@@ -51,6 +51,27 @@
   </button>
   </sc-if>
 
+  <sc-if value="{{vdb.show}}" hint-placeholder-val="{{true}}">
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 15px; font-weight: 700">{{vdb.title}}</span>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{vdb.rows}}" as="r" hint-placeholder-count="4">
+        <div style="background: #2C2C2E; border-radius: 12px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 1px">
+          <span style="font-size: 11px; font-weight: {{r.weight}}; color: #98989F">{{r.name}}</span>
+          <span style="font-size: 17px; font-weight: 800; color: {{r.b.bg}}">{{r.b.pct}}</span>
+          <span style="font-size: 12px; font-weight: 700; color: {{r.d.col}}">{{r.d.txt}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <sc-for list="{{vdb.lines}}" as="h" hint-placeholder-count="2">
+      <div style="display: flex; gap: 10px; align-items: center">
+        <span style="width: 8px; height: 8px; border-radius: 4px; flex: none; background: {{h.col}}"></span>
+        <span style="font-size: 14px">{{h.txt}}</span>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+
   <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px">
     <span style="font-size: 15px; font-weight: 700; padding: 0 4px">Previous 7 Days</span>
     <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px">
@@ -69,6 +90,48 @@
     </div>
   </div>
 
+  <div style="background: #1C1C1E; border-radius: 20px; overflow: hidden">
+    <button onClick="{{attn.toggle}}" aria-expanded="{{attn.openStr}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; padding: 14px 16px; display: flex; align-items: center; gap: 10px; text-align: left; min-height: 60px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 15px; font-weight: 700">{{attn.title}}</span>
+        <span style="font-size: 13px; color: #98989F">{{attn.sub}}</span>
+      </div>
+      <span style="font-size: 22px; font-weight: 800; color: {{attn.valCol}}">{{attn.val}}</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{attn.rot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+    <sc-if value="{{attn.open}}" hint-placeholder-val="{{false}}">
+      <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{latRecs.pillars}}" as="p" hint-placeholder-count="1">
+          <div style="font-size: 14px; font-weight: 700; color: #FF6961">{{p}}</div>
+        </sc-for>
+        <sc-for list="{{latRecs.items}}" as="r" hint-placeholder-count="3">
+          <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 10px; border-top: 1px solid #38383A">
+            <span style="font-size: 15px; font-weight: 800; min-width: 34px; color: {{r.bg}}">{{r.score}}</span>
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+              <sc-if value="{{tipsOn}}" hint-placeholder-val="{{true}}">
+                <sc-if value="{{r.hasTip}}" hint-placeholder-val="{{true}}">
+                  <span style="font-size: 14px; color: #E5E5EA; line-height: 1.4">{{r.tip}}</span>
+                  <span style="font-size: 12px; color: #98989F; font-style: italic">— {{r.author}}, {{r.work}}</span>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                    <a href="{{r.url}}" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 600; color: #409CFF; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center">Open source ›</a>
+                    <button onClick="{{r.next}}" style="display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 13px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"></path></svg>New tip</button>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{tipsOff}}" hint-placeholder-val="{{false}}">
+          <div style="background: #2C2C2E; border-radius: 12px; padding: 10px 12px; font-size: 14px; color: #C7C7CC">Connect to the internet to see tips.</div>
+        </sc-if>
+        <sc-if value="{{latSafety}}" hint-placeholder-val="{{false}}">
+          <div style="background: #0A2A4A; border-radius: 14px; padding: 12px; font-size: 14px; line-height: 1.45">Your emotional scores were low. If this keeps up, it can help to talk with someone you trust or a professional. If you're ever in crisis, call or text <strong>988</strong> (US).</div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
   <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
     <span style="font-size: 15px; font-weight: 700">Highlights</span>
     <sc-for list="{{highlights}}" as="h" hint-placeholder-count="3">
@@ -79,7 +142,7 @@
     </sc-for>
   </div>
 
-  <sc-for list="{{sections}}" as="x" hint-placeholder-count="4">
+  <sc-for list="{{sections}}" as="x" hint-placeholder-count="3">
     <div style="background: #1C1C1E; border-radius: 20px; overflow: hidden">
       <button onClick="{{x.toggle}}" aria-expanded="{{x.openStr}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; padding: 14px 16px; display: flex; align-items: center; gap: 10px; text-align: left; min-height: 60px">
         <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
@@ -135,40 +198,6 @@
         </div>
       </sc-if>
 
-      <sc-if value="{{x.openAttn}}" hint-placeholder-val="{{false}}">
-        <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px">
-          <sc-for list="{{latRecs.pillars}}" as="p" hint-placeholder-count="1">
-            <div style="font-size: 14px; font-weight: 700; color: #FF6961">{{p}}</div>
-          </sc-for>
-          <sc-for list="{{latRecs.items}}" as="r" hint-placeholder-count="3">
-            <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 10px; border-top: 1px solid #38383A">
-              <span style="font-size: 15px; font-weight: 800; min-width: 34px; color: {{r.bg}}">{{r.score}}</span>
-              <div style="display: flex; flex-direction: column; gap: 2px">
-                <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
-                <sc-if value="{{tipsOn}}" hint-placeholder-val="{{true}}">
-                  <sc-if value="{{r.hasTip}}" hint-placeholder-val="{{true}}">
-                    <span style="font-size: 14px; color: #E5E5EA; line-height: 1.4">{{r.tip}}</span>
-                    <span style="font-size: 12px; color: #98989F; font-style: italic">— {{r.author}}, {{r.work}}</span>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-                      <a href="{{r.url}}" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 600; color: #409CFF; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center">Open source ›</a>
-                      <button onClick="{{r.next}}" style="display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 13px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"></path></svg>New tip</button>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{r.noTip}}" hint-placeholder-val="{{false}}">
-                    <span style="font-size: 14px; color: #98989F">No new tips for {{r.name}} right now. Check back later.</span>
-                  </sc-if>
-                </sc-if>
-              </div>
-            </div>
-          </sc-for>
-          <sc-if value="{{tipsOff}}" hint-placeholder-val="{{false}}">
-            <div style="background: #2C2C2E; border-radius: 12px; padding: 10px 12px; font-size: 14px; color: #C7C7CC">Connect to the internet to see tips.</div>
-          </sc-if>
-          <sc-if value="{{latSafety}}" hint-placeholder-val="{{false}}">
-            <div style="background: #0A2A4A; border-radius: 14px; padding: 12px; font-size: 14px; line-height: 1.45">Your emotional scores were low. If this keeps up, it can help to talk with someone you trust or a professional. If you're ever in crisis, call or text <strong>988</strong> (US).</div>
-          </sc-if>
-        </div>
-      </sc-if>
     </div>
   </sc-for>
 </div>
@@ -181,25 +210,34 @@
   <sc-if value="{{iv.isReview}}" hint-placeholder-val="{{false}}">
     <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
       <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
-        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">Step 1 of 3 · {{iv.dateLabel}}</span>
-        <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Review Tasks</h1>
-        <span style="font-size: 15px; color: #98989F">Check off what got done before you rate the day.</span>
+        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{rv.title}}</span>
+        <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Check-in</h1>
       </div>
-      <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
-        <span style="font-size: 15px; font-weight: 700; padding: 8px 0">{{rv.head}}</span>
-        <sc-if value="{{rv.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 8px 0 10px; border-top: 1px solid #38383A">Nothing was planned for this day.</span></sc-if>
-        <sc-for list="{{rv.tasks}}" as="t" hint-placeholder-count="4">
-          <div style="display: flex; align-items: center; gap: 8px; min-height: 52px; border-top: 1px solid #38383A">
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
-              <span style="font-size: 16px; font-weight: 600">{{t.text}}</span>
-              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
-            </div>
-            <button onClick="{{t.yes}}" aria-label="{{t.yesAria}}" aria-pressed="{{t.yesP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.yesStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M5 12l5 5 9-10"></path></svg></button>
-            <button onClick="{{t.no}}" aria-label="{{t.noAria}}" aria-pressed="{{t.noP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.noStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      <button onClick="{{rv.start}}" style="min-height: 56px; border-radius: 16px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 18px; font-weight: 700">{{rv.btn}}</button>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 4px 0">
+        <span style="font-size: 20px; font-weight: 800">{{rv.head}}</span>
+      </div>
+      <span style="font-size: 13px; color: #98989F; padding: 0 4px; margin-top: -6px">Check things off anytime today. They're your reminders during the check-in.</span>
+      <sc-if value="{{rv.empty}}" hint-placeholder-val="{{false}}"><div style="background: #1C1C1E; border-radius: 16px; padding: 14px 16px; font-size: 14px; color: #98989F">Nothing due. Add to-dos in Planner.</div></sc-if>
+      <sc-for list="{{rv.groups}}" as="g" hint-placeholder-count="3">
+        <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 0">
+            <span style="width: 10px; height: 10px; border-radius: 5px; background: {{g.col}}"></span>
+            <span style="flex: 1; font-size: 15px; font-weight: 700; color: {{g.col}}">{{g.name}}</span>
+            <span style="font-size: 13px; color: #98989F">{{g.count}}</span>
           </div>
-        </sc-for>
-      </div>
-      <button onClick="{{startQs}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Rate My Day</button>
+          <sc-for list="{{g.tasks}}" as="t" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 8px; min-height: 52px; border-top: 1px solid #38383A">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                <span style="font-size: 16px; font-weight: 600">{{t.text}}</span>
+                <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+              </div>
+              <button onClick="{{t.yes}}" aria-label="{{t.yesAria}}" aria-pressed="{{t.yesP}}" style="width: 44px; height: 44px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.yesStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M5 12l5 5 9-10"></path></svg></button>
+              <button onClick="{{t.no}}" aria-label="{{t.noAria}}" aria-pressed="{{t.noP}}" style="width: 44px; height: 44px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.noStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
     </div>
   </sc-if>
 
@@ -216,12 +254,13 @@
         <div style="display: flex; gap: 8px">
           <label for="plantask" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New task for tomorrow</label>
           <input id="plantask" type="text" value="{{pn.draft.text}}" onChange="{{pn.draft.onText}}" onKeyDown="{{pn.draft.onKey}}" placeholder="Add a task for tomorrow" style="flex: 1; min-width: 0; min-height: 44px; border-radius: 10px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px">
-          <button onClick="{{pn.draft.add}}" aria-label="Add task" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+          <button onClick="{{pn.draft.add}}" aria-label="Add task" style="width: 44px; height: 44px; border-radius: 22px; border: none; {{pn.draft.addStyle}}; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
         </div>
-        <label for="plantag" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Link to factor</label>
-        <select id="plantag" value="{{pn.draft.factor}}" onChange="{{pn.draft.onFactor}}" style="min-height: 36px; border-radius: 8px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 8px; font-size: 13px; font-weight: 600">
-          <sc-for list="{{tagOpts}}" as="o" hint-placeholder-count="16"><option value="{{o.id}}">{{o.name}}</option></sc-for>
-        </select>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px" role="group" aria-label="Pillar">
+          <sc-for list="{{pn.draft.pillars}}" as="o" hint-placeholder-count="3">
+            <button onClick="{{o.pick}}" aria-pressed="{{o.selStr}}" style="min-height: 44px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; {{o.style}}">{{o.name}}</button>
+          </sc-for>
+        </div>
       </div>
       <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
         <span style="font-size: 15px; font-weight: 700; padding: 8px 0">{{pn.head}}</span>
@@ -264,15 +303,10 @@
         <span style="font-size: 30px; font-weight: 800; letter-spacing: -0.01em">{{iv.name}}</span>
       </div>
 
-      <sc-if value="{{iv.hasLinked}}" hint-placeholder-val="{{false}}">
-        <div style="background: #1C1C1E; border-radius: 16px; padding: 2px 12px 2px 14px; display: flex; flex-direction: column">
-          <sc-for list="{{iv.linked}}" as="t" hint-placeholder-count="1">
-            <div style="display: flex; align-items: center; gap: 8px; min-height: 48px; {{t.sep}}">
-              <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 600">{{t.text}}</span>
-              <button onClick="{{t.yes}}" aria-label="{{t.yesAria}}" aria-pressed="{{t.yesP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.yesStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M5 12l5 5 9-10"></path></svg></button>
-              <button onClick="{{t.no}}" aria-label="{{t.noAria}}" aria-pressed="{{t.noP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.noStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-            </div>
-          </sc-for>
+      <sc-if value="{{iv.pt.has}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; border-left: 3px solid {{iv.pt.col}}">
+          <span style="font-size: 12px; font-weight: 700; color: {{iv.pt.col}}">{{iv.pt.head}}</span>
+          <span style="font-size: 13px; color: #C7C7CC; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical">{{iv.pt.names}}</span>
         </div>
       </sc-if>
 
@@ -288,10 +322,10 @@
         <div style="padding: 8px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; box-sizing: border-box">
           <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">2</span>
           <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-            <span style="font-size: 14px; font-weight: 600; line-height: 1.25">Today's importance</span>
+            <span style="font-size: 13px; font-weight: 600; line-height: 1.25; white-space: nowrap">Today's importance</span>
             <span style="font-size: 12px; color: #98989F">{{iv.r2.tag}}</span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 180px; flex: none" role="group" aria-label="Today's importance">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 138px; flex: none" role="group" aria-label="Today's importance">
             <sc-for list="{{iv.r2.opts}}" as="o" hint-placeholder-count="3">
               <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 0; {{o.style}}">{{o.short}}</button>
             </sc-for>
@@ -307,10 +341,10 @@
         <div style="padding: 8px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; box-sizing: border-box">
           <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">4</span>
           <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-            <span style="font-size: 14px; font-weight: 600; line-height: 1.25">Tomorrow's importance</span>
+            <span style="font-size: 13px; font-weight: 600; line-height: 1.25; white-space: nowrap">Tomorrow's importance</span>
             <span style="font-size: 12px; color: #98989F">{{iv.r3.tag}}</span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 180px; flex: none" role="group" aria-label="Tomorrow's importance">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 138px; flex: none" role="group" aria-label="Tomorrow's importance">
             <sc-for list="{{iv.r3.opts}}" as="o" hint-placeholder-count="3">
               <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 0; {{o.style}}">{{o.short}}</button>
             </sc-for>
@@ -393,9 +427,6 @@
                       <button onClick="{{r.next}}" style="display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 13px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"></path></svg>New tip</button>
                     </div>
                   </sc-if>
-                  <sc-if value="{{r.noTip}}" hint-placeholder-val="{{false}}">
-                    <span style="font-size: 14px; color: #98989F">No new tips for {{r.name}} right now. Check back later.</span>
-                  </sc-if>
                 </sc-if>
               </div>
             </div>
@@ -408,8 +439,7 @@
       <sc-if value="{{res.safety}}" hint-placeholder-val="{{false}}">
         <div style="background: #0A2A4A; border-radius: 16px; padding: 14px; font-size: 14px; line-height: 1.45">Your emotional scores were low today. If this keeps up, it can help to talk with someone you trust or a professional. If you're ever in crisis, call or text <strong>988</strong> (US).</div>
       </sc-if>
-      <button onClick="{{goCompare}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Compare With Last Entry</button>
-      <button onClick="{{goSummary}}" style="min-height: 52px; border-radius: 14px; border: none; background: #1C1C1E; color: #409CFF; font-size: 17px; font-weight: 600">Back to Summary</button>
+      <button onClick="{{goSummary}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Back to Summary</button>
     </div>
   </sc-if>
 </div>
@@ -465,7 +495,7 @@
             </button>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
               <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
-              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-if value="{{t.hasTag}}" hint-placeholder-val="{{true}}"><span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid {{t.tagCol}}; color: {{t.tagCol}}">{{t.tag}}</span></sc-if><sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if></div>
             </div>
             <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
           </div>
@@ -481,7 +511,7 @@
             </button>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
               <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
-              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-if value="{{t.hasTag}}" hint-placeholder-val="{{true}}"><span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid {{t.tagCol}}; color: {{t.tagCol}}">{{t.tag}}</span></sc-if><sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if></div>
             </div>
             <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
           </div>
@@ -502,7 +532,7 @@
             </button>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
               <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
-              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-if value="{{t.hasTag}}" hint-placeholder-val="{{true}}"><span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid {{t.tagCol}}; color: {{t.tagCol}}">{{t.tag}}</span></sc-if><sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if></div>
             </div>
             <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
           </div>
@@ -521,13 +551,14 @@
                 <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 17px; height: 17px; border-radius: 10px; border: 2px solid #636366"></span></sc-if>
               </button>
               <span style="flex: 1; font-size: 14px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasTag}}" hint-placeholder-val="{{true}}"><span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid {{t.tagCol}}; color: {{t.tagCol}}">{{t.tag}}</span></sc-if>
             </div>
           </sc-for>
         </div>
       </sc-for>
     </div>
   </sc-if>
-  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Tap + to add a to-do for any day. Unfinished daily to-dos carry over to the next day, and linked ones show up on that factor's check-in page.</span>
+  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Tap + to add a to-do for any day and pick its pillar. Today's to-dos show on the Check-in tab, grouped by pillar.</span>
 </div>
 </sc-if>
 
@@ -618,68 +649,54 @@
 </div>
 </sc-if>
 
-<!-- ================= COMPARE ================= -->
-<sc-if value="{{show.compare}}" hint-placeholder-val="{{false}}">
+<!-- ================= WORK ================= -->
+<sc-if value="{{show.work}}" hint-placeholder-val="{{false}}">
 <div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
   <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
-    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{cmp.title}}</span>
-    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Compare</h1>
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{wk.count}}</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Work</h1>
   </div>
-
-  <sc-if value="{{notTwo}}" hint-placeholder-val="{{false}}">
-    <div style="background: #1C1C1E; border-radius: 20px; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px">
-      <span style="font-size: 17px; font-weight: 700">Nothing to compare yet</span>
-      <span style="font-size: 15px; color: #C7C7CC; line-height: 1.45">Compare shows your latest check-in next to the one before it. It fills in after your second check-in.</span>
-      <button onClick="{{goInput}}" style="min-height: 50px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Go to Check-in</button>
-    </div>
-  </sc-if>
-  <sc-if value="{{hasTwo}}" hint-placeholder-val="{{true}}">
-  <div style="display: flex; flex-direction: column; gap: 12px">
-  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
-    <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.9fr; gap: 6px; font-size: 12px; font-weight: 600; color: #98989F">
-      <span></span><span>{{cmp.thenShort}}</span><span>{{cmp.nowShort}}</span><span>Change</span>
-    </div>
-    <sc-for list="{{cmp.top}}" as="t" hint-placeholder-count="4">
-      <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.9fr; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid #38383A">
-        <span style="font-size: 15px; font-weight: {{t.weight}}">{{t.name}}</span>
-        <span style="font-size: 15px; font-weight: 700; color: {{t.a.bg}}">{{t.a.pct}} {{t.a.letter}}</span>
-        <span style="font-size: 15px; font-weight: 800; color: {{t.b.bg}}">{{t.b.pct}} {{t.b.letter}}</span>
-        <span style="font-size: 14px; font-weight: 800; color: {{t.d.col}}">{{t.d.txt}}</span>
-      </div>
+  <div style="display: flex; gap: 8px">
+    <label for="worktext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New work to-do</label>
+    <input id="worktext" type="text" value="{{wk.text}}" onChange="{{wk.onText}}" onKeyDown="{{wk.onKey}}" placeholder="Add a work to-do" style="flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 0 14px; font-size: 16px">
+    <button onClick="{{wk.add}}" aria-label="Add work to-do" style="width: 48px; height: 48px; border-radius: 24px; border: none; display: flex; align-items: center; justify-content: center; flex: none; {{wk.addStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+  </div>
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 2px 16px 4px; display: flex; flex-direction: column">
+    <sc-if value="{{wk.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 14px 0">Nothing on your work list.</span></sc-if>
+    <sc-for list="{{wk.items}}" as="t" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; {{t.sep}}">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <span style="flex: 1; min-width: 0; font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+            <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
     </sc-for>
   </div>
-
-  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
-    <span style="font-size: 15px; font-weight: 700">Expected vs. Actual · {{cmp.nowShort}}</span>
-    <span style="font-size: 14px; color: #C7C7CC">{{cmp.expLine}}</span>
-    <span style="font-size: 16px; font-weight: 800; color: {{cmp.ed.col}}">{{cmp.ed.txt}}</span>
-  </div>
-
-  <sc-for list="{{cmp.groups}}" as="g" hint-placeholder-count="3">
-    <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
-      <span style="font-size: 15px; font-weight: 700">{{g.name}}</span>
-      <div style="display: grid; grid-template-columns: 1.5fr 0.7fr 0.7fr 0.9fr 0.9fr; gap: 4px; font-size: 11px; font-weight: 600; color: #98989F">
-        <span>Factor</span><span>Then</span><span>Now</span><span>Change</span><span>Imp.</span>
+  <sc-if value="{{wk.hasDone}}" hint-placeholder-val="{{false}}">
+    <div style="background: #1C1C1E; border-radius: 20px; padding: 0 16px; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; min-height: 48px">
+        <button onClick="{{wk.toggleDone}}" aria-expanded="{{wk.doneOpenStr}}" style="flex: 1; background: transparent; border: none; color: #FFFFFF; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; text-align: left; font-size: 15px; font-weight: 700"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{wk.doneRot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>{{wk.doneHead}}</button>
+        <button onClick="{{wk.clear}}" style="background: transparent; border: none; color: #409CFF; font-size: 15px; min-height: 44px; padding: 0 0 0 12px">Clear</button>
       </div>
-      <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="5">
-        <div style="display: grid; grid-template-columns: 1.5fr 0.7fr 0.7fr 0.9fr 0.9fr; gap: 4px; align-items: center; font-size: 14px; padding: 6px 0; border-top: 1px solid #38383A">
-          <span style="font-weight: 600">{{r.name}}</span>
-          <span style="color: #C7C7CC">{{r.a}}</span>
-          <span style="font-weight: 700">{{r.b}}</span>
-          <span style="font-weight: 800; color: {{r.d.col}}">{{r.d.txt}}</span>
-          <span style="font-size: 12px; color: #98989F">{{r.imp}}</span>
+      <sc-if value="{{wk.doneOpen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; padding-bottom: 4px">
+          <sc-for list="{{wk.doneItems}}" as="t" hint-placeholder-count="1">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #38383A">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <span style="flex: 1; min-width: 0; font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+            <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+          </sc-for>
         </div>
-      </sc-for>
+      </sc-if>
     </div>
-  </sc-for>
-
-  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
-    <span style="font-size: 15px; font-weight: 700">Notes</span>
-    <span style="font-size: 14px; color: #C7C7CC"><strong style="color: #FFFFFF">{{cmp.thenShort}}:</strong> {{cmp.noteThen}}</span>
-    <span style="font-size: 14px; color: #C7C7CC"><strong style="color: #FFFFFF">{{cmp.nowShort}}:</strong> {{cmp.noteNow}}</span>
-  </div>
-  </div>
   </sc-if>
+  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Work to-dos are kept separate from your personal to-dos and aren't part of the check-in.</span>
 </div>
 </sc-if>
 
@@ -707,15 +724,13 @@
         <sc-if value="{{c.real}}" hint-placeholder-val="{{true}}">
           <button onClick="{{c.pick}}" aria-label="{{c.aria}}" style="height: 46px; border-radius: 23px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 15px; font-weight: 700; padding: 0; {{c.style}}">
             <span>{{c.num}}</span>
-            <sc-if value="{{c.isLogged}}" hint-placeholder-val="{{false}}"><svg width="11" height="11" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
-            <sc-if value="{{c.isMissed}}" hint-placeholder-val="{{false}}"><svg width="11" height="11" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></sc-if>
           </button>
         </sc-if>
       </sc-for>
     </div>
     <div style="display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #C7C7CC; padding-top: 4px">
-      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 6px; background: #1E7B3A"></span>Logged</span>
-      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 6px; background: #C4161C"></span>Missed</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 44px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #E0201B, #FFD60A 50%, #1FA34A)"></span>Day's score</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 6px; border: 2px solid #48484A"></span>No check-in</span>
       <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 6px; border: 2px solid #409CFF"></span>Today</span>
     </div>
   </div>
@@ -731,7 +746,7 @@
   <button onClick="{{goSummary}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.summary}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle></svg>Summary</button>
   <button onClick="{{goInput}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.input}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Check-in</button>
   <button onClick="{{goPlanner}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.planner}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"></path></svg>Planner</button>
-  <button onClick="{{goCompare}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.compare}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"></path></svg>Compare</button>
+  <button onClick="{{goWork}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.work}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5"></rect><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"></path></svg>Work</button>
   <button onClick="{{goHistory}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.history}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>History</button>
 </nav>
 </sc-if>
@@ -748,6 +763,11 @@
       </div>
       <label for="addtext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">To-do</label>
       <input id="addtext" type="text" value="{{ad.text}}" onChange="{{ad.onText}}" onKeyDown="{{ad.onKey}}" placeholder="What do you need to do?" style="min-height: 48px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 14px; font-size: 17px">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px" role="group" aria-label="Pillar">
+        <sc-for list="{{ad.pillars}}" as="o" hint-placeholder-count="3">
+          <button onClick="{{o.pick}}" aria-pressed="{{o.selStr}}" style="min-height: 44px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; {{o.style}}">{{o.name}}</button>
+        </sc-for>
+      </div>
       <div style="display: flex; align-items: center; justify-content: space-between">
         <button onClick="{{ad.prevWk}}" aria-label="Previous week" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
         <span style="font-size: 14px; font-weight: 600; color: #C7C7CC">{{ad.wkLabel}}</span>
@@ -760,12 +780,6 @@
             <span style="font-size: 11px; font-weight: 600; opacity: 0.85">{{c.sub}}</span>
           </button>
         </sc-for>
-      </div>
-      <div style="display: flex; align-items: center; min-height: 44px; border-top: 1px solid #38383A; padding-top: 6px">
-        <label for="addtag" style="flex: 1; font-size: 15px">Link to factor</label>
-        <select id="addtag" value="{{ad.factor}}" onChange="{{ad.onFactor}}" style="min-height: 36px; border-radius: 8px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 8px; font-size: 14px; font-weight: 600">
-          <sc-for list="{{tagOpts}}" as="o" hint-placeholder-count="16"><option value="{{o.id}}">{{o.name}}</option></sc-for>
-        </select>
       </div>
     </div>
   </div>

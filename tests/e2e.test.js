@@ -28,14 +28,14 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   // check-in
   await p.getByRole('button', { name: 'Start Tonight\'s Check-in' }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/03-review.png' });
-  await p.getByRole('button', { name: 'Rate My Day' }).click(); await p.waitForTimeout(150);
+  await p.getByRole('button', { name: /Start Today.s Check-in/ }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
   const type = async (s) => { for (const ch of s) { await p.getByRole('button', { name: ch === '.' ? 'Decimal point' : ch, exact: true }).click(); } await p.waitForTimeout(700); };
   const today = ['7.5','8.0','6.5','5.0','7.0','8.0','4.5','7.5','8.5','6.0','6.5','7.0','8.0','9.0','6.0'];
   for (let i = 0; i < 15; i++) { await type(today[i]); await type('8.0'); }
   await p.waitForTimeout(300);
   log('plan screen:', await p.getByText('Plan Tomorrow').isVisible());
-  await p.getByLabel('New task for tomorrow').fill('Gym at 6 AM'); await p.getByLabel('Link to factor').selectOption('exercise');
+  await p.getByLabel('New task for tomorrow').fill('Gym at 6 AM'); await p.getByRole('button', { name: 'Physical', exact: true }).click();
   await p.getByRole('button', { name: 'Add task' }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/05-plan.png' });
   await p.getByRole('button', { name: 'Continue' }).click(); await p.waitForTimeout(150);
@@ -49,7 +49,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.screenshot({ path: SHOTS + '/07-summary-after-reload.png' });
   log('summary label:', await p.getByText('Today', { exact: true }).first().isVisible());
   const stored = await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')));
-  log('stored days:', Object.keys(stored.days), 'tasks:', stored.tasks.map(t => t.text + '@' + t.date), 'note:', Object.values(stored.days)[0].note);
+  log('stored days:', Object.keys(stored.days), 'pillars:', stored.tasks.map(t => t.pillar), 'tasks:', stored.tasks.map(t => t.text + '@' + t.date), 'note:', Object.values(stored.days)[0].note);
   // expand 7-day
   await p.getByRole('button', { name: /7-Day Score/ }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/08-summary-expanded.png', fullPage: true });
@@ -57,12 +57,20 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await btn('Planner').click(); await p.waitForTimeout(150);
   await p.getByRole('button', { name: 'Add to-do' }).click(); await p.waitForTimeout(150);
   await p.getByRole('textbox', { name: 'To-do' }).fill('Call Mom');
+  await p.getByRole('button', { name: 'Emotional', exact: true }).click();
   await p.screenshot({ path: SHOTS + '/09-add-sheet.png' });
   await p.getByRole('button', { name: 'Add', exact: true }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/10-planner.png' });
-  // compare (one entry)
-  await btn('Compare').click(); await p.waitForTimeout(150);
-  log('compare empty msg:', await p.getByText('Nothing to compare yet').isVisible());
+  // check-in tab: start button on top, today's to-dos grouped by pillar
+  await btn('Check-in').click(); await p.waitForTimeout(150);
+  await p.screenshot({ path: SHOTS + '/10b-checkin-tab.png' });
+  // work list
+  await btn('Work').click(); await p.waitForTimeout(150);
+  await p.getByLabel('New work to-do').fill('Send proposal'); await p.keyboard.press('Enter'); await p.waitForTimeout(100);
+  await p.getByLabel('New work to-do').fill('Call client'); await p.getByRole('button', { name: 'Add work to-do' }).click(); await p.waitForTimeout(100);
+  await p.getByRole('button', { name: 'Mark done: Send proposal' }).click(); await p.waitForTimeout(100);
+  log('work list:', await p.getByText('Call client').isVisible(), await p.getByText('Done (1)').isVisible());
+  await p.screenshot({ path: SHOTS + '/10c-work.png' });
   await btn('History').click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/11-history.png' });
   // settings

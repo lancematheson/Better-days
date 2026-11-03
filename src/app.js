@@ -33,18 +33,25 @@ const IW = { H: 3, M: 2, L: 1 };
 const INAME = { H: 'High', M: 'Medium', L: 'Low' };
 const DEF_IMP = { sleep: 'H', exercise: 'H', nutrition: 'M', hydration: 'L', energy: 'M', mood: 'H', stress: 'H', connection: 'M', purpose: 'M', rest: 'L', spending: 'H', saving: 'M', earning: 'H', obligations: 'M', awareness: 'L' };
 const BASE = { sleep: 6.0, exercise: 6.2, nutrition: 6.0, hydration: 7.0, energy: 6.6, mood: 6.9, stress: 5.9, connection: 6.7, purpose: 6.9, rest: 5.7, spending: 7.0, saving: 6.2, earning: 7.4, obligations: 8.4, awareness: 5.9 };
-// Sample of what the live tip feed returns. In the real app these load only when online,
-// skip anything already seen, and stay on the factor's topic. Listed in the order they'd be shown.
+// Built-in tip library (about 10 per factor), written in plain words from each source's main ideas.
+// Existing tips keep their position so saved progress lines up. Tips rotate forever: once every tip for a
+// factor has been shown, a new shuffled round starts (never the same tip twice in a row).
 const SRC = {
   hub: { author: 'Andrew Huberman', work: 'Huberman Lab', url: 'https://www.hubermanlab.com' },
+  walker: { author: 'Matthew Walker', work: 'Why We Sleep', url: 'https://www.sleepdiplomat.com' },
+  attia: { author: 'Peter Attia', work: 'Outlive', url: 'https://peterattiamd.com' },
+  pollan: { author: 'Michael Pollan', work: 'Food Rules', url: 'https://michaelpollan.com' },
+  mayo: { author: 'Mayo Clinic', work: 'Water: How much should you drink?', url: 'https://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/water/art-20044256' },
   burns: { author: 'David D. Burns', work: 'Feeling Good', url: 'https://feelinggood.com' },
   neff: { author: 'Kristin Neff', work: 'Self-Compassion', url: 'https://self-compassion.org' },
+  seligman: { author: 'Martin Seligman', work: 'Flourish', url: 'https://www.authentichappiness.sas.upenn.edu' },
   nag: { author: 'Emily & Amelia Nagoski', work: 'Burnout', url: 'https://www.emilynagoski.com' },
   mcg: { author: 'Kelly McGonigal', work: 'The Upside of Stress', url: 'https://kellymcgonigal.com' },
   wal: { author: 'Robert Waldinger & Marc Schulz', work: 'The Good Life', url: 'https://www.lifespanresearch.org' },
   frankl: { author: 'Viktor Frankl', work: 'Man’s Search for Meaning', url: 'https://www.viktorfrankl.org' },
   pang: { author: 'Alex Soojung-Kim Pang', work: 'Rest', url: 'https://www.hachettebookgroup.com/titles/alex-soojung-kim-pang/rest/9781541604834/' },
   newport: { author: 'Cal Newport', work: 'Digital Minimalism', url: 'https://calnewport.com' },
+  deepwork: { author: 'Cal Newport', work: 'Deep Work', url: 'https://calnewport.com' },
   sethi: { author: 'Ramit Sethi', work: 'I Will Teach You to Be Rich', url: 'https://www.iwillteachyoutoberich.com' },
   collins: { author: 'JL Collins', work: 'The Simple Path to Wealth', url: 'https://jlcollinsnh.com' },
   ramsey: { author: 'Dave Ramsey', work: 'The Total Money Makeover', url: 'https://www.ramseysolutions.com' },
@@ -52,24 +59,162 @@ const SRC = {
   robin: { author: 'Vicki Robin & Joe Dominguez', work: 'Your Money or Your Life', url: 'https://www.yourmoneyoryourlife.com' }
 };
 const RAW = {
-  sleep: [['hub', 'Get outside for morning sunlight soon after waking to help set your sleep schedule.'], ['hub', 'Keep lights dim in the late evening and avoid bright overhead light before bed.'], ['hub', 'Keep your bedroom cool and dark. A slight drop in body temperature helps you fall asleep.']],
-  exercise: [['hub', 'Build a weekly routine that mixes resistance training with cardio, and put each session on your calendar.'], ['hub', 'Include steady cardio where you can still hold a conversation, several times a week.']],
-  nutrition: [['hub', 'Build most meals around minimally processed foods.']],
-  hydration: [['hub', 'Spread water through the day instead of all at once, and add electrolytes when you sweat a lot.'], ['hub', 'Start the day with water, before your first coffee.']],
-  energy: [['hub', 'Get light and movement early in the day, and wait 90 to 120 minutes after waking before your first caffeine.'], ['hub', 'Try a short non-sleep deep rest (NSDR) session or a brief nap in the afternoon to restore energy.']],
-  mood: [['burns', 'Write down the thought that is bringing you down, spot the distortion in it (like all-or-nothing thinking), and rewrite it more accurately.'], ['neff', 'Talk to yourself the way you would talk to a good friend who is struggling.']],
-  stress: [['nag', 'When stress builds up, finish the stress cycle with physical activity, even a short walk.'], ['mcg', 'Try seeing stress as your body getting ready to meet a challenge. That view can change how stress affects you.'], ['nag', 'Other ways to finish the stress cycle: slow deep breaths, a real laugh, a long hug or a good cry.']],
-  connection: [['wal', 'Close relationships are among the strongest predictors of a happy, healthy life. Reach out to one person you care about today.'], ['wal', 'Relationships need regular upkeep, a kind of social fitness. Check in on one you have let slide.']],
-  purpose: [['frankl', 'Meaning can come from your work, from the people you love and from how you face hard things. Name one thing that gives today’s effort meaning.'], ['frankl', 'You cannot always choose what happens, but you can choose your attitude toward it.']],
-  rest: [['pang', 'Treat rest as a skill: take real breaks like walks or short naps, and protect time fully away from work.'], ['newport', 'Set aside time away from your phone and replace scrolling with a hobby you actually enjoy.'], ['pang', 'Active hobbies like sports or making things restore you more than passive downtime.']],
-  spending: [['sethi', 'Decide ahead of time what you love spending on, and cut back hard on everything else.'], ['robin', 'Before buying, ask whether it is worth the hours of your life you traded to earn the money.']],
-  saving: [['collins', 'Spend less than you earn, invest the difference in a low-cost index fund, and avoid debt.'], ['housel', 'Save even without a specific goal. Savings give you flexibility and options.'], ['sethi', 'Automate your savings so money moves before you can spend it.']],
-  earning: [['sethi', 'Focus on big wins, like negotiating your salary or growing your income, before trimming small expenses.'], ['robin', 'Figure out your real hourly wage once you subtract work costs like commuting and work clothes.']],
-  obligations: [['ramsey', 'List your debts from smallest to largest and pay off the smallest first (the debt snowball).'], ['ramsey', 'Start with a small starter emergency fund before attacking debt, so surprises do not go on a card.']],
-  awareness: [['robin', 'Track every dollar that comes in or goes out, so you know where your money really goes.'], ['housel', 'Wealth is what you do not see: the money you did not spend.']]
+  sleep: [['hub', 'Get outside for morning sunlight soon after waking to help set your sleep schedule.'], ['hub', 'Keep lights dim in the late evening and avoid bright overhead light before bed.'], ['hub', 'Keep your bedroom cool and dark. A slight drop in body temperature helps you fall asleep.'],
+    ['walker', 'Go to bed and wake up at the same time every day, weekends included.'],
+    ['walker', 'Cut off caffeine by early afternoon. It stays in your system for many hours.'],
+    ['walker', 'Skip the nightcap. Alcohol may help you nod off, but it breaks up your sleep later in the night.'],
+    ['walker', 'If you can’t fall asleep after about 20 minutes, get up and do something calm in dim light until you feel sleepy.'],
+    ['walker', 'Give yourself a full 8-hour window in bed so you can actually get 7 to 9 hours of sleep.'],
+    ['walker', 'Take a warm bath or shower before bed. Your body cools down quickly afterward, which helps you fall asleep.'],
+    ['hub', 'Look at the late-afternoon or evening sun for a few minutes. It helps your body clock know when the day is ending.']],
+  exercise: [['hub', 'Build a weekly routine that mixes resistance training with cardio, and put each session on your calendar.'], ['hub', 'Include steady cardio where you can still hold a conversation, several times a week.'],
+    ['hub', 'Try a simple weekly plan: one long endurance session, one hard interval session, and strength days for legs and for upper body.'],
+    ['hub', 'You don’t have to lift to total failure. Stopping a rep or two short still builds strength.'],
+    ['hub', 'Take a 10 to 15 minute walk after meals. It helps keep blood sugar steady.'],
+    ['attia', 'Aim for about three hours a week of easy “zone 2” cardio, where you can talk but would rather not sing.'],
+    ['attia', 'Once a week, do hard intervals, like four 4-minute pushes with 4 easy minutes between, to raise your top-end fitness.'],
+    ['attia', 'Train for the life you want at 80: carrying groceries, getting up off the floor, playing with grandkids.'],
+    ['attia', 'Work on grip strength with carries and dead hangs. Grip is a strong signal of overall health as you age.'],
+    ['attia', 'Practice balance and stability, like standing on one leg, to protect yourself from falls later in life.']],
+  nutrition: [['hub', 'Build most meals around minimally processed foods.'],
+    ['pollan', 'Eat food. Not too much. Mostly plants.'],
+    ['pollan', 'Skip food products with more than five ingredients, or ingredients you can’t pronounce.'],
+    ['pollan', 'Don’t eat anything your great-grandmother wouldn’t recognize as food.'],
+    ['pollan', 'Shop the edges of the grocery store, where the fresh food usually is.'],
+    ['pollan', 'Eat meals at a table, not at your desk or in the car.'],
+    ['pollan', 'Stop eating when you’re satisfied, not when you’re full.'],
+    ['pollan', 'Cook more of your own meals. Home cooking is usually healthier than anything ready-made.'],
+    ['attia', 'Get enough protein, and spread it across your meals with a solid serving at each.'],
+    ['attia', 'There are three ways to eat less: eat less overall, cut out certain foods, or shorten your eating window. Pick the one you can stick with.']],
+  hydration: [['hub', 'Spread water through the day instead of all at once, and add electrolytes when you sweat a lot.'], ['hub', 'Start the day with water, before your first coffee.'],
+    ['hub', 'For the first 10 hours after waking, aim for about 8 ounces of water every hour.'],
+    ['hub', 'Drink extra during exercise. A few gulps every 15 to 20 minutes is a good rough guide.'],
+    ['hub', 'Taper off drinks in the last couple of hours before bed so you aren’t up at night.'],
+    ['mayo', 'Pale yellow urine is a simple sign you’re drinking enough. Dark yellow means drink more.'],
+    ['mayo', 'Drink a glass of water with each meal and between meals.'],
+    ['mayo', 'Drink more on hot days, when you exercise, or when you’re sick with a fever.'],
+    ['mayo', 'Food counts too. Fruits and vegetables like watermelon, cucumber and spinach are mostly water.'],
+    ['mayo', 'Choose water over sugary drinks. It hydrates you without the extra calories.']],
+  energy: [['hub', 'Get light and movement early in the day, and wait 90 to 120 minutes after waking before your first caffeine.'], ['hub', 'Try a short non-sleep deep rest (NSDR) session or a brief nap in the afternoon to restore energy.'],
+    ['hub', 'Stop caffeine 8 to 10 hours before bed so it doesn’t steal tonight’s sleep and tomorrow’s energy.'],
+    ['hub', 'A brief cold shower can raise your alertness for hours afterward.'],
+    ['hub', 'Breathing changes your energy. Slow breaths calm you down; a minute of faster, deeper breaths wakes you up.'],
+    ['hub', 'When you need to focus, keep daytime meals lighter. Big, heavy meals tend to make you sleepy.'],
+    ['walker', 'Most energy problems trace back to sleep. Protect your sleep before reaching for more caffeine.'],
+    ['walker', 'A short early-afternoon nap of 20 to 30 minutes can restore alertness. Keep it short and not too late.'],
+    ['attia', 'Break up long stretches of sitting with a few minutes of walking or movement every hour.'],
+    ['pang', 'Do your hardest work when you feel sharpest, often in the morning, and save easier tasks for your afternoon slump.']],
+  mood: [['burns', 'Write down the thought that is bringing you down, spot the distortion in it (like all-or-nothing thinking), and rewrite it more accurately.'], ['neff', 'Talk to yourself the way you would talk to a good friend who is struggling.'],
+    ['burns', 'Ask yourself, “What would I tell a friend who had this thought?” Then say that to yourself.'],
+    ['burns', 'Watch for “should” statements. Swap “I should have…” for “It would have been nice if…, and here’s what I’ll try next.”'],
+    ['burns', 'Do one small, doable thing now. Action often comes before motivation, not after.'],
+    ['burns', 'Predict how much you’ll enjoy something from 0 to 100, do it, then rate it again. It’s often better than you expected.'],
+    ['neff', 'When things are hard, put a hand on your chest and tell yourself: this is hard, everyone struggles, may I be kind to myself.'],
+    ['neff', 'Remember you’re not alone. Mistakes and bad days are part of being human, not proof something is wrong with you.'],
+    ['seligman', 'Each night, write down three things that went well today and why they happened.'],
+    ['seligman', 'Write a thank-you letter to someone who made a difference in your life, and read it to them if you can.']],
+  stress: [['nag', 'When stress builds up, finish the stress cycle with physical activity, even a short walk.'], ['mcg', 'Try seeing stress as your body getting ready to meet a challenge. That view can change how stress affects you.'], ['nag', 'Other ways to finish the stress cycle: slow deep breaths, a real laugh, a long hug or a good cry.'],
+    ['nag', 'Your stress and its cause are different things. Even after a problem is solved, your body may still need to let the stress out.'],
+    ['nag', 'Do something creative, like drawing, music or writing, to help your body release stress.'],
+    ['nag', 'A 20-second hug with someone you trust can tell your body you’re safe.'],
+    ['mcg', 'Notice the stress and remind yourself it shows up because you care about something. Then use the energy it gives you.'],
+    ['mcg', 'Stress can push you to connect. Reaching out to help someone else can ease your own stress.'],
+    ['mcg', 'Before a stressful moment, remind yourself that a racing heart is your body getting ready to perform.'],
+    ['hub', 'Try a “physiological sigh”: two inhales through the nose, then a long, slow exhale through the mouth. One to three can calm you quickly.']],
+  connection: [['wal', 'Close relationships are among the strongest predictors of a happy, healthy life. Reach out to one person you care about today.'], ['wal', 'Relationships need regular upkeep, a kind of social fitness. Check in on one you have let slide.'],
+    ['wal', 'Ask someone a question you’ve never asked them before. Curiosity deepens relationships.'],
+    ['wal', 'Swap one scrolling session for a phone call or coffee with a friend.'],
+    ['wal', 'The quality of your relationships matters more than the number. Invest in the few that matter most.'],
+    ['wal', 'Loneliness affects your health, not just your mood. Treat time with people as part of staying healthy.'],
+    ['wal', 'Keep up with people from different parts of your life: family, friends, coworkers and neighbors.'],
+    ['wal', 'Give the people you’re with your full attention. Put the phone away during meals and conversations.'],
+    ['wal', 'Don’t wait for a reason to reach out. A quick “thinking of you” text counts.'],
+    ['newport', 'Choose real conversation over likes and comments. A phone call or face-to-face talk builds far more connection.']],
+  purpose: [['frankl', 'Meaning can come from your work, from the people you love and from how you face hard things. Name one thing that gives today’s effort meaning.'], ['frankl', 'You cannot always choose what happens, but you can choose your attitude toward it.'],
+    ['frankl', 'When something hard happens, ask “What is this asking of me?” instead of “Why me?”'],
+    ['frankl', 'Meaning often comes from caring for someone or something beyond yourself.'],
+    ['frankl', 'Don’t chase success directly. It tends to follow when you commit to something bigger than you.'],
+    ['frankl', 'Live as if you were living for the second time and had gotten it wrong the first time. What would you do differently today?'],
+    ['frankl', 'Small acts, like doing your work well or helping one person, can carry real meaning.'],
+    ['seligman', 'Use one of your strengths in a new way today.'],
+    ['seligman', 'A meaningful life comes from belonging to and serving something bigger than yourself.'],
+    ['deepwork', 'Spend focused, undistracted time on work that matters to you. Deep work brings a real sense of meaning.']],
+  rest: [['pang', 'Treat rest as a skill: take real breaks like walks or short naps, and protect time fully away from work.'], ['newport', 'Set aside time away from your phone and replace scrolling with a hobby you actually enjoy.'], ['pang', 'Active hobbies like sports or making things restore you more than passive downtime.'],
+    ['pang', 'Stop work at a point where you know what comes next. It’s easier to switch off, and easier to start again tomorrow.'],
+    ['pang', 'Take a walk. Walking is one of the best ways to rest your mind and let new ideas come.'],
+    ['pang', 'Detach fully after work. No checking email in the evening.'],
+    ['pang', 'A short nap is real rest, not laziness.'],
+    ['newport', 'Spend some time alone with your thoughts, without a podcast or your phone.'],
+    ['newport', 'Try a 30-day break from optional apps, then add back only the ones that truly help you.'],
+    ['newport', 'Leave your phone at home for a short walk or errand.']],
+  spending: [['sethi', 'Decide ahead of time what you love spending on, and cut back hard on everything else.'], ['robin', 'Before buying, ask whether it is worth the hours of your life you traded to earn the money.'],
+    ['sethi', 'Split your money four ways: fixed costs, investing, savings, and guilt-free spending you can use however you like.'],
+    ['sethi', 'Don’t sweat the latte. Focus on the big costs, like housing, cars and food.'],
+    ['sethi', 'Cancel subscriptions you don’t use, and call to negotiate lower bills for your phone, internet and insurance.'],
+    ['housel', 'Spending money to show people how much you have is the fastest way to have less.'],
+    ['housel', 'No one is as impressed by your stuff as you are.'],
+    ['robin', 'Ask whether each expense brought you fulfillment worth the life energy it cost.'],
+    ['ramsey', 'Give every dollar a job before the month starts with a zero-based budget.'],
+    ['ramsey', 'Use cash envelopes for categories where you tend to overspend, like eating out.']],
+  saving: [['collins', 'Spend less than you earn, invest the difference in a low-cost index fund, and avoid debt.'], ['housel', 'Save even without a specific goal. Savings give you flexibility and options.'], ['sethi', 'Automate your savings so money moves before you can spend it.'],
+    ['collins', 'Raise your savings rate a little at a time. The more you save, the sooner your money can support you.'],
+    ['collins', 'Keep investing simple. A broad stock market index fund does the heavy lifting.'],
+    ['collins', 'When the market drops, don’t sell. Stay the course.'],
+    ['housel', 'Your savings rate matters more than your investment returns, and it’s the part you control.'],
+    ['housel', 'Leave room for error. Keep more cash on hand than you think you need.'],
+    ['ramsey', 'Build a full emergency fund of 3 to 6 months of expenses once your consumer debt is paid off.'],
+    ['sethi', 'Open a separate savings account for each goal, like a trip or a car, and give it a name.']],
+  earning: [['sethi', 'Focus on big wins, like negotiating your salary or growing your income, before trimming small expenses.'], ['robin', 'Figure out your real hourly wage once you subtract work costs like commuting and work clothes.'],
+    ['sethi', 'Keep a list of your wins at work and bring it to your manager before review time to ask for a raise.'],
+    ['sethi', 'Build a side income around a skill people already pay for.'],
+    ['sethi', 'Always negotiate a job offer. A small raise now grows over your whole career.'],
+    ['robin', 'Chart your monthly income and spending together so you can watch the gap between them grow.'],
+    ['deepwork', 'Block out time for focused work with no email or messages. That’s where your most valuable work happens.'],
+    ['deepwork', 'Plan your workday in blocks so every hour has a job.'],
+    ['deepwork', 'End each workday with a short shutdown routine: review what’s left, plan tomorrow, then stop.'],
+    ['housel', 'Being able to control your own time is the biggest payoff money gives. Work toward more control over your schedule.']],
+  obligations: [['ramsey', 'List your debts from smallest to largest and pay off the smallest first (the debt snowball).'], ['ramsey', 'Start with a small starter emergency fund before attacking debt, so surprises do not go on a card.'],
+    ['ramsey', 'Stop borrowing while you pay off debt.'],
+    ['ramsey', 'Put extra money, like a raise or tax refund, toward the debt snowball.'],
+    ['ramsey', 'When a debt is paid off, roll its payment into the next one so the snowball grows.'],
+    ['ramsey', 'Make a written budget every month, and agree on it with your partner if you share money.'],
+    ['sethi', 'Set up automatic payments so you never miss a due date.'],
+    ['sethi', 'Call your credit card company and ask for a lower interest rate or to waive a late fee. It often works.'],
+    ['sethi', 'Pay your credit card in full every month so you never pay interest.'],
+    ['housel', 'Avoid any debt you couldn’t survive if things went wrong. Staying in the game matters most.']],
+  awareness: [['robin', 'Track every dollar that comes in or goes out, so you know where your money really goes.'], ['housel', 'Wealth is what you do not see: the money you did not spend.'],
+    ['robin', 'Add up what you’ve earned in your lifetime and compare it with what you have to show for it.'],
+    ['robin', 'Once a month, total up your income and spending by category.'],
+    ['robin', 'Find your “enough”: the point where spending more stops making you happier.'],
+    ['sethi', 'Spend a few minutes each week checking your accounts. It keeps small problems from growing.'],
+    ['sethi', 'Know your numbers: what you take home, your fixed costs, and what’s left over.'],
+    ['sethi', 'Check your credit report and score once a year.'],
+    ['ramsey', 'Check your budget each week so you catch problems before the month ends.'],
+    ['collins', 'Know what your investments cost you in fees. Low fees leave more money for you.']]
 };
 const TIPLIB = {};
 Object.keys(RAW).forEach(function (k) { TIPLIB[k] = RAW[k].map(function (r, i) { return Object.assign({ id: k + '-' + i, tip: r[1] }, SRC[r[0]]); }); });
+// Order tips are shown in for a factor's round. Round 0 is library order; later rounds are shuffled
+// (same shuffle every time) and never start with the tip that ended the round before.
+const TIP_ORDERS = {};
+function tipOrder(fid, round) {
+  const key = fid + ':' + round; if (TIP_ORDERS[key]) return TIP_ORDERS[key];
+  const n = (TIPLIB[fid] || []).length; const a = []; for (let i = 0; i < n; i++) a.push(i);
+  if (round > 0 && n > 1) {
+    let h = 7; for (let i = 0; i < fid.length; i++) h = (h * 31 + fid.charCodeAt(i)) | 0;
+    const R = rng(h + round * 7919);
+    for (let i = n - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    const prev = tipOrder(fid, round - 1);
+    if (a[0] === prev[n - 1]) { const t = a[0]; a[0] = a[1]; a[1] = t; }
+  }
+  TIP_ORDERS[key] = a; return a;
+}
+// Older saves stored which tips had been seen; those were shown in library order, so start just after them.
+function tipPosFromSeen(seen) {
+  const pos = {};
+  Object.keys(TIPLIB).forEach(function (k) { let c = 0; TIPLIB[k].forEach(function (t) { if (seen && seen[t.id]) c++; }); if (c) pos[k] = c >= TIPLIB[k].length ? { r: 1, i: 0 } : { r: 0, i: c }; });
+  return pos;
+}
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WD1 = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -116,12 +261,12 @@ function letter(p) { const q = Math.round(p); return q >= 90 ? 'A' : q >= 80 ? '
 function dR(a, b, dec) { if (a == null || b == null) return null; return dec ? Math.round(b * 10) / 10 - Math.round(a * 10) / 10 : Math.round(b) - Math.round(a); }
 function h2r(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }); }
 function mix(a, b, t) { const A = h2r(a), B = h2r(b); return A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }); }
-// Grade colors: 50 and below full red, red to yellow 50-75, yellow 75-80, green appears from 80, full green 90+.
+// Grade colors: 50 and below full red, red to yellow 50-70, yellow 70-75, green appears from 75, full green 85+.
 function rgbOf(p) {
   if (p <= 50) return h2r('#E0201B');
-  if (p <= 75) return mix('#E0201B', '#FFD60A', (p - 50) / 25);
-  if (p <= 80) return h2r('#FFD60A');
-  if (p < 90) return mix('#FFD60A', '#1FA34A', (p - 80) / 10);
+  if (p <= 70) return mix('#E0201B', '#FFD60A', (p - 50) / 20);
+  if (p <= 75) return h2r('#FFD60A');
+  if (p < 85) return mix('#FFD60A', '#1FA34A', (p - 75) / 10);
   return h2r('#1FA34A');
 }
 function weekKey(k) { const d = new Date(k + 'T12:00:00Z'); return addDays(k, -((d.getUTCDay() + 6) % 7)); }
@@ -144,9 +289,18 @@ function makeTasks() {
   return t.map(function (x, i) {
     const o = { id: i + 1, text: x.text, date: x.date || null, week: x.week || null, factor: x.factor || '', done: x.done, mark: x.done ? 'done' : null, carried: '' };
     if (o.date && o.date < TODAY && !o.done) { o.carried = fmtShort(o.date); o.date = TODAY; }
-    return o;
+    return migrateTask(o);
   });
 }
+function makeWork() {
+  return ['Send Q4 proposal to Dana', 'Follow up with Acme on renewal', 'Update pipeline notes', 'Prep slides for Thursday']
+    .map(function (text, i) { return { id: i + 1, text: text, done: i === 2 }; });
+}
+const PCOL = { physical: '#64D2FF', emotional: '#FF6FAE', financial: '#BF5AF2' };
+function pillarOfFactor(id) { const f = FACTORS.filter(function (x) { return x.id === id; })[0]; return f ? f.p : ''; }
+function pillarName(id) { const p = PILLARS.filter(function (x) { return x.id === id; })[0]; return p ? p.name : ''; }
+// To-dos used to link to a factor; now they belong to a pillar. Linked ones move to that factor's pillar.
+function migrateTask(t) { if (t.pillar !== undefined) return t; return Object.assign({}, t, { pillar: pillarOfFactor(t.factor) }); }
 function factorName(id) { const f = FACTORS.filter(function (x) { return x.id === id; })[0]; return f ? f.name : ''; }
 function gcol(p) { if (p == null) return '#636366'; return 'rgb(' + rgbOf(p).join(',') + ')'; }
 function badge(p) { return { pct: p == null ? '–' : Math.round(p) + '%', letter: p == null ? '–' : letter(p), bg: gcol(p), missed: p == null ? '–' : (100 - Math.round(p)) + '%' }; }
@@ -245,19 +399,24 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.busy = false;
-    const S = SAVED || {};
+    let S = SAVED || {};
+    // Preview builds (window.BD_DEMO) start with sample data so every screen has something to show.
+    if (!SAVED && typeof window !== 'undefined' && window.BD_DEMO) {
+      START = '2026-09-04';
+      S = { days: makeData(), plans: makePlans(), tasks: makeTasks(), work: makeWork(), nextId: 100, workNextId: 100, setupDone: true };
+    }
     const tParts = TODAY.split('-');
     this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
-      tasks: S.tasks || [], nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
-      draftP: { text: '', scope: 'day', factor: '' }, draftC: { text: '', factor: '' },
+      tasks: (S.tasks || []).map(migrateTask), work: S.work || [], workNextId: S.workNextId || 1, workText: '', workDoneOpen: false, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
-      seen: S.seen || {}, set: this.freshDraft(), msg: '', reminder: S.reminder || { on: false, time: '21:00' }, setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
+      tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', reminder: S.reminder || { on: false, time: '21:00' }, setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
       hist: S.hist || [],
-      add: { open: false, text: '', day: TODAY, week: weekKey(TODAY), factor: '' } };
+      add: { open: false, text: '', day: TODAY, week: weekKey(TODAY), pillar: '' } };
   }
   persist() {
     const s = this.state; const names = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; });
-    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, hist: s.hist, seen: s.seen, reminder: s.reminder,
+    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, hist: s.hist, tipPos: s.tipPos, reminder: s.reminder,
       setupDone: s.setupDone, whist: WHIST, fhist: FHIST, names: names, defImp: DEF_IMP, focus0: FOCUS };
     try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
   }
@@ -316,35 +475,47 @@ class Component extends DCLogic {
     });
     return [head.join(',')].concat(rows).join('\n');
   }
-  tipFor(fid) { const lib = TIPLIB[fid] || []; for (let i = 0; i < lib.length; i++) { if (!this.state.seen[lib[i].id]) return lib[i]; } return null; }
-  newTip(fid) { const t = this.tipFor(fid); if (!t) return; const seen = Object.assign({}, this.state.seen); seen[t.id] = true; this.setState({ seen: seen }); }
+  // Tips never run out: walk through the factor's library, then start a new shuffled round.
+  tipFor(fid) { const lib = TIPLIB[fid] || []; if (!lib.length) return null; const p = this.state.tipPos[fid] || { r: 0, i: 0 }; return lib[tipOrder(fid, p.r)[p.i]]; }
+  newTip(fid) {
+    const n = (TIPLIB[fid] || []).length; if (!n) return;
+    const p = this.state.tipPos[fid] || { r: 0, i: 0 }; const np = p.i + 1 < n ? { r: p.r, i: p.i + 1 } : { r: p.r + 1, i: 0 };
+    const pos = Object.assign({}, this.state.tipPos); pos[fid] = np; this.setState({ tipPos: pos });
+  }
   patchAdd(p) { this.setState({ add: Object.assign({}, this.state.add, p) }); }
   openAdd() {
     const s = this.state; const day = s.pView === 'day' ? s.pDate : 'week'; const wk = s.pView === 'day' ? weekKey(s.pDate) : s.pWeek;
-    this.setState({ add: { open: true, text: '', day: day, week: wk, factor: '' } });
+    this.setState({ add: { open: true, text: '', day: day, week: wk, pillar: '' } });
   }
   submitAdd() {
-    const a = this.state.add; if (!a.text.trim()) return;
+    const a = this.state.add; if (!a.text.trim() || !a.pillar) return;
     const isWeek = a.day === 'week';
-    this.addTask(a.text, isWeek ? null : a.day, isWeek ? a.week : null, a.factor);
+    this.addTask(a.text, isWeek ? null : a.day, isWeek ? a.week : null, a.pillar);
     this.setState({ add: Object.assign({}, a, { open: false, text: '' }) });
   }
-  addTask(text, date, week, factor) {
-    if (!text || !text.trim()) return false;
-    const t = { id: this.state.nextId, text: text.trim(), date: date, week: week, factor: factor || '', done: false, mark: null, carried: '' };
+  addTask(text, date, week, pillar) {
+    if (!text || !text.trim() || !pillar) return false;
+    const t = { id: this.state.nextId, text: text.trim(), date: date, week: week, pillar: pillar, done: false, mark: null, carried: '' };
     this.setState({ tasks: this.state.tasks.concat([t]), nextId: this.state.nextId + 1 });
     return true;
   }
   toggleTask(id) { this.setState({ tasks: this.state.tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { done: !t.done, mark: t.done ? null : 'done' }) : t; }) }); }
   setMark(id, m) { this.setState({ tasks: this.state.tasks.map(function (t) { if (t.id !== id) return t; const nm = t.mark === m ? null : m; return Object.assign({}, t, { mark: nm, done: nm === 'done' }); }) }); }
   delTask(id) { this.setState({ tasks: this.state.tasks.filter(function (t) { return t.id !== id; }) }); }
+  // Work to-dos: one simple list, separate from personal to-dos and never part of the check-in.
+  addWork() {
+    const text = (this.state.workText || '').trim(); if (!text) return;
+    this.setState({ work: this.state.work.concat([{ id: this.state.workNextId, text: text, done: false }]), workNextId: this.state.workNextId + 1, workText: '' });
+  }
+  toggleWork(id) { this.setState({ work: this.state.work.map(function (w) { return w.id === id ? Object.assign({}, w, { done: !w.done }) : w; }) }); }
+  delWork(id) { this.setState({ work: this.state.work.filter(function (w) { return w.id !== id; }) }); }
+  clearDoneWork() { this.setState({ work: this.state.work.filter(function (w) { return !w.done; }) }); }
   taskRow(t, showWhen) {
     const bits = [];
-    if (t.factor) bits.push(factorName(t.factor));
     if (t.carried) bits.push('Carried over from ' + t.carried);
     if (showWhen && t.week) bits.push('This week');
-    if (t.factor && t.date && this.state.days[t.date]) { const v = this.state.days[t.date].score[t.factor]; bits.push('rated ' + f1(v)); }
     return {
+      hasTag: !!t.pillar, tag: pillarName(t.pillar), tagCol: PCOL[t.pillar] || '#8E8E93',
       text: t.text, done: t.done, notDone: !t.done, doneStr: t.done ? 'true' : 'false',
       aria: (t.done ? 'Mark not done: ' : 'Mark done: ') + t.text,
       textStyle: t.done ? 'color: #8E8E93; text-decoration: line-through' : 'color: #FFFFFF',
@@ -357,16 +528,13 @@ class Component extends DCLogic {
       noStyle: t.mark === 'not' ? 'background: #C4161C; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93'
     };
   }
-  addFromPlanner() {
-    const s = this.state; const d = s.draftP;
-    const isWeek = s.pView === 'week' || d.scope === 'week';
-    const date = s.pView === 'day' ? s.pDate : s.pWeek;
-    const ok = this.addTask(d.text, isWeek ? null : date, isWeek ? weekKey(date) : null, d.factor);
-    if (ok) this.setState({ draftP: Object.assign({}, d, { text: '' }) });
+  // Three big Physical / Emotional / Financial buttons used when adding a personal to-do.
+  pillarPicks(cur, pick) {
+    return PILLARS.map(function (p) { const on = cur === p.id; return { name: p.name, selStr: on ? 'true' : 'false', style: on ? 'background: ' + PCOL[p.id] + '; color: #000000' : 'background: #2C2C2E; color: ' + PCOL[p.id], pick: function () { pick(p.id); } }; });
   }
   addFromCheckin() {
     const s = this.state; const d = s.draftC; const tom = addDays(s.inp.date, 1);
-    const ok = this.addTask(d.text, tom, null, d.factor);
+    const ok = this.addTask(d.text, tom, null, d.pillar);
     if (ok) this.setState({ draftC: Object.assign({}, d, { text: '' }) });
   }
   tasksForDay(k, includeWeek) {
@@ -475,7 +643,7 @@ class Component extends DCLogic {
   recsFor(e) {
     const sd = scoreDay(e, 'score');
     const items = FACTORS.filter(function (f) { return e.score[f.id] != null && e.score[f.id] < 7.0; })
-      .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: f1(v), hasTip: !!t, noTip: !t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v * 10), gap: (10 - v) * wt(e, f.id) }; })
+      .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: f1(v), hasTip: !!t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v * 10), gap: (10 - v) * wt(e, f.id) }; })
       .sort(function (a, b) { return b.gap - a.gap; });
     const pillars = PILLARS.filter(function (p) { return sd.pillars[p.id] != null && Math.round(sd.pillars[p.id]) < 70; })
       .map(function (p) { const v = sd.pillars[p.id]; return p.name + ' is at ' + Math.round(v) + '% (' + letter(v) + ')'; });
@@ -506,6 +674,20 @@ class Component extends DCLogic {
       pillars: this.pillarsOf(lsd), rings: rings(lsd, true)
     };
     if (!lat.d.txt) lat.d = { txt: '–', col: NEU };
+
+    // vs. day before: latest check-in compared with the one before it
+    const vdb = { show: !!psd, title: pk ? 'vs. ' + (dayDiff(pk, lk) === 1 ? 'Day Before' : fmtShort(pk)) : '', rows: [], lines: [] };
+    if (psd) {
+      vdb.rows = [{ name: 'Overall', weight: 800, b: badge(lsd.overall), d: delta(dR(psd.overall, lsd.overall), false) }].concat(PILLARS.map(function (p) {
+        return { name: p.name, weight: 600, b: badge(lsd.pillars[p.id]), d: delta(dR(psd.pillars[p.id], lsd.pillars[p.id]), false) };
+      })).map(function (r) { if (!r.d.txt) r.d = { txt: '–', col: NEU }; return r; });
+      const pe0 = days[pk];
+      const fm = FACTORS.map(function (f) { const a = pe0.score[f.id], b = le.score[f.id]; return { f: f, a: a, b: b, d: a != null && b != null ? dR(a, b, true) : null }; }).filter(function (m) { return m.d != null; });
+      fm.sort(function (x, y) { return y.d - x.d; });
+      if (fm.length && fm[0].d > 0) vdb.lines.push({ txt: fm[0].f.name + ' up ' + fm[0].d.toFixed(1) + ' (' + f1(fm[0].a) + ' → ' + f1(fm[0].b) + ')', col: UP });
+      const lo = fm[fm.length - 1]; if (lo && lo.d < 0) vdb.lines.push({ txt: lo.f.name + ' down ' + Math.abs(lo.d).toFixed(1) + ' (' + f1(lo.a) + ' → ' + f1(lo.b) + ')', col: DOWN });
+      if (!vdb.lines.length) vdb.lines.push({ txt: 'No factor changed', col: NEU });
+    }
 
     // previous 7 days strip
     const week = [];
@@ -558,9 +740,9 @@ class Component extends DCLogic {
     const sections = [
       mkPeriod('w7', 7, '7-Day Score', false, 4.5),
       mkPeriod('w30', 30, '30-Day Score', true, 3),
-      Object.assign({}, blank, { title: 'Big Three', sub: big3.map(function (b) { return b.name; }).join(' · '), val: '', valCol: '#FFFFFF', d: { txt: '', col: NEU }, rot: ob ? 90 : 0, openStr: ob ? 'true' : 'false', toggle: () => this.toggle('big'), openChart: false, openBig: ob, openAttn: false }),
-      Object.assign({}, blank, { title: 'Needs Attention', sub: latRecs.count ? 'Below 70% on ' + fmtShort(lk) : 'Nothing below 70%', val: String(latRecs.count), valCol: latRecs.count ? '#FF6961' : UP, d: { txt: '', col: NEU }, rot: oa ? 90 : 0, openStr: oa ? 'true' : 'false', toggle: () => this.toggle('attn'), openChart: false, openBig: false, openAttn: oa })
+      Object.assign({}, blank, { title: 'Big Three', sub: big3.map(function (b) { return b.name; }).join(' · '), val: '', valCol: '#FFFFFF', d: { txt: '', col: NEU }, rot: ob ? 90 : 0, openStr: ob ? 'true' : 'false', toggle: () => this.toggle('big'), openChart: false, openBig: ob })
     ];
+    const attn = { title: 'Needs Attention', sub: latRecs.count ? 'Below 70% on ' + fmtShort(lk) : 'Nothing below 70%', val: String(latRecs.count), valCol: latRecs.count ? '#FF6961' : UP, rot: oa ? 90 : 0, openStr: oa ? 'true' : 'false', toggle: () => this.toggle('attn'), open: oa };
 
     const filters = [{ id: 'all', label: 'All' }].concat(PILLARS.map(function (p) { return { id: p.id, label: p.name }; })).map((c) => ({
       label: c.label, pick: () => this.setState({ filter: c.id }),
@@ -569,7 +751,7 @@ class Component extends DCLogic {
 
     // check-in
     const inp = s.inp; let iv = { isQ: false, isNote: false, isDone: false, isReview: false, isPlan: false, linked: [] };
-    let rv = { head: '', empty: true, tasks: [] };
+    let rv = { title: '', btn: '', start: () => {}, head: '', empty: true, groups: [] };
     let pn = { dateLabel: '', head: '', empty: true, tasks: [], draft: {} };
     let res = { date: '', b: badge(null), expLine: '', ed: { txt: '', col: NEU }, pillars: [], rings: [], recs: { has: false, items: [], pillars: [] }, safety: false };
     if (inp) {
@@ -591,10 +773,13 @@ class Component extends DCLogic {
       }));
       iv = {
         isQ: inp.phase === 'q', isNote: inp.phase === 'note', isDone: inp.phase === 'done', isReview: inp.phase === 'review', isPlan: inp.phase === 'plan',
-        linked: this.tasksForDay(inp.date, true).filter(function (t) { return t.factor === f.id; }).map((t, i) => Object.assign(this.taskRow(t, false), { sep: i ? 'border-top: 1px solid #38383A' : '' })),
-        hasLinked: this.tasksForDay(inp.date, true).some(function (t) { return t.factor === f.id; }),
+        pt: (() => {
+          const ts = this.tasksForDay(inp.date, true).filter(function (t) { return t.pillar === f.p; });
+          return { has: ts.length > 0, col: PCOL[f.p], head: pillarName(f.p) + ' to-dos · ' + ts.filter(function (t) { return t.done; }).length + ' of ' + ts.length + ' done',
+            names: ts.map(function (t) { return (t.mark === 'done' ? '✓ ' : t.mark === 'not' ? '✗ ' : '') + t.text; }).join('  ·  ') };
+        })(),
         dateLabel: inp.date === TODAY ? 'Today' : fmtShort(inp.date), dateShort: inp.date === TODAY ? 'today' : fmtShort(inp.date),
-        backLabel: inp.fi > 0 ? FACTORS[inp.fi - 1].name : 'Tasks',
+        backLabel: inp.fi > 0 ? FACTORS[inp.fi - 1].name : 'Check-in',
         pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, fnum: inp.fi + 1,
         prog: Math.round((inp.phase === 'q' ? inp.fi : 15) / 15 * 100),
         name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
@@ -606,15 +791,22 @@ class Component extends DCLogic {
         note: inp.note
       };
       const dayT = this.tasksForDay(inp.date, true);
-      rv = { head: (inp.date === TODAY ? 'Today' : fmtShort(inp.date)) + ' · ' + dayT.filter(function (t) { return t.done; }).length + ' of ' + dayT.length + ' done', empty: dayT.length === 0, tasks: dayT.map((t) => this.taskRow(t, true)) };
+      const grp = PILLARS.map(function (p) { return { id: p.id, name: p.name }; }).concat([{ id: '', name: 'Other' }]).map((g) => {
+        const ts = dayT.filter(function (t) { return (t.pillar || '') === g.id; });
+        return { name: g.name, col: PCOL[g.id] || '#8E8E93', count: ts.filter(function (t) { return t.done; }).length + ' of ' + ts.length + ' done', tasks: ts.map((t) => this.taskRow(t, true)), n: ts.length };
+      }).filter(function (g) { return g.n > 0; });
+      const isToday = inp.date === TODAY;
+      rv = { title: isToday ? 'Today' : fmt(inp.date), btn: (days[inp.date] ? 'Edit ' : 'Start ') + (isToday ? 'Today’s Check-in' : 'Check-in for ' + fmtShort(inp.date)),
+        start: () => this.patchInp({ phase: 'q', fi: 0, act: 0, buf: '' }),
+        head: (isToday ? 'Due Today' : 'Due ' + fmtShort(inp.date)) + ' · ' + dayT.filter(function (t) { return t.done; }).length + ' of ' + dayT.length + ' done', empty: dayT.length === 0, groups: grp };
       const tom = addDays(inp.date, 1); const tomT = this.tasksForDay(tom, false); const dc = s.draftC;
       pn = {
         dateLabel: fmt(tom), head: 'Tomorrow · ' + tomT.length + (tomT.length === 1 ? ' task' : ' tasks'), empty: tomT.length === 0,
         tasks: tomT.map((t) => this.taskRow(t, false)),
         draft: {
-          text: dc.text, factor: dc.factor,
+          text: dc.text, pillars: this.pillarPicks(dc.pillar, (id) => this.setState({ draftC: Object.assign({}, this.state.draftC, { pillar: id }) })),
+          addStyle: dc.text.trim() && dc.pillar ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
           onText: (ev) => this.setState({ draftC: Object.assign({}, this.state.draftC, { text: ev.target.value }) }),
-          onFactor: (ev) => this.setState({ draftC: Object.assign({}, this.state.draftC, { factor: ev.target.value }) }),
           onKey: (ev) => { if (ev.key === 'Enter') this.addFromCheckin(); },
           add: () => this.addFromCheckin()
         }
@@ -631,31 +823,6 @@ class Component extends DCLogic {
     }
     const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del'].map((k) => ({ label: k === 'del' ? '⌫' : k, aria: k === 'del' ? 'Delete' : k === '.' ? 'Decimal point' : k, pick: () => this.press(k) }));
 
-    // compare
-    const hasTwo = logged.length > 1; const ck = logged[logged.length - 1] || TODAY, cp = logged[logged.length - 2] || addDays(ck, -1);
-    const ce = days[ck] || blankEntry(ck), pe = days[cp] || blankEntry(cp);
-    const csd = scoreDay(ce, 'score'), psd2 = scoreDay(pe, 'score'), cex = scoreDay(ce, 'exp');
-    const gap = dayDiff(cp, ck); const psdOv = psd2.overall, csdOv = csd.overall;
-    const top = [{ name: 'Overall', weight: 800, a: badge(psd2.overall), b: badge(csd.overall), d: delta(dR(psd2.overall, csd.overall), false) }].concat(PILLARS.map(function (p) {
-      const a = psd2.pillars[p.id], b = csd.pillars[p.id];
-      return { name: p.name, weight: 600, a: badge(a), b: badge(b), d: delta(dR(a, b), false) };
-    }));
-    const cmp = {
-      title: fmtShort(ck) + ' vs. ' + fmtShort(cp) + (gap > 1 ? ' (' + gap + ' days earlier)' : ''),
-      thenShort: fmtShort(cp), nowShort: fmtShort(ck), top: top,
-      expLine: cex.overall != null ? 'Expected ' + p1(cex.overall) + ' → actual ' + p1(csd.overall) : 'No expectations were set for this day.',
-      ed: expDelta(csd.overall, cex.overall),
-      groups: PILLARS.map(function (p) {
-        return { name: p.name, rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
-          const a = pe.score[f.id], b = ce.score[f.id];
-          const ia = pe.imp[f.id], ib = ce.imp[f.id];
-          const dd = delta(a != null && b != null ? b - a : null, true);
-          return { name: f.name + (focusFor(ck).indexOf(f.id) >= 0 ? ' ★' : ''), a: f1(a), b: f1(b), d: dd.txt ? dd : { txt: '–', col: NEU }, imp: ia === ib ? INAME[ia] : ia + ' → ' + ib };
-        }) };
-      }),
-      noteThen: pe.note || 'No note', noteNow: ce.note || 'No note'
-    };
-
     // calendar
     const y = s.month.y, m = s.month.m;
     const first = new Date(Date.UTC(y, m, 1)); const off = (first.getUTCDay() + 6) % 7; const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
@@ -663,14 +830,16 @@ class Component extends DCLogic {
     for (let i = 0; i < off; i++) cells.push({ blank: true, real: false });
     for (let d = 1; d <= dim; d++) {
       const k = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-      const isL = !!days[k]; const isM = !isL && k >= START && k < TODAY; const isT = k === TODAY && !isL;
+      // Checked-in days are filled with their grade color; days with no check-in stay blank.
+      const isL = !!days[k]; const isM = !isL && k >= START && k < TODAY; const isT = k === TODAY;
       if (isL) lc++; if (isL || isM) el++;
-      let style = 'background: transparent; color: #636366; border: 2px solid transparent';
-      if (isL) style = 'background: #1E7B3A; color: #FFFFFF; border: 2px solid #1E7B3A';
-      else if (isM) style = 'background: #C4161C; color: #FFFFFF; border: 2px solid #C4161C';
-      else if (isT) style = 'background: transparent; color: #FFFFFF; border: 2px solid #409CFF';
+      const ov = isL ? scoreDay(days[k], 'score').overall : null;
+      const ring = isT ? '#409CFF' : 'transparent';
+      let style = 'background: transparent; color: #48484A; border: 2px solid transparent';
+      if (isL && ov != null) { const c = rgbOf(ov); const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255; style = 'background: ' + gcol(ov) + '; color: ' + (lum > 0.55 ? '#000000' : '#FFFFFF') + '; border: 2px solid ' + (isT ? '#409CFF' : gcol(ov)); }
+      else if (isM || isT || isL) style = 'background: transparent; color: #C7C7CC; border: 2px solid ' + ring;
       const tappable = isL || isM || isT;
-      cells.push({ blank: false, real: true, num: d, style: style, isLogged: isL, isMissed: isM, aria: fmt(k) + (isL ? ', logged' : isM ? ', missed' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
+      cells.push({ blank: false, real: true, num: d, style: style, aria: fmt(k) + (isL ? (ov != null ? ', ' + Math.round(ov) + '% ' + letter(ov) : ', logged') : isM ? ', no check-in' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
     }
     const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet' };
 
@@ -697,7 +866,7 @@ class Component extends DCLogic {
     }
 
     // planner
-    const isDay = s.pView === 'day'; const dp = s.draftP;
+    const isDay = s.pView === 'day';
     const segOn = 'background: #636366; color: #FFFFFF', segOff = 'background: transparent; color: #C7C7CC';
     const wk = isDay ? weekKey(s.pDate) : s.pWeek;
     const wkTasks = s.tasks.filter(function (t) { return t.week === wk; });
@@ -724,20 +893,8 @@ class Component extends DCLogic {
       prev: () => isDay ? this.setState({ pDate: addDays(this.state.pDate, -1) }) : this.setState({ pWeek: addDays(this.state.pWeek, -7) }),
       next: () => isDay ? this.setState({ pDate: addDays(this.state.pDate, 1) }) : this.setState({ pWeek: addDays(this.state.pWeek, 7) }),
       dayHead: s.pDate === TODAY ? 'Today' : fmtShort(s.pDate), dayEmpty: dTasks.length === 0,
-      dayTasks: dTasks.map((t) => this.taskRow(t, false)), weekTasks: wkTasks.map((t) => this.taskRow(t, false)), weekDays: weekDays,
-      draft: {
-        text: dp.text, factor: dp.factor, ph: isDay && dp.scope === 'day' ? 'Add a task for ' + fmtShort(s.pDate) : 'Add a task for this week',
-        dayLabel: isDay ? fmtShort(s.pDate) : 'A day',
-        scDayStyle: isDay && dp.scope === 'day' ? segOn : segOff, scWeekStyle: !isDay || dp.scope === 'week' ? segOn : segOff,
-        scDay: () => this.setState({ pView: 'day', draftP: Object.assign({}, this.state.draftP, { scope: 'day' }) }),
-        scWeek: () => this.setState({ draftP: Object.assign({}, this.state.draftP, { scope: 'week' }) }),
-        onText: (ev) => this.setState({ draftP: Object.assign({}, this.state.draftP, { text: ev.target.value }) }),
-        onFactor: (ev) => this.setState({ draftP: Object.assign({}, this.state.draftP, { factor: ev.target.value }) }),
-        onKey: (ev) => { if (ev.key === 'Enter') this.addFromPlanner(); },
-        add: () => this.addFromPlanner()
-      }
+      dayTasks: dTasks.map((t) => this.taskRow(t, false)), weekTasks: wkTasks.map((t) => this.taskRow(t, false)), weekDays: weekDays
     };
-    const tagOpts = [{ id: '', name: 'No factor link' }].concat(FACTORS.map(function (f) { return { id: f.id, name: f.name }; }));
 
     // settings draft view
     const d = s.set; const segOn2 = 'background: #636366; color: #FFFFFF', segOff2 = 'background: transparent; color: #C7C7CC';
@@ -769,7 +926,7 @@ class Component extends DCLogic {
       delLabel: s.delStep === 0 ? 'Delete All Data' : 'Tap again to permanently delete everything',
       del: () => {
         if (this.state.delStep === 0) { this.setState({ delStep: 1 }); return; }
-        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], inp: null, seen: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans and to-dos deleted' }] });
+        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], work: [], inp: null, tipPos: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans and to-dos (personal and work) deleted' }] });
       }
     };
     // setup flow
@@ -795,36 +952,48 @@ class Component extends DCLogic {
     // add-to-do sheet
     const A = s.add;
     const ad = {
-      open: A.open, text: A.text, factor: A.factor, addCol: A.text.trim() ? '#409CFF' : '#636366',
+      open: A.open, text: A.text, addCol: A.text.trim() && A.pillar ? '#409CFF' : '#636366',
+      pillars: this.pillarPicks(A.pillar, (id) => this.patchAdd({ pillar: id })),
       wkLabel: 'Week of ' + fmtShort(A.week) + (A.week === weekKey(TODAY) ? ' (this week)' : ''),
       prevWk: () => { const w = addDays(this.state.add.week, -7); const dd = this.state.add.day; this.patchAdd({ week: w, day: dd === 'week' ? 'week' : addDays(dd, -7) }); },
       nextWk: () => { const w = addDays(this.state.add.week, 7); const dd = this.state.add.day; this.patchAdd({ week: w, day: dd === 'week' ? 'week' : addDays(dd, 7) }); },
       chips: [0, 1, 2, 3, 4, 5, 6].map((i) => { const k = addDays(A.week, i); const on = A.day === k; const dt = new Date(k + 'T12:00:00Z'); return { top: WD1[dt.getUTCDay()], sub: String(dt.getUTCDate()), aria: fmt(k), selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : (k === TODAY ? 'background: #2C2C2E; color: #409CFF' : 'background: #2C2C2E; color: #FFFFFF'), pick: () => this.patchAdd({ day: k }) }; })
         .concat([{ top: 'Week', sub: 'any', aria: 'Anytime this week', selStr: A.day === 'week' ? 'true' : 'false', style: A.day === 'week' ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #FFFFFF', pick: () => this.patchAdd({ day: 'week' }) }]),
-      onText: (ev) => this.patchAdd({ text: ev.target.value }), onFactor: (ev) => this.patchAdd({ factor: ev.target.value }),
+      onText: (ev) => this.patchAdd({ text: ev.target.value }),
       onKey: (ev) => { if (ev.key === 'Enter') this.submitAdd(); },
       submit: () => this.submitAdd(), cancel: () => this.patchAdd({ open: false })
     };
 
+    // work
+    const wOpen = s.work.filter(function (w) { return !w.done; }), wDone = s.work.filter(function (w) { return w.done; });
+    const wRow = (w) => ({ text: w.text, done: w.done, notDone: !w.done, doneStr: w.done ? 'true' : 'false', aria: (w.done ? 'Mark not done: ' : 'Mark done: ') + w.text,
+      textStyle: w.done ? 'color: #8E8E93; text-decoration: line-through' : 'color: #FFFFFF', toggle: () => this.toggleWork(w.id), del: () => this.delWork(w.id) });
+    const wk2 = {
+      text: s.workText, onText: (ev) => this.setState({ workText: ev.target.value }), onKey: (ev) => { if (ev.key === 'Enter') this.addWork(); }, add: () => this.addWork(),
+      addStyle: (s.workText || '').trim() ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+      count: wOpen.length ? wOpen.length + ' to do' : 'All clear', empty: wOpen.length === 0, items: wOpen.map((w, i) => Object.assign(wRow(w), { sep: i ? 'border-top: 1px solid #38383A' : '' })),
+      hasDone: wDone.length > 0, doneHead: 'Done (' + wDone.length + ')', doneOpen: s.workDoneOpen, doneOpenStr: s.workDoneOpen ? 'true' : 'false', doneRot: s.workDoneOpen ? 90 : 0,
+      toggleDone: () => this.setState({ workDoneOpen: !this.state.workDoneOpen }), doneItems: wDone.map(wRow), clear: () => this.clearDoneWork()
+    };
+
     const on = '#409CFF', off2 = '#8E8E93';
     return {
-      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', compare: s.tab === 'compare', history: s.tab === 'history', settings: s.tab === 'settings' },
+      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', work: s.tab === 'work', history: s.tab === 'history', settings: s.tab === 'settings' },
       showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
-      st: st, su: su, ad: ad, openAdd: () => this.openAdd(), hasData: hasData, noData: !hasData, hasTwo: hasTwo, notTwo: !hasTwo, oneLogged: logged.length === 1,
+      st: st, su: su, ad: ad, openAdd: () => this.openAdd(), hasData: hasData, noData: !hasData, wk: wk2, vdb: vdb, attn: attn,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
       runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
-      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, compare: s.tab === 'compare' ? on : off2, history: s.tab === 'history' ? on : off2 },
-      pl: pl, rv: rv, pn: pn, tagOpts: tagOpts,
+      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, work: s.tab === 'work' ? on : off2, history: s.tab === 'history' ? on : off2 },
+      pl: pl, rv: rv, pn: pn,
       tipsOn: s.online, tipsOff: !s.online && latRecs.items.length > 0,
       offlineLabel: s.simOff ? 'Demo: turn internet back on' : 'Demo: see it without internet',
       toggleOffline: () => this.setState({ simOff: !this.state.simOff }),
       goPlanner: () => this.go('planner'),
-      startQs: () => this.patchInp({ phase: 'q', fi: 0, act: 0, buf: '' }),
       toNote: () => this.patchInp({ phase: 'note' }),
       todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,
       latRecs: latRecs, latSafety: latSafety, openLatest: () => this.setState({ sel: lk }),
-      iv: iv, res: res, keys: keys, cmp: cmp, cal: cal, sheet: sheet,
-      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goCompare: () => this.go('compare'), goHistory: () => this.go('history'),
+      iv: iv, res: res, keys: keys, cal: cal, sheet: sheet,
+      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goWork: () => this.go('work'), goHistory: () => this.go('history'),
       back: () => this.back(), next: () => this.next(), autoFill: () => this.autoFill(), save: () => this.save(),
       markNA: () => { if (!this.busy) this.commitScore('NA'); },
       onNote: (ev) => this.patchInp({ note: ev.target.value }),

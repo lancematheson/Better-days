@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, migrateTask, tipPosFromSeen, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -34,8 +34,10 @@ ok(L.badge(72).missed === '28%', 'left on the table');
 
 // Colors.
 ok(hex(L.rgbOf(30)) === '#E0201B' && hex(L.rgbOf(50)) === '#E0201B', '<=50 full red');
-ok(hex(L.rgbOf(75)) === '#FFD60A' && hex(L.rgbOf(80)) === '#FFD60A', '75-80 yellow');
-ok(hex(L.rgbOf(85)) !== '#FFD60A' && hex(L.rgbOf(90)) === '#1FA34A', 'green from 80, full at 90');
+ok(hex(L.rgbOf(60)) !== '#E0201B' && hex(L.rgbOf(60)) !== '#FFD60A', '50-70 fades red to yellow');
+ok(hex(L.rgbOf(70)) === '#FFD60A' && hex(L.rgbOf(75)) === '#FFD60A', '70-75 yellow');
+ok(hex(L.rgbOf(80)) !== '#FFD60A' && hex(L.rgbOf(80)) !== '#1FA34A', 'green starts showing after 75');
+ok(hex(L.rgbOf(85)) === '#1FA34A' && hex(L.rgbOf(100)) === '#1FA34A', 'full green from 85');
 
 // Deltas match the displayed numbers.
 ok(L.dR(75.4, 76.6) === 2, '75% -> 77% shows +2');
@@ -58,12 +60,63 @@ ok((ch3.path.match(/M/g) || []).length === 2, 'missed days break the line');
 const C = new L.Component({});
 C.state.days = L.makeData(); C.state.tasks = L.makeTasks(); C.state.setup = null; C.state.setupDone = true;
 let v = C.renderVals();
-ok(v.hasData && v.hasTwo, 'sample data loads');
+ok(v.hasData && v.vdb.show, 'sample data loads');
 ok(v.latRecs.items.every((x) => parseFloat(x.score) < 7), 'recommendations only below 7.0');
 const ids = Object.values(L.TIPLIB).flat().map((x) => x.id);
 ok(new Set(ids).size === ids.length, 'tip ids unique');
 const stress = () => C.renderVals().latRecs.items.find((x) => x.name === 'Stress');
 if (stress()) { const first = stress().tip; stress().next(); ok(stress().tip !== first, 'New tip shows a different tip'); }
+Object.keys(L.TIPLIB).forEach((k) => ok(L.TIPLIB[k].length >= 10, k + ' has at least 10 tips'));
+// Tips never run out: 5 full rounds, every round shows every tip once, never the same tip twice in a row.
+{
+  const T = new L.Component({}); T.state.tipPos = {};
+  const n = L.TIPLIB.sleep.length; const shown = [];
+  for (let i = 0; i < n * 5; i++) { const t = T.tipFor('sleep'); ok(!!t, 'tip always available'); shown.push(t.id); T.newTip('sleep'); }
+  for (let r = 0; r < 5; r++) ok(new Set(shown.slice(r * n, (r + 1) * n)).size === n, 'round ' + r + ' shows every tip once');
+  ok(shown.every((id, i) => i === 0 || id !== shown[i - 1]), 'never the same tip twice in a row');
+  ok(shown.slice(0, n).join() === L.TIPLIB.sleep.map((t) => t.id).join(), 'first round in library order');
+  ok(shown.slice(n, 2 * n).join() !== shown.slice(0, n).join(), 'later rounds are shuffled');
+}
+// Old saves: tips already seen are skipped once; a fully seen old library starts a new round.
+{
+  const pos = L.tipPosFromSeen({ 'sleep-0': true, 'sleep-1': true, 'mood-0': true, 'mood-1': true });
+  ok(pos.sleep.r === 0 && pos.sleep.i === 2 && !pos.stress, 'seen tips map to the next tip');
+}
+// To-dos: old factor links move to that factor's pillar; new ones need a pillar.
+ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.migrateTask({ text: 'y', factor: '' }).pillar === '', 'factor links become pillars');
+{
+  const T = new L.Component({}); T.state.tasks = []; T.state.nextId = 1;
+  ok(!T.addTask('No pillar', L.getToday(), null, ''), 'pillar required');
+  ok(T.addTask('Walk', L.getToday(), null, 'physical') && T.state.tasks[0].pillar === 'physical', 'to-do saved with pillar');
+  T.startInput(L.getToday()); const rv = T.renderVals().rv;
+  ok(rv.groups.length === 1 && rv.groups[0].name === 'Physical' && rv.groups[0].tasks[0].text === 'Walk', 'check-in groups to-dos by pillar');
+  T.patchInp({ phase: 'q', fi: 0 }); const pt = T.renderVals().iv.pt;
+  ok(pt.has && /Physical to-dos · 0 of 1 done/.test(pt.head), 'pillar to-dos shown on its factor pages');
+  T.patchInp({ fi: 5 }); ok(!T.renderVals().iv.pt.has, 'not shown on other pillars');
+}
+// Work list is separate from personal to-dos.
+{
+  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.workNextId = 1;
+  T.state.workText = '  Send proposal '; T.addWork(); T.state.workText = 'Call client'; T.addWork();
+  ok(T.state.work.length === 2 && T.state.work[0].text === 'Send proposal' && T.state.tasks.length === 0, 'work to-dos kept separate');
+  T.toggleWork(1); let w = T.renderVals().wk;
+  ok(w.items.length === 1 && w.doneItems.length === 1 && w.count === '1 to do', 'done work moves to Done');
+  w.clear(); ok(T.state.work.length === 1, 'clear done');
+}
+// vs. day before matches the shown numbers.
+{
+  const vd = v.vdb; const ks = Object.keys(C.state.days).sort(); const a = L.scoreDay(C.state.days[ks[ks.length - 2]], 'score'), b = L.scoreDay(C.state.days[ks[ks.length - 1]], 'score');
+  ok(vd.rows[0].b.pct === Math.round(b.overall) + '%', 'vs day before: overall shown');
+  const d = Math.round(b.overall) - Math.round(a.overall); ok(vd.rows[0].d.txt === (d > 0 ? '▲ ' + d : d < 0 ? '▼ ' + -d : '0'), 'vs day before: change from rounded numbers');
+  ok(vd.rows.length === 4 && vd.lines.length >= 1, 'vs day before: pillars and factor lines');
+}
+// History calendar: checked-in days use their grade color; days without a check-in are blank.
+{
+  C.state.month = { y: 2026, m: 9 }; const cells = C.renderVals().cal.cells.filter((c) => c.real);
+  const d20 = cells[19]; const ov = L.scoreDay(C.state.days['2026-10-20'], 'score').overall;
+  ok(d20.style.indexOf('background: rgb(' + L.rgbOf(ov).join(',') + ')') === 0, 'logged day colored by score');
+  ok(/^background: transparent/.test(cells[16].style), 'missed day left blank');
+}
 
 // Week keys run Monday-Sunday.
 ok(L.weekKey('2026-11-08') === '2026-11-02' && L.weekKey('2026-11-09') === '2026-11-09', 'weeks start Monday');
