@@ -159,10 +159,11 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(c20.dot !== 'transparent' && /has an entry/.test(c20.aria), 'dot on days with an entry');
   c20.pick(); ok(T.state.jDate === '2026-10-20' && !T.state.pick && T.renderVals().jn.text === 'Paid it off!', 'picking opens that page');
   T.state.sel = '2026-10-20'; let sh = T.renderVals().sheet;
-  ok(sh.groups.every((g) => !g.open) && !sh.taskSec.open && !sh.noteSec.open && sh.hasJournal && !sh.jSec.open, 'sections start collapsed');
+  ok(sh.groups.every((g) => !g.open) && !sh.taskSec.open && sh.noteSec.open && sh.hasJournal && !sh.jSec.open, 'note starts open, other sections collapsed');
   sh.groups[1].toggle(); sh = T.renderVals().sheet; ok(sh.groups[1].open && !sh.groups[0].open, 'tap opens one section');
   sh.groups[1].toggle(); ok(!T.renderVals().sheet.groups[1].open, 'tap again closes it');
-  T.renderVals().sheet.noteSec.toggle(); T.state.sel = '2026-10-21'; ok(!T.renderVals().sheet.noteSec.open, 'another day starts collapsed');
+  T.renderVals().sheet.noteSec.toggle(); ok(!T.renderVals().sheet.noteSec.open, 'note can be closed');
+  T.renderVals().sheet.taskSec.toggle(); T.state.sel = '2026-10-21'; ok(T.renderVals().sheet.noteSec.open && !T.renderVals().sheet.taskSec.open, 'another day starts fresh');
 }
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {

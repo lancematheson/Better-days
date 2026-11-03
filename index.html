@@ -2163,10 +2163,13 @@ class Component extends DCLogic {
         sheet.b = badge(sd.overall); sheet.rings = rings(sd, true);
         sheet.expLine = ex.overall != null ? 'Expected ' + p1(ex.overall) + ' \u2192 actual ' + p1(sd.overall) : 'No expectations set';
         sheet.ed = expDelta(sd.overall, ex.overall);
-        // Sections start collapsed; tap a header to open it. Open state resets when another day is opened.
+        // Tap a section header to open or close it. Open state resets when another day is opened.
         const so = s.shOpen && s.shOpen.date === k ? s.shOpen.ids : {};
-        const tg = (id) => { const cur = this.state.shOpen && this.state.shOpen.date === k ? Object.assign({}, this.state.shOpen.ids) : {}; cur[id] = !cur[id]; this.setState({ shOpen: { date: k, ids: cur } }); };
-        const sec = (id) => ({ open: !!so[id], openStr: so[id] ? 'true' : 'false', rot: so[id] ? 90 : 0, toggle: () => tg(id) });
+        // The note starts open; everything else starts collapsed.
+        const dflt = { note: true };
+        const isOpen = (ids, id) => (id in ids ? ids[id] : !!dflt[id]);
+        const tg = (id) => { const cur = this.state.shOpen && this.state.shOpen.date === k ? Object.assign({}, this.state.shOpen.ids) : {}; cur[id] = !isOpen(cur, id); this.setState({ shOpen: { date: k, ids: cur } }); };
+        const sec = (id) => { const o = isOpen(so, id); return { open: o, openStr: o ? 'true' : 'false', rot: o ? 90 : 0, toggle: () => tg(id) }; };
         sheet.groups = PILLARS.map(function (p) {
           return Object.assign(sec(p.id), { name: p.name, b: badge(sd.pillars[p.id]), rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
             return { name: f.name + (focusFor(k).indexOf(f.id) >= 0 ? ' ★' : ''), imp: INAME[e.imp[f.id]], score: f1(e.score[f.id]), exp: f1(e.exp[f.id]) };
