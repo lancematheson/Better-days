@@ -1,0 +1,834 @@
+
+function localToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+let TODAY = localToday();
+// Saved app data lives on the phone (localStorage). Nothing is sent anywhere.
+const STORE_KEY = 'dayscore.v1';
+function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+const SAVED = loadStore();
+let START = (SAVED && SAVED.start) || TODAY;
+const FACTORS = [
+  { id: 'sleep', name: 'Sleep', p: 'physical', lo: 'barely slept or very poor sleep', hi: 'full, restful night' },
+  { id: 'exercise', name: 'Exercise', p: 'physical', lo: 'sedentary all day', hi: 'did the planned workout or very active' },
+  { id: 'nutrition', name: 'Nutrition', p: 'physical', lo: 'mostly junk or skipped meals', hi: 'balanced, on-plan eating' },
+  { id: 'hydration', name: 'Hydration', p: 'physical', lo: 'barely drank water', hi: 'hit your water goal' },
+  { id: 'energy', name: 'Body / Energy', p: 'physical', lo: 'sick, in pain or exhausted', hi: 'felt strong and energized' },
+  { id: 'mood', name: 'Mood', p: 'emotional', lo: 'low or down all day', hi: 'upbeat and positive' },
+  { id: 'stress', name: 'Stress', p: 'emotional', lo: 'overwhelmed', hi: 'calm and in control' },
+  { id: 'connection', name: 'Connection', p: 'emotional', lo: 'isolated, or conflict with people', hi: 'meaningful time with others' },
+  { id: 'purpose', name: 'Purpose', p: 'emotional', lo: 'felt wasted or aimless', hi: 'did what mattered to you' },
+  { id: 'rest', name: 'Mental Rest', p: 'emotional', lo: 'no downtime at all', hi: 'recharged with a hobby, quiet time or reflection' },
+  { id: 'spending', name: 'Spending', p: 'financial', lo: 'impulsive or well over plan', hi: 'stayed within plan' },
+  { id: 'saving', name: 'Saving', p: 'financial', lo: 'pulled from savings', hi: 'moved money toward goals' },
+  { id: 'earning', name: 'Earning / Work', p: 'financial', lo: 'unproductive or lost income', hi: 'strong work day or income progress' },
+  { id: 'obligations', name: 'Obligations', p: 'financial', lo: 'missed a bill or added debt', hi: 'everything on track or paid down' },
+  { id: 'awareness', name: 'Awareness', p: 'financial', lo: 'no idea where money stands', hi: 'checked accounts, tracked or planned' }
+];
+const PILLARS = [
+  { id: 'physical', name: 'Physical', w: 40 },
+  { id: 'emotional', name: 'Emotional', w: 35 },
+  { id: 'financial', name: 'Financial', w: 25 }
+];
+const FOCUS = (SAVED && SAVED.focus0) || ['sleep', 'exercise', 'saving'];
+const IW = { H: 3, M: 2, L: 1 };
+const INAME = { H: 'High', M: 'Medium', L: 'Low' };
+const DEF_IMP = { sleep: 'H', exercise: 'H', nutrition: 'M', hydration: 'L', energy: 'M', mood: 'H', stress: 'H', connection: 'M', purpose: 'M', rest: 'L', spending: 'H', saving: 'M', earning: 'H', obligations: 'M', awareness: 'L' };
+const BASE = { sleep: 6.0, exercise: 6.2, nutrition: 6.0, hydration: 7.0, energy: 6.6, mood: 6.9, stress: 5.9, connection: 6.7, purpose: 6.9, rest: 5.7, spending: 7.0, saving: 6.2, earning: 7.4, obligations: 8.4, awareness: 5.9 };
+// Sample of what the live tip feed returns. In the real app these load only when online,
+// skip anything already seen, and stay on the factor's topic. Listed in the order they'd be shown.
+const SRC = {
+  hub: { author: 'Andrew Huberman', work: 'Huberman Lab', url: 'https://www.hubermanlab.com' },
+  burns: { author: 'David D. Burns', work: 'Feeling Good', url: 'https://feelinggood.com' },
+  neff: { author: 'Kristin Neff', work: 'Self-Compassion', url: 'https://self-compassion.org' },
+  nag: { author: 'Emily & Amelia Nagoski', work: 'Burnout', url: 'https://www.emilynagoski.com' },
+  mcg: { author: 'Kelly McGonigal', work: 'The Upside of Stress', url: 'https://kellymcgonigal.com' },
+  wal: { author: 'Robert Waldinger & Marc Schulz', work: 'The Good Life', url: 'https://www.lifespanresearch.org' },
+  frankl: { author: 'Viktor Frankl', work: 'Man’s Search for Meaning', url: 'https://www.viktorfrankl.org' },
+  pang: { author: 'Alex Soojung-Kim Pang', work: 'Rest', url: 'https://www.hachettebookgroup.com/titles/alex-soojung-kim-pang/rest/9781541604834/' },
+  newport: { author: 'Cal Newport', work: 'Digital Minimalism', url: 'https://calnewport.com' },
+  sethi: { author: 'Ramit Sethi', work: 'I Will Teach You to Be Rich', url: 'https://www.iwillteachyoutoberich.com' },
+  collins: { author: 'JL Collins', work: 'The Simple Path to Wealth', url: 'https://jlcollinsnh.com' },
+  ramsey: { author: 'Dave Ramsey', work: 'The Total Money Makeover', url: 'https://www.ramseysolutions.com' },
+  housel: { author: 'Morgan Housel', work: 'The Psychology of Money', url: 'https://collabfund.com/blog/' },
+  robin: { author: 'Vicki Robin & Joe Dominguez', work: 'Your Money or Your Life', url: 'https://www.yourmoneyoryourlife.com' }
+};
+const RAW = {
+  sleep: [['hub', 'Get outside for morning sunlight soon after waking to help set your sleep schedule.'], ['hub', 'Keep lights dim in the late evening and avoid bright overhead light before bed.'], ['hub', 'Keep your bedroom cool and dark. A slight drop in body temperature helps you fall asleep.']],
+  exercise: [['hub', 'Build a weekly routine that mixes resistance training with cardio, and put each session on your calendar.'], ['hub', 'Include steady cardio where you can still hold a conversation, several times a week.']],
+  nutrition: [['hub', 'Build most meals around minimally processed foods.']],
+  hydration: [['hub', 'Spread water through the day instead of all at once, and add electrolytes when you sweat a lot.'], ['hub', 'Start the day with water, before your first coffee.']],
+  energy: [['hub', 'Get light and movement early in the day, and wait 90 to 120 minutes after waking before your first caffeine.'], ['hub', 'Try a short non-sleep deep rest (NSDR) session or a brief nap in the afternoon to restore energy.']],
+  mood: [['burns', 'Write down the thought that is bringing you down, spot the distortion in it (like all-or-nothing thinking), and rewrite it more accurately.'], ['neff', 'Talk to yourself the way you would talk to a good friend who is struggling.']],
+  stress: [['nag', 'When stress builds up, finish the stress cycle with physical activity, even a short walk.'], ['mcg', 'Try seeing stress as your body getting ready to meet a challenge. That view can change how stress affects you.'], ['nag', 'Other ways to finish the stress cycle: slow deep breaths, a real laugh, a long hug or a good cry.']],
+  connection: [['wal', 'Close relationships are among the strongest predictors of a happy, healthy life. Reach out to one person you care about today.'], ['wal', 'Relationships need regular upkeep, a kind of social fitness. Check in on one you have let slide.']],
+  purpose: [['frankl', 'Meaning can come from your work, from the people you love and from how you face hard things. Name one thing that gives today’s effort meaning.'], ['frankl', 'You cannot always choose what happens, but you can choose your attitude toward it.']],
+  rest: [['pang', 'Treat rest as a skill: take real breaks like walks or short naps, and protect time fully away from work.'], ['newport', 'Set aside time away from your phone and replace scrolling with a hobby you actually enjoy.'], ['pang', 'Active hobbies like sports or making things restore you more than passive downtime.']],
+  spending: [['sethi', 'Decide ahead of time what you love spending on, and cut back hard on everything else.'], ['robin', 'Before buying, ask whether it is worth the hours of your life you traded to earn the money.']],
+  saving: [['collins', 'Spend less than you earn, invest the difference in a low-cost index fund, and avoid debt.'], ['housel', 'Save even without a specific goal. Savings give you flexibility and options.'], ['sethi', 'Automate your savings so money moves before you can spend it.']],
+  earning: [['sethi', 'Focus on big wins, like negotiating your salary or growing your income, before trimming small expenses.'], ['robin', 'Figure out your real hourly wage once you subtract work costs like commuting and work clothes.']],
+  obligations: [['ramsey', 'List your debts from smallest to largest and pay off the smallest first (the debt snowball).'], ['ramsey', 'Start with a small starter emergency fund before attacking debt, so surprises do not go on a card.']],
+  awareness: [['robin', 'Track every dollar that comes in or goes out, so you know where your money really goes.'], ['housel', 'Wealth is what you do not see: the money you did not spend.']]
+};
+const TIPLIB = {};
+Object.keys(RAW).forEach(function (k) { TIPLIB[k] = RAW[k].map(function (r, i) { return Object.assign({ id: k + '-' + i, tip: r[1] }, SRC[r[0]]); }); });
+const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WD1 = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const UP = '#30D158', DOWN = '#FF6961', NEU = '#98989F';
+
+function addDays(k, n) { const d = new Date(k + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function fmt(k) { const d = new Date(k + 'T12:00:00Z'); return WD[d.getUTCDay()] + ', ' + MO[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
+function fmtShort(k) { const d = new Date(k + 'T12:00:00Z'); return MO[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
+function dayDiff(a, b) { return Math.round((new Date(b + 'T12:00:00Z') - new Date(a + 'T12:00:00Z')) / 864e5); }
+function r1(x) { return Math.round(Math.max(0, Math.min(10, x)) * 10) / 10; }
+function f1(v) { return v == null ? 'N/A' : Number(v).toFixed(1); }
+function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// Settings history: past days keep the weights and Focus that applied at the time.
+let WHIST = (SAVED && SAVED.whist) || [{ from: '2000-01-01', w: { physical: 40, emotional: 35, financial: 25 } }];
+let FHIST = (SAVED && SAVED.fhist) || [{ from: '2000-01-01', list: FOCUS.slice() }];
+if (SAVED && SAVED.names) FACTORS.forEach(function (f) { if (SAVED.names[f.id]) f.name = SAVED.names[f.id]; });
+if (SAVED && SAVED.defImp) Object.keys(SAVED.defImp).forEach(function (k) { DEF_IMP[k] = SAVED.defImp[k]; });
+function blankEntry(k) { const e = { date: k, score: {}, imp: {}, exp: {}, note: '', edited: '' }; FACTORS.forEach(function (f) { e.score[f.id] = null; e.exp[f.id] = null; e.imp[f.id] = DEF_IMP[f.id]; }); return e; }
+function histFor(h, key) { let best = h[0]; h.forEach(function (x) { if (x.from <= key && x.from >= best.from) best = x; }); return best; }
+function wFor(date) { return histFor(WHIST, date || '9999-12-31').w; }
+function focusFor(date) { return histFor(FHIST, date ? weekKey(date) : '9999-12-31').list; }
+function wt(e, f) { return IW[(e.imp && e.imp[f]) || 'M'] * (focusFor(e.date).indexOf(f) >= 0 ? 1.2 : 1); }
+function scoreDay(e, which) {
+  const res = { pillars: {}, overall: null };
+  let tot = 0, tw = 0; const PW = wFor(e.date);
+  PILLARS.forEach(function (p) {
+    let s = 0, w = 0;
+    FACTORS.forEach(function (f) {
+      if (f.p !== p.id) return;
+      const v = e[which] ? e[which][f.id] : null;
+      if (v == null) return;
+      const x = wt(e, f.id); s += v * x; w += x;
+    });
+    const pct = w ? s / w * 10 : null;
+    res.pillars[p.id] = pct;
+    if (pct != null) { tot += pct * PW[p.id]; tw += PW[p.id]; }
+  });
+  res.overall = tw ? tot / tw : null;
+  return res;
+}
+function letter(p) { const q = Math.round(p); return q >= 90 ? 'A' : q >= 80 ? 'B' : q >= 70 ? 'C' : q >= 60 ? 'D' : 'F'; }
+// Change between two shown values, computed from the rounded numbers so it always matches what is on screen.
+function dR(a, b, dec) { if (a == null || b == null) return null; return dec ? Math.round(b * 10) / 10 - Math.round(a * 10) / 10 : Math.round(b) - Math.round(a); }
+function h2r(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }); }
+function mix(a, b, t) { const A = h2r(a), B = h2r(b); return A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }); }
+// Grade colors: 50 and below full red, red to yellow 50-75, yellow 75-80, green appears from 80, full green 90+.
+function rgbOf(p) {
+  if (p <= 50) return h2r('#E0201B');
+  if (p <= 75) return mix('#E0201B', '#FFD60A', (p - 50) / 25);
+  if (p <= 80) return h2r('#FFD60A');
+  if (p < 90) return mix('#FFD60A', '#1FA34A', (p - 80) / 10);
+  return h2r('#1FA34A');
+}
+function weekKey(k) { const d = new Date(k + 'T12:00:00Z'); return addDays(k, -((d.getUTCDay() + 6) % 7)); }
+function makeTasks() {
+  const t = [
+    { text: 'Long run, 6 miles', date: '2026-11-01', factor: 'exercise', done: true },
+    { text: 'Meal prep for the week', date: '2026-11-01', factor: 'nutrition', done: true },
+    { text: 'Move $200 to savings', date: '2026-11-01', factor: 'saving', done: false },
+    { text: 'Gym: legs, 6:00 AM', date: '2026-11-02', factor: 'exercise', done: false },
+    { text: 'Pay electric bill', date: '2026-11-02', factor: 'obligations', done: true },
+    { text: 'Call Mom', date: '2026-11-02', factor: 'connection', done: false },
+    { text: 'Lights out by 10:30 PM', date: '2026-11-02', factor: 'sleep', done: false },
+    { text: 'Prep for team meeting', date: '2026-11-03', factor: 'earning', done: false },
+    { text: 'Run 3 miles', date: '2026-11-03', factor: 'exercise', done: false },
+    { text: 'Review this month’s budget', date: '2026-11-04', factor: 'awareness', done: false },
+    { text: 'Read two chapters', week: '2026-11-02', factor: 'rest', done: false },
+    { text: 'Book dentist appointment', week: '2026-11-02', factor: 'energy', done: false },
+    { text: 'Plan weekend with friends', week: '2026-11-02', factor: 'connection', done: true }
+  ];
+  return t.map(function (x, i) {
+    const o = { id: i + 1, text: x.text, date: x.date || null, week: x.week || null, factor: x.factor || '', done: x.done, mark: x.done ? 'done' : null, carried: '' };
+    if (o.date && o.date < TODAY && !o.done) { o.carried = fmtShort(o.date); o.date = TODAY; }
+    return o;
+  });
+}
+function factorName(id) { const f = FACTORS.filter(function (x) { return x.id === id; })[0]; return f ? f.name : ''; }
+function gcol(p) { if (p == null) return '#636366'; return 'rgb(' + rgbOf(p).join(',') + ')'; }
+function badge(p) { return { pct: p == null ? '–' : Math.round(p) + '%', letter: p == null ? '–' : letter(p), bg: gcol(p), missed: p == null ? '–' : (100 - Math.round(p)) + '%' }; }
+function delta(d, dec) {
+  if (d == null || isNaN(d)) return { txt: '', col: NEU };
+  const r = dec ? Math.round(d * 10) / 10 : Math.round(d);
+  const s = dec ? Math.abs(r).toFixed(1) : String(Math.abs(r));
+  if (r > 0) return { txt: '▲ ' + s, col: UP };
+  if (r < 0) return { txt: '▼ ' + s, col: DOWN };
+  return { txt: dec ? '0.0' : '0', col: NEU };
+}
+function p1(v) { return (Math.round(v * 10) / 10).toFixed(1) + '%'; }
+function expDelta(act, exp) {
+  if (act == null || exp == null) return { txt: '', col: NEU };
+  const d = Math.round((Math.round(act * 10) - Math.round(exp * 10))) / 10;
+  if (d > 0) return { txt: '\u25B2 Beat expectations by ' + d.toFixed(1) + ' points', col: UP };
+  if (d < 0) return { txt: '\u25BC Fell short by ' + Math.abs(d).toFixed(1) + ' points', col: DOWN };
+  return { txt: 'Right on expectations', col: NEU };
+}
+function rings(sd, big) {
+  const R = big ? [62, 45, 28] : [16, 11, 6];
+  return PILLARS.map(function (p, i) {
+    const v = sd ? sd.pillars[p.id] : null; const r = R[i]; const c = 2 * Math.PI * r;
+    const frac = v == null ? 0 : Math.max(0.02, Math.min(1, v / 100));
+    return { r: r, col: gcol(v), dash: (c * frac).toFixed(1) + ' ' + (c + 1).toFixed(1) };
+  });
+}
+function makeData() {
+  const R = rng(42); const days = {};
+  const missed = ['2026-09-14', '2026-09-27', '2026-10-09', '2026-10-17', '2026-10-25'];
+  const notes = {
+    '2026-10-20': 'Paid off the credit card balance.',
+    '2026-10-29': 'Late shift, only 5 hours of sleep. Planned for it.',
+    '2026-10-31': 'Halloween with the family. Too much candy, skipped the gym.',
+    '2026-11-01': 'Good long run this morning. Meal-prepped for the week.'
+  };
+  for (let i = 0; i < 60; i++) {
+    const key = addDays(START, i);
+    if (missed.indexOf(key) >= 0) continue;
+    const trend = i / 60 * 1.2; const dm = (R() - 0.5) * 2;
+    const e = { date: key, score: {}, imp: {}, exp: {}, note: notes[key] || '', edited: key === '2026-10-20' ? 'Oct 22' : '' };
+    FACTORS.forEach(function (f) {
+      let imp = DEF_IMP[f.id];
+      if (R() < 0.1) imp = imp === 'M' ? (R() < 0.5 ? 'H' : 'L') : 'M';
+      const v = BASE[f.id] + trend + dm * 0.8 + (R() - 0.5) * 3.4;
+      const x = v + 0.6 + (R() - 0.5) * 2;
+      if (f.id === 'saving' && R() < 0.35) { e.score[f.id] = null; e.exp[f.id] = null; }
+      else { e.score[f.id] = r1(v); e.exp[f.id] = r1(x); }
+      e.imp[f.id] = imp;
+    });
+    days[key] = e;
+  }
+  const o29 = days['2026-10-29']; o29.score.sleep = 3.5; o29.imp.sleep = 'L'; o29.exp.sleep = 4.0;
+  function setDay(k, sc, ex, imp) { const e = days[k]; FACTORS.forEach(function (f, i) { e.score[f.id] = sc[i]; e.exp[f.id] = ex[i]; e.imp[f.id] = imp[f.id] || DEF_IMP[f.id]; }); }
+  setDay('2026-10-31',
+    [6.0, 4.0, 3.5, 5.0, 6.0, 8.5, 7.0, 9.0, 6.5, 7.0, 5.0, null, 6.0, 8.5, 5.0],
+    [6.5, 5.0, 5.0, 6.0, 6.5, 8.0, 7.0, 8.5, 6.0, 7.0, 6.0, null, 6.0, 8.5, 5.5],
+    { exercise: 'L', nutrition: 'L' });
+  setDay('2026-11-01',
+    [7.5, 9.0, 8.0, 6.5, 8.0, 8.0, 6.0, 7.5, 8.5, 5.5, 6.5, 8.0, 7.0, 9.0, 7.5],
+    [7.0, 8.5, 7.5, 7.0, 7.5, 7.5, 6.5, 7.0, 7.5, 6.0, 7.5, 7.0, 6.5, 9.0, 7.0],
+    {});
+  return days;
+}
+function makePlans() {
+  const ex = [4.5, 7.5, 7.0, 7.0, 6.5, 7.5, 6.0, 7.0, 7.5, 5.0, 7.5, 8.0, 8.0, 9.0, 7.0];
+  const p = { imp: Object.assign({}, DEF_IMP, { sleep: 'L' }), exp: {} };
+  FACTORS.forEach(function (f, i) { p.exp[f.id] = ex[i]; });
+  const out = {}; out[TODAY] = p; return out;
+}
+function buildChart(keys, valf, W, H, withTrend, r) {
+  const n = keys.length;
+  const xs = function (i) { return n <= 1 ? W / 2 : 8 + i * (W - 16) / (n - 1); };
+  let lo = 30; keys.forEach(function (k) { const v = valf(k); if (v != null && v < lo) lo = Math.max(0, Math.floor(v / 10) * 10); });
+  const ys = function (v) { const c = Math.max(lo, Math.min(100, v)); return 6 + (100 - c) / (100 - lo) * (H - 12); };
+  let path = ''; let pen = false; const dots = []; const pts = [];
+  keys.forEach(function (k, i) {
+    const v = valf(k);
+    if (v == null) { pen = false; return; }
+    const x = xs(i), y = ys(v);
+    path += (pen ? ' L' : ' M') + x.toFixed(1) + ' ' + y.toFixed(1); pen = true;
+    dots.push({ cx: x.toFixed(1), cy: y.toFixed(1), fill: gcol(v) });
+    pts.push([i, v]);
+  });
+  const out = { path: path.trim() || 'M0 0', dots: dots, r: r, y70: ys(70).toFixed(1), t: { x1: 0, y1: 0, x2: 0, y2: 0, op: 0 } };
+  if (withTrend && pts.length > 2) {
+    let sx = 0, sy = 0, sxx = 0, sxy = 0; const m = pts.length;
+    pts.forEach(function (q) { sx += q[0]; sy += q[1]; sxx += q[0] * q[0]; sxy += q[0] * q[1]; });
+    const b = (m * sxy - sx * sy) / (m * sxx - sx * sx); const a = (sy - b * sx) / m;
+    out.t = { x1: xs(0).toFixed(1), y1: ys(a).toFixed(1), x2: xs(n - 1).toFixed(1), y2: ys(a + b * (n - 1)).toFixed(1), op: 1 };
+  }
+  return out;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.busy = false;
+    const S = SAVED || {};
+    const tParts = TODAY.split('-');
+    this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
+      tasks: S.tasks || [], nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      draftP: { text: '', scope: 'day', factor: '' }, draftC: { text: '', factor: '' },
+      online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
+      seen: S.seen || {}, set: this.freshDraft(), msg: '', reminder: S.reminder || { on: false, time: '21:00' }, setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
+      hist: S.hist || [],
+      add: { open: false, text: '', day: TODAY, week: weekKey(TODAY), factor: '' } };
+  }
+  persist() {
+    const s = this.state; const names = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; });
+    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, hist: s.hist, seen: s.seen, reminder: s.reminder,
+      setupDone: s.setupDone, whist: WHIST, fhist: FHIST, names: names, defImp: DEF_IMP, focus0: FOCUS };
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  componentDidMount() {
+    const tick = () => { const t = localToday(); if (t !== TODAY) { TODAY = t; this.forceUpdate(); } };
+    try { document.addEventListener('visibilitychange', tick); setInterval(tick, 60000); } catch (e) {}
+    this._on = () => this.setState({ online: true });
+    this._off = () => this.setState({ online: false });
+    try { window.addEventListener('online', this._on); window.addEventListener('offline', this._off); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('online', this._on); window.removeEventListener('offline', this._off); } catch (e) {}
+  }
+
+  freshDraft() {
+    const names = {}, imp = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; imp[f.id] = DEF_IMP[f.id]; });
+    return { w: Object.assign({}, wFor(TODAY)), focus: focusFor(TODAY).slice(), names: names, imp: imp };
+  }
+  setDraft(p) { this.setState({ set: Object.assign({}, this.state.set, p), msg: '' }); }
+  draftValid() { const d = this.state.set; return d.w.physical + d.w.emotional + d.w.financial === 100 && d.focus.length === 3; }
+  commitSettings(origin) {
+    const s = this.state, d = s.set; const out = [];
+    if (!this.draftValid()) { this.setState({ msg: d.focus.length !== 3 ? 'Pick exactly 3 Focus factors.' : 'Pillar weights must add up to 100%.' }); return false; }
+    const cw = wFor(TODAY);
+    if (cw.physical !== d.w.physical || cw.emotional !== d.w.emotional || cw.financial !== d.w.financial) {
+      WHIST = WHIST.filter(function (h) { return h.from !== TODAY; }).concat([{ from: TODAY, w: Object.assign({}, d.w) }]);
+      out.push('Pillar weights ' + cw.physical + '/' + cw.emotional + '/' + cw.financial + ' → ' + d.w.physical + '/' + d.w.emotional + '/' + d.w.financial + ' (past days keep old weights)');
+    }
+    const cf = focusFor(TODAY); const wk = weekKey(TODAY);
+    if (cf.slice().sort().join() !== d.focus.slice().sort().join()) {
+      FHIST = FHIST.filter(function (h) { return h.from !== wk; }).concat([{ from: wk, list: d.focus.slice() }]);
+      out.push('Focus for week of ' + fmtShort(wk) + ': ' + d.focus.map(factorName).join(', '));
+    }
+    FACTORS.forEach(function (f) {
+      const nn = (d.names[f.id] || '').trim();
+      if (nn && nn !== f.name) { out.push('Renamed ' + f.name + ' → ' + nn); f.name = nn; }
+      if (d.imp[f.id] !== DEF_IMP[f.id]) { out.push(f.name + ' default importance ' + INAME[DEF_IMP[f.id]] + ' → ' + INAME[d.imp[f.id]]); DEF_IMP[f.id] = d.imp[f.id]; }
+    });
+    if (origin === 'setup') out.push('Setup completed');
+    const hist = out.map(function (t) { return { date: fmtShort(TODAY), txt: t }; }).reverse().concat(s.hist);
+    this.setState({ hist: hist, msg: origin === 'setup' ? '' : (out.length ? 'Saved ' + out.length + (out.length === 1 ? ' change.' : ' changes.') : 'No changes to save.'), setup: null, set: this.freshDraft() });
+    return true;
+  }
+  buildCsv() {
+    const s = this.state; const head = ['date', 'overall_pct', 'physical_pct', 'emotional_pct', 'financial_pct'];
+    FACTORS.forEach(function (f) { head.push(f.id + '_score', f.id + '_importance', f.id + '_expected'); });
+    head.push('note', 'edited_on');
+    const q = function (v) { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const r1d = function (v) { return v == null ? '' : (Math.round(v * 10) / 10).toFixed(1); };
+    const rows = Object.keys(s.days).sort().map(function (k) {
+      const e = s.days[k]; const sd = scoreDay(e, 'score');
+      const row = [k, r1d(sd.overall), r1d(sd.pillars.physical), r1d(sd.pillars.emotional), r1d(sd.pillars.financial)];
+      FACTORS.forEach(function (f) { row.push(e.score[f.id] == null ? 'N/A' : e.score[f.id], e.imp[f.id], e.exp[f.id] == null ? '' : e.exp[f.id]); });
+      row.push(e.note || '', e.edited || '');
+      return row.map(q).join(',');
+    });
+    return [head.join(',')].concat(rows).join('\n');
+  }
+  tipFor(fid) { const lib = TIPLIB[fid] || []; for (let i = 0; i < lib.length; i++) { if (!this.state.seen[lib[i].id]) return lib[i]; } return null; }
+  newTip(fid) { const t = this.tipFor(fid); if (!t) return; const seen = Object.assign({}, this.state.seen); seen[t.id] = true; this.setState({ seen: seen }); }
+  patchAdd(p) { this.setState({ add: Object.assign({}, this.state.add, p) }); }
+  openAdd() {
+    const s = this.state; const day = s.pView === 'day' ? s.pDate : 'week'; const wk = s.pView === 'day' ? weekKey(s.pDate) : s.pWeek;
+    this.setState({ add: { open: true, text: '', day: day, week: wk, factor: '' } });
+  }
+  submitAdd() {
+    const a = this.state.add; if (!a.text.trim()) return;
+    const isWeek = a.day === 'week';
+    this.addTask(a.text, isWeek ? null : a.day, isWeek ? a.week : null, a.factor);
+    this.setState({ add: Object.assign({}, a, { open: false, text: '' }) });
+  }
+  addTask(text, date, week, factor) {
+    if (!text || !text.trim()) return false;
+    const t = { id: this.state.nextId, text: text.trim(), date: date, week: week, factor: factor || '', done: false, mark: null, carried: '' };
+    this.setState({ tasks: this.state.tasks.concat([t]), nextId: this.state.nextId + 1 });
+    return true;
+  }
+  toggleTask(id) { this.setState({ tasks: this.state.tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { done: !t.done, mark: t.done ? null : 'done' }) : t; }) }); }
+  setMark(id, m) { this.setState({ tasks: this.state.tasks.map(function (t) { if (t.id !== id) return t; const nm = t.mark === m ? null : m; return Object.assign({}, t, { mark: nm, done: nm === 'done' }); }) }); }
+  delTask(id) { this.setState({ tasks: this.state.tasks.filter(function (t) { return t.id !== id; }) }); }
+  taskRow(t, showWhen) {
+    const bits = [];
+    if (t.factor) bits.push(factorName(t.factor));
+    if (t.carried) bits.push('Carried over from ' + t.carried);
+    if (showWhen && t.week) bits.push('This week');
+    if (t.factor && t.date && this.state.days[t.date]) { const v = this.state.days[t.date].score[t.factor]; bits.push('rated ' + f1(v)); }
+    return {
+      text: t.text, done: t.done, notDone: !t.done, doneStr: t.done ? 'true' : 'false',
+      aria: (t.done ? 'Mark not done: ' : 'Mark done: ') + t.text,
+      textStyle: t.done ? 'color: #8E8E93; text-decoration: line-through' : 'color: #FFFFFF',
+      hasSub: bits.length > 0, sub: bits.join(' · '),
+      toggle: () => this.toggleTask(t.id), del: () => this.delTask(t.id),
+      yes: () => this.setMark(t.id, 'done'), no: () => this.setMark(t.id, 'not'),
+      yesP: t.mark === 'done' ? 'true' : 'false', noP: t.mark === 'not' ? 'true' : 'false',
+      yesAria: 'Done: ' + t.text, noAria: 'Not done: ' + t.text,
+      yesStyle: t.mark === 'done' ? 'background: #1FA34A; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+      noStyle: t.mark === 'not' ? 'background: #C4161C; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93'
+    };
+  }
+  addFromPlanner() {
+    const s = this.state; const d = s.draftP;
+    const isWeek = s.pView === 'week' || d.scope === 'week';
+    const date = s.pView === 'day' ? s.pDate : s.pWeek;
+    const ok = this.addTask(d.text, isWeek ? null : date, isWeek ? weekKey(date) : null, d.factor);
+    if (ok) this.setState({ draftP: Object.assign({}, d, { text: '' }) });
+  }
+  addFromCheckin() {
+    const s = this.state; const d = s.draftC; const tom = addDays(s.inp.date, 1);
+    const ok = this.addTask(d.text, tom, null, d.factor);
+    if (ok) this.setState({ draftC: Object.assign({}, d, { text: '' }) });
+  }
+  tasksForDay(k, includeWeek) {
+    const wk = weekKey(k);
+    return this.state.tasks.filter(function (t) { return t.date === k || (includeWeek && t.week === wk); });
+  }
+
+  impPrefill(date, f) {
+    const s = this.state;
+    if (s.days[date]) return s.days[date].imp[f];
+    if (s.plans[date]) return s.plans[date].imp[f];
+    return DEF_IMP[f];
+  }
+  recImp(date, f) {
+    const s = this.state; const cnt = { H: 0, M: 0, L: 0 }; let last = DEF_IMP[f];
+    for (let i = 6; i >= 1; i--) { const e = s.days[addDays(date, -i)]; if (e) { cnt[e.imp[f]]++; last = e.imp[f]; } }
+    const today = (s.inp && s.inp.a.impToday[f]) || this.impPrefill(date, f);
+    cnt[today]++;
+    let best = DEF_IMP[f], bn = -1;
+    ['H', 'M', 'L'].forEach(function (k) { if (cnt[k] > bn) { best = k; bn = cnt[k]; } });
+    return best;
+  }
+  startInput(date) {
+    const e = this.state.days[date];
+    const a = { score: {}, impToday: {}, impTom: {}, expTom: {} };
+    if (e) FACTORS.forEach(function (f) { a.score[f.id] = e.score[f.id] == null ? 'NA' : e.score[f.id]; a.impToday[f.id] = e.imp[f.id]; });
+    this.setState({ tab: 'input', sel: null, inp: { date: date, fi: 0, act: 0, buf: '', a: a, phase: 'review', note: e ? e.note : '' } });
+  }
+  patchInp(p) { this.setState({ inp: Object.assign({}, this.state.inp, p) }); }
+  setAnswer(key, f, v) {
+    const inp = this.state.inp; const a = Object.assign({}, inp.a); a[key] = Object.assign({}, a[key]); a[key][f] = v; return a;
+  }
+  advanceFactor(inp) {
+    if (inp.fi >= 14) return Object.assign({}, inp, { phase: 'plan', buf: '', act: 0 });
+    return Object.assign({}, inp, { fi: inp.fi + 1, act: 0, buf: '' });
+  }
+  commitScore(v) {
+    const inp = this.state.inp; const f = FACTORS[inp.fi].id;
+    const key = inp.act === 0 ? 'score' : 'expTom';
+    const a = this.setAnswer(key, f, v);
+    let ni = Object.assign({}, inp, { a: a, buf: '' });
+    if (inp.act === 0) { ni.act = 3; this.setState({ inp: ni }); return; }
+    if (ni.a.score[f] === undefined) { ni.act = 0; this.setState({ inp: ni }); return; }
+    this.setState({ inp: ni });
+    this.busy = true;
+    setTimeout(() => { this.busy = false; this.setState({ inp: this.advanceFactor(this.state.inp) }); }, 350);
+  }
+  press(k) {
+    if (this.busy) return;
+    let b = this.state.inp.buf;
+    if (k === 'del') b = b.slice(0, -1);
+    else if (k === '.') { if (b && b.indexOf('.') < 0) b += '.'; }
+    else if (b === '') b = k;
+    else if (b.indexOf('.') < 0) { if (b === '1' && k === '0') b = '10'; }
+    else { const parts = b.split('.'); if (parts[1] === '' && !(parts[0] === '10' && k !== '0')) b += k; }
+    this.patchInp({ buf: b });
+    if (/^\d+\.\d$/.test(b)) {
+      this.busy = true; const v = parseFloat(b);
+      setTimeout(() => { this.busy = false; this.commitScore(v); }, 200);
+    }
+  }
+  back() {
+    const inp = this.state.inp;
+    if (inp.phase === 'note') { this.patchInp({ phase: 'plan' }); return; }
+    if (inp.phase === 'plan') { this.patchInp({ phase: 'q', fi: 14, act: 0, buf: '' }); return; }
+    if (inp.fi > 0) this.patchInp({ fi: inp.fi - 1, act: 0, buf: '' });
+    else this.patchInp({ phase: 'review', buf: '' });
+  }
+  next() { this.setState({ inp: this.advanceFactor(this.state.inp) }); }
+  autoFill() {
+    const inp = this.state.inp; const a = { score: Object.assign({}, inp.a.score), impToday: Object.assign({}, inp.a.impToday), impTom: Object.assign({}, inp.a.impTom), expTom: Object.assign({}, inp.a.expTom) };
+    const R = rng(Date.now() % 100000);
+    FACTORS.forEach(function (f) {
+      if (a.score[f.id] === undefined) a.score[f.id] = r1(BASE[f.id] + 1.2 + (R() - 0.5) * 3.6);
+      if (a.expTom[f.id] === undefined) a.expTom[f.id] = r1(BASE[f.id] + 1.5 + (R() - 0.5) * 2);
+    });
+    this.setState({ inp: Object.assign({}, inp, { a: a, phase: 'plan', buf: '', act: 0 }) });
+  }
+  save() {
+    const s = this.state; const inp = s.inp; const date = inp.date; const old = s.days[date]; const plan = s.plans[date];
+    const e = { date: date, score: {}, imp: {}, exp: {}, note: inp.note || '', edited: old ? fmtShort(TODAY) : '' };
+    FACTORS.forEach((f) => {
+      const v = inp.a.score[f.id]; e.score[f.id] = (v === 'NA' || v == null) ? null : v;
+      e.imp[f.id] = inp.a.impToday[f.id] || this.impPrefill(date, f.id);
+      e.exp[f.id] = plan ? plan.exp[f.id] : (old ? old.exp[f.id] : null);
+      if (e.score[f.id] == null) e.exp[f.id] = null;
+    });
+    const tom = addDays(date, 1); const np = { imp: {}, exp: {} };
+    FACTORS.forEach((f) => { np.imp[f.id] = inp.a.impTom[f.id] || this.recImp(date, f.id); const x = inp.a.expTom[f.id]; np.exp[f.id] = (x === 'NA' || x == null) ? null : x; });
+    const days = Object.assign({}, s.days); days[date] = e;
+    const plans = Object.assign({}, s.plans); plans[tom] = np;
+    this.setState({ days: days, plans: plans, inp: Object.assign({}, inp, { phase: 'done' }) });
+  }
+  go(tab) {
+    if (tab === 'input' && (!this.state.inp || this.state.inp.phase === 'done')) { this.startInput(TODAY); return; }
+    this.setState({ tab: tab, sel: null });
+  }
+  shiftMonth(n) {
+    let y = this.state.month.y, m = this.state.month.m + n;
+    if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
+    const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 1) return;
+    this.setState({ month: { y: y, m: m } });
+  }
+  toggle(id) { const o = Object.assign({}, this.state.open); o[id] = !o[id]; this.setState({ open: o }); }
+
+  recsFor(e) {
+    const sd = scoreDay(e, 'score');
+    const items = FACTORS.filter(function (f) { return e.score[f.id] != null && e.score[f.id] < 7.0; })
+      .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: f1(v), hasTip: !!t, noTip: !t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v * 10), gap: (10 - v) * wt(e, f.id) }; })
+      .sort(function (a, b) { return b.gap - a.gap; });
+    const pillars = PILLARS.filter(function (p) { return sd.pillars[p.id] != null && Math.round(sd.pillars[p.id]) < 70; })
+      .map(function (p) { const v = sd.pillars[p.id]; return p.name + ' is at ' + Math.round(v) + '% (' + letter(v) + ')'; });
+    const ov = sd.overall != null && Math.round(sd.overall) < 70 ? ['Overall day is at ' + Math.round(sd.overall) + '% (' + letter(sd.overall) + ')'] : [];
+    const pl = ov.concat(pillars);
+    return { has: items.length > 0 || pl.length > 0, items: items, pillars: pl, count: items.length + pl.length };
+  }
+  safetyFor(e) {
+    const sd = scoreDay(e, 'score');
+    if (sd.pillars.emotional != null && sd.pillars.emotional < 50) return true;
+    return FACTORS.some(function (f) { return f.p === 'emotional' && e.score[f.id] != null && e.score[f.id] < 5.0; });
+  }
+  pillarsOf(sd) { return PILLARS.map(function (p) { return { name: p.name, b: badge(sd.pillars[p.id]) }; }); }
+
+  renderVals() {
+    const s = this.state; const days = s.days;
+    const logged = Object.keys(days).sort();
+    const sdOf = (k) => days[k] ? scoreDay(days[k], 'score') : null;
+    const valf = (k) => { const sd = sdOf(k); if (!sd) return null; return s.filter === 'all' ? sd.overall : sd.pillars[s.filter]; };
+    const avgOf = (fn, from, to) => { let t = 0, n = 0; for (let k = from; k <= to; k = addDays(k, 1)) { const v = fn(k); if (v != null) { t += v; n++; } } return { v: n ? t / n : null, n: n }; };
+
+    // latest day
+    const hasData = logged.length > 0; const lk = hasData ? logged[logged.length - 1] : addDays(TODAY, -1); const le = days[lk] || blankEntry(lk); const lsd = scoreDay(le, 'score');
+    const pk = logged[logged.length - 2]; const psd = pk ? sdOf(pk) : null;
+    const lat = {
+      label: !hasData ? 'No Check-ins Yet' : lk === TODAY ? 'Today' : lk === addDays(TODAY, -1) ? 'Yesterday' : 'Last Logged Day',
+      date: fmtShort(lk), b: badge(lsd.overall), d: delta(psd ? dR(psd.overall, lsd.overall) : null, false),
+      pillars: this.pillarsOf(lsd), rings: rings(lsd, true)
+    };
+    if (!lat.d.txt) lat.d = { txt: '–', col: NEU };
+
+    // previous 7 days strip
+    const week = [];
+    for (let i = 6; i >= 0; i--) {
+      const k = addDays(lk, -i); const sd = sdOf(k); const d = new Date(k + 'T12:00:00Z');
+      week.push({ wd: WD1[d.getUTCDay()], rings: rings(sd, false), letter: sd ? letter(sd.overall) : '–', col: sd ? gcol(sd.overall) : '#8E8E93', aria: fmt(k) + (sd ? ', ' + Math.round(sd.overall) + '%' : ', missed'), pick: () => this.setState({ sel: k }) });
+    }
+
+    // highlights
+    let streak = 0; for (let k = lk; days[k]; k = addDays(k, -1)) streak++;
+    const fAvg = (id, from, to) => avgOf((k) => days[k] ? days[k].score[id] : null, from, to).v;
+    const moves = FACTORS.map(function (f) { const c = fAvg(f.id, addDays(lk, -6), lk), p = fAvg(f.id, addDays(lk, -13), addDays(lk, -7)); return { f: f, c: c, d: dR(p, c, true) }; }).filter(function (m) { return m.d != null; });
+    moves.sort(function (a, b) { return b.d - a.d; });
+    let beat = 0, cnt = 0;
+    for (let i = 0; i < 7; i++) { const e = days[addDays(lk, -i)]; if (!e) continue; const a = scoreDay(e, 'score').overall, x = scoreDay(e, 'exp').overall; if (a != null && x != null) { cnt++; if (Math.round(a * 10) >= Math.round(x * 10)) beat++; } }
+    const highlights = hasData ? [{ txt: streak + '-day check-in streak', col: '#409CFF' }] : [{ txt: 'Highlights appear after your first few check-ins.', col: '#409CFF' }];
+    if (moves.length && moves[0].d > 0) highlights.push({ txt: moves[0].f.name + ' is up ' + moves[0].d.toFixed(1) + ' from last week (avg ' + moves[0].c.toFixed(1) + ')', col: UP });
+    const worst = moves[moves.length - 1]; if (worst && worst.d < 0) highlights.push({ txt: worst.f.name + ' is down ' + Math.abs(worst.d).toFixed(1) + ' from last week (avg ' + worst.c.toFixed(1) + ')', col: DOWN });
+    if (cnt) highlights.push({ txt: 'Met or beat expectations on ' + beat + ' of the last ' + cnt + ' days', col: '#FFD60A' });
+
+    // sections
+    const fname = s.filter === 'all' ? 'overall' : PILLARS.filter(function (p) { return p.id === s.filter; })[0].name.toLowerCase();
+    const mkPeriod = (id, n, title, trend, r) => {
+      const from = addDays(lk, -(n - 1)); const keys = []; for (let i = 0; i < n; i++) keys.push(addDays(from, i));
+      const curAll = avgOf((k) => { const sd = sdOf(k); return sd ? sd.overall : null; }, from, lk);
+      const prevAll = avgOf((k) => { const sd = sdOf(k); return sd ? sd.overall : null; }, addDays(from, -n), addDays(from, -1));
+      const open = !!s.open[id];
+      return {
+        title: title, sub: curAll.n + ' of ' + n + ' days logged', val: badge(curAll.v).pct + ' ' + badge(curAll.v).letter, valCol: gcol(curAll.v),
+        d: delta(dR(prevAll.v, curAll.v), false),
+        rot: open ? 90 : 0, openStr: open ? 'true' : 'false', toggle: () => this.toggle(id),
+        openChart: open, openBig: false, openAttn: false,
+        c: buildChart(keys, valf, 326, 96, trend, r),
+        caption: 'Showing ' + fname + '. ' + (trend ? 'Dashed blue line is the trend. ' : 'Gaps are missed days. ') + 'Dotted line marks 70% (C).',
+        pill: PILLARS.map(function (p) {
+          const c = avgOf((k) => { const sd = sdOf(k); return sd ? sd.pillars[p.id] : null; }, from, lk).v;
+          const pv = avgOf((k) => { const sd = sdOf(k); return sd ? sd.pillars[p.id] : null; }, addDays(from, -n), addDays(from, -1)).v;
+          return { name: p.name, b: badge(c), d: delta(dR(pv, c), false) };
+        })
+      };
+    };
+    const big3 = focusFor(lk).map(function (id) {
+      const f = FACTORS.filter(function (x) { return x.id === id; })[0];
+      const cur = fAvg(id, addDays(lk, -6), lk); const prev = fAvg(id, addDays(lk, -13), addDays(lk, -7)); const m30 = fAvg(id, addDays(lk, -29), lk);
+      return { name: f.name, pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, avg: f1(cur), avg30: f1(m30), b: badge(cur == null ? null : cur * 10), d: delta(dR(prev, cur, true), true) };
+    });
+    const latRecs = this.recsFor(le); const latSafety = this.safetyFor(le);
+    const ob = !!s.open.big, oa = !!s.open.attn;
+    const blank = { c: buildChart([], valf, 326, 96, false, 3), caption: '', pill: [] };
+    const sections = [
+      mkPeriod('w7', 7, '7-Day Score', false, 4.5),
+      mkPeriod('w30', 30, '30-Day Score', true, 3),
+      Object.assign({}, blank, { title: 'Big Three', sub: big3.map(function (b) { return b.name; }).join(' · '), val: '', valCol: '#FFFFFF', d: { txt: '', col: NEU }, rot: ob ? 90 : 0, openStr: ob ? 'true' : 'false', toggle: () => this.toggle('big'), openChart: false, openBig: ob, openAttn: false }),
+      Object.assign({}, blank, { title: 'Needs Attention', sub: latRecs.count ? 'Below 70% on ' + fmtShort(lk) : 'Nothing below 70%', val: String(latRecs.count), valCol: latRecs.count ? '#FF6961' : UP, d: { txt: '', col: NEU }, rot: oa ? 90 : 0, openStr: oa ? 'true' : 'false', toggle: () => this.toggle('attn'), openChart: false, openBig: false, openAttn: oa })
+    ];
+
+    const filters = [{ id: 'all', label: 'All' }].concat(PILLARS.map(function (p) { return { id: p.id, label: p.name }; })).map((c) => ({
+      label: c.label, pick: () => this.setState({ filter: c.id }),
+      style: s.filter === c.id ? 'background: #636366; color: #FFFFFF' : 'background: transparent; color: #C7C7CC'
+    }));
+
+    // check-in
+    const inp = s.inp; let iv = { isQ: false, isNote: false, isDone: false, isReview: false, isPlan: false, linked: [] };
+    let rv = { head: '', empty: true, tasks: [] };
+    let pn = { dateLabel: '', head: '', empty: true, tasks: [], draft: {} };
+    let res = { date: '', b: badge(null), expLine: '', ed: { txt: '', col: NEU }, pillars: [], rings: [], recs: { has: false, items: [], pillars: [] }, safety: false };
+    if (inp) {
+      const f = FACTORS[inp.fi];
+      const planned = this.impPrefill(inp.date, f.id); const rec = this.recImp(inp.date, f.id);
+      const selT = inp.a.impToday[f.id] || planned; const selN = inp.a.impTom[f.id] || rec;
+      const scoreRow = (act, key) => {
+        const v = inp.a[key][f.id]; const isAct = inp.act === act;
+        let disp, col;
+        if (isAct && inp.buf) { disp = inp.buf; col = '#FFFFFF'; }
+        else if (v !== undefined) { disp = v === 'NA' ? 'N/A' : f1(v); col = v === 'NA' ? '#98989F' : gcol(v * 10); }
+        else { disp = isAct ? '_._' : '–'; col = isAct ? '#409CFF' : '#8E8E93'; }
+        return { disp: disp, col: col, ring: isAct ? 'box-shadow: inset 0 0 0 2px #0A84FF; border-radius: 16px' : '', pick: () => this.patchInp({ act: act, buf: '' }) };
+      };
+      const seg = (sel, key) => ['H', 'M', 'L'].map((k) => ({
+        label: INAME[k], short: k === 'M' ? 'Med' : INAME[k], sel: k === sel ? 'true' : 'false',
+        style: k === sel ? 'background: #636366; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
+        pick: () => this.patchInp({ a: this.setAnswer(key, f.id, k) })
+      }));
+      iv = {
+        isQ: inp.phase === 'q', isNote: inp.phase === 'note', isDone: inp.phase === 'done', isReview: inp.phase === 'review', isPlan: inp.phase === 'plan',
+        linked: this.tasksForDay(inp.date, true).filter(function (t) { return t.factor === f.id; }).map((t, i) => Object.assign(this.taskRow(t, false), { sep: i ? 'border-top: 1px solid #38383A' : '' })),
+        hasLinked: this.tasksForDay(inp.date, true).some(function (t) { return t.factor === f.id; }),
+        dateLabel: inp.date === TODAY ? 'Today' : fmtShort(inp.date), dateShort: inp.date === TODAY ? 'today' : fmtShort(inp.date),
+        backLabel: inp.fi > 0 ? FACTORS[inp.fi - 1].name : 'Tasks',
+        pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, fnum: inp.fi + 1,
+        prog: Math.round((inp.phase === 'q' ? inp.fi : 15) / 15 * 100),
+        name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
+        canNext: inp.a.score[f.id] !== undefined && inp.a.expTom[f.id] !== undefined,
+        activeName: inp.act === 0 ? 'today' : 'tomorrow',
+        r1: scoreRow(0, 'score'), r4: scoreRow(3, 'expTom'),
+        r2: { tag: (s.days[inp.date] ? 'Saved' : s.plans[inp.date] ? 'Planned last night' : 'Usual'), opts: seg(selT, 'impToday') },
+        r3: { tag: 'Recommended: ' + INAME[rec], opts: seg(selN, 'impTom') },
+        note: inp.note
+      };
+      const dayT = this.tasksForDay(inp.date, true);
+      rv = { head: (inp.date === TODAY ? 'Today' : fmtShort(inp.date)) + ' · ' + dayT.filter(function (t) { return t.done; }).length + ' of ' + dayT.length + ' done', empty: dayT.length === 0, tasks: dayT.map((t) => this.taskRow(t, true)) };
+      const tom = addDays(inp.date, 1); const tomT = this.tasksForDay(tom, false); const dc = s.draftC;
+      pn = {
+        dateLabel: fmt(tom), head: 'Tomorrow · ' + tomT.length + (tomT.length === 1 ? ' task' : ' tasks'), empty: tomT.length === 0,
+        tasks: tomT.map((t) => this.taskRow(t, false)),
+        draft: {
+          text: dc.text, factor: dc.factor,
+          onText: (ev) => this.setState({ draftC: Object.assign({}, this.state.draftC, { text: ev.target.value }) }),
+          onFactor: (ev) => this.setState({ draftC: Object.assign({}, this.state.draftC, { factor: ev.target.value }) }),
+          onKey: (ev) => { if (ev.key === 'Enter') this.addFromCheckin(); },
+          add: () => this.addFromCheckin()
+        }
+      };
+      if (inp.phase === 'done' && days[inp.date]) {
+        const e = days[inp.date]; const sd = scoreDay(e, 'score'); const ex = scoreDay(e, 'exp');
+        res = {
+          date: fmt(inp.date), b: badge(sd.overall), rings: rings(sd, true),
+          expLine: ex.overall != null ? 'Expected ' + p1(ex.overall) + ' → actual ' + p1(sd.overall) : 'No expectations were set for this day.',
+          ed: expDelta(sd.overall, ex.overall), pillars: this.pillarsOf(sd), recs: this.recsFor(e), safety: this.safetyFor(e)
+        };
+        res.tipsOffShow = res.recs.items.length > 0 && !s.online;
+      }
+    }
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del'].map((k) => ({ label: k === 'del' ? '⌫' : k, aria: k === 'del' ? 'Delete' : k === '.' ? 'Decimal point' : k, pick: () => this.press(k) }));
+
+    // compare
+    const hasTwo = logged.length > 1; const ck = logged[logged.length - 1] || TODAY, cp = logged[logged.length - 2] || addDays(ck, -1);
+    const ce = days[ck] || blankEntry(ck), pe = days[cp] || blankEntry(cp);
+    const csd = scoreDay(ce, 'score'), psd2 = scoreDay(pe, 'score'), cex = scoreDay(ce, 'exp');
+    const gap = dayDiff(cp, ck); const psdOv = psd2.overall, csdOv = csd.overall;
+    const top = [{ name: 'Overall', weight: 800, a: badge(psd2.overall), b: badge(csd.overall), d: delta(dR(psd2.overall, csd.overall), false) }].concat(PILLARS.map(function (p) {
+      const a = psd2.pillars[p.id], b = csd.pillars[p.id];
+      return { name: p.name, weight: 600, a: badge(a), b: badge(b), d: delta(dR(a, b), false) };
+    }));
+    const cmp = {
+      title: fmtShort(ck) + ' vs. ' + fmtShort(cp) + (gap > 1 ? ' (' + gap + ' days earlier)' : ''),
+      thenShort: fmtShort(cp), nowShort: fmtShort(ck), top: top,
+      expLine: cex.overall != null ? 'Expected ' + p1(cex.overall) + ' → actual ' + p1(csd.overall) : 'No expectations were set for this day.',
+      ed: expDelta(csd.overall, cex.overall),
+      groups: PILLARS.map(function (p) {
+        return { name: p.name, rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
+          const a = pe.score[f.id], b = ce.score[f.id];
+          const ia = pe.imp[f.id], ib = ce.imp[f.id];
+          const dd = delta(a != null && b != null ? b - a : null, true);
+          return { name: f.name + (focusFor(ck).indexOf(f.id) >= 0 ? ' ★' : ''), a: f1(a), b: f1(b), d: dd.txt ? dd : { txt: '–', col: NEU }, imp: ia === ib ? INAME[ia] : ia + ' → ' + ib };
+        }) };
+      }),
+      noteThen: pe.note || 'No note', noteNow: ce.note || 'No note'
+    };
+
+    // calendar
+    const y = s.month.y, m = s.month.m;
+    const first = new Date(Date.UTC(y, m, 1)); const off = (first.getUTCDay() + 6) % 7; const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    const cells = []; let lc = 0, el = 0;
+    for (let i = 0; i < off; i++) cells.push({ blank: true, real: false });
+    for (let d = 1; d <= dim; d++) {
+      const k = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      const isL = !!days[k]; const isM = !isL && k >= START && k < TODAY; const isT = k === TODAY && !isL;
+      if (isL) lc++; if (isL || isM) el++;
+      let style = 'background: transparent; color: #636366; border: 2px solid transparent';
+      if (isL) style = 'background: #1E7B3A; color: #FFFFFF; border: 2px solid #1E7B3A';
+      else if (isM) style = 'background: #C4161C; color: #FFFFFF; border: 2px solid #C4161C';
+      else if (isT) style = 'background: transparent; color: #FFFFFF; border: 2px solid #409CFF';
+      const tappable = isL || isM || isT;
+      cells.push({ blank: false, real: true, num: d, style: style, isLogged: isL, isMissed: isM, aria: fmt(k) + (isL ? ', logged' : isM ? ', missed' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
+    }
+    const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet' };
+
+    // sheet
+    let sheet = { open: false, logged: false, missed: false, date: '', edited: '', b: badge(null), rings: [], expLine: '', ed: { txt: '', col: NEU }, groups: [], note: '', tasks: [], taskCount: '', edit: () => {} };
+    if (s.sel) {
+      const e = days[s.sel]; const k = s.sel;
+      sheet = { open: true, logged: !!e, missed: !e, date: fmt(k), edited: e && e.edited ? 'Edited on ' + e.edited : (e ? 'Logged' : (k === TODAY ? 'Not logged yet' : 'Missed')), b: badge(null), rings: [], expLine: '', ed: { txt: '', col: NEU }, groups: [], note: '', tasks: [], taskCount: '', edit: () => this.startInput(k) };
+      if (e) {
+        const sd = scoreDay(e, 'score'), ex = scoreDay(e, 'exp');
+        sheet.b = badge(sd.overall); sheet.rings = rings(sd, true);
+        sheet.expLine = ex.overall != null ? 'Expected ' + p1(ex.overall) + ' \u2192 actual ' + p1(sd.overall) : 'No expectations set';
+        sheet.ed = expDelta(sd.overall, ex.overall);
+        sheet.groups = PILLARS.map(function (p) {
+          return { name: p.name, b: badge(sd.pillars[p.id]), rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
+            return { name: f.name + (focusFor(k).indexOf(f.id) >= 0 ? ' ★' : ''), imp: INAME[e.imp[f.id]], score: f1(e.score[f.id]), exp: f1(e.exp[f.id]) };
+          }) };
+        });
+        sheet.note = e.note || 'No note';
+        const st = this.tasksForDay(k, true);
+        sheet.tasks = st.map((t) => this.taskRow(t, true));
+        sheet.taskCount = st.length ? st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done' : 'None planned';
+      }
+    }
+
+    // planner
+    const isDay = s.pView === 'day'; const dp = s.draftP;
+    const segOn = 'background: #636366; color: #FFFFFF', segOff = 'background: transparent; color: #C7C7CC';
+    const wk = isDay ? weekKey(s.pDate) : s.pWeek;
+    const wkTasks = s.tasks.filter(function (t) { return t.week === wk; });
+    const dTasks = s.tasks.filter(function (t) { return t.date === s.pDate; });
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const k = addDays(wk, i); const ts = s.tasks.filter(function (t) { return t.date === k; });
+      weekDays.push({ label: fmt(k) + (k === TODAY ? ' · Today' : ''), col: k === TODAY ? '#409CFF' : '#FFFFFF', count: ts.length ? ts.filter(function (t) { return t.done; }).length + ' of ' + ts.length + ' done' : 'No tasks', tasks: ts.map((t) => this.taskRow(t, false)), open: () => this.setState({ pView: 'day', pDate: k }) });
+    }
+    const allWeek = s.tasks.filter(function (t) { return t.week === wk || (t.date && weekKey(t.date) === wk); });
+    const pdE = days[s.pDate]; const pdSd = pdE ? scoreDay(pdE, 'score') : null;
+    const ci = pdE
+      ? { title: 'Checked in · ' + Math.round(pdSd.overall) + '% ' + letter(pdSd.overall), sub: 'Tap to see scores, notes and to-dos', action: 'View', col: gcol(pdSd.overall), rings: rings(pdSd, false), go: () => this.setState({ sel: this.state.pDate }) }
+      : s.pDate <= TODAY
+        ? { title: 'Not checked in yet', sub: 'Review these to-dos and rate the day', action: 'Start', col: '#409CFF', rings: rings(null, false), go: () => this.startInput(this.state.pDate) }
+        : { title: 'Check-in opens that night', sub: 'Plan the to-dos now, rate the day later', action: '', col: '#409CFF', rings: rings(null, false), go: () => {} };
+    const pl = {
+      ci: ci,
+      isDay: isDay, isWeek: !isDay, dayStyle: isDay ? segOn : segOff, weekStyle: isDay ? segOff : segOn,
+      toDay: () => this.setState({ pView: 'day' }), toWeek: () => this.setState({ pView: 'week', pWeek: weekKey(this.state.pDate) }),
+      kicker: isDay ? (s.pDate === TODAY ? 'Today' : s.pDate === addDays(TODAY, 1) ? 'Tomorrow' : s.pDate < TODAY ? 'Past day' : 'Upcoming') : 'Week of ' + fmtShort(wk),
+      title: isDay ? fmt(s.pDate) : fmtShort(wk) + ' – ' + fmtShort(addDays(wk, 6)),
+      count: isDay ? dTasks.filter(function (t) { return t.done; }).length + ' of ' + dTasks.length + ' done' : allWeek.filter(function (t) { return t.done; }).length + ' of ' + allWeek.length + ' done this week',
+      prev: () => isDay ? this.setState({ pDate: addDays(this.state.pDate, -1) }) : this.setState({ pWeek: addDays(this.state.pWeek, -7) }),
+      next: () => isDay ? this.setState({ pDate: addDays(this.state.pDate, 1) }) : this.setState({ pWeek: addDays(this.state.pWeek, 7) }),
+      dayHead: s.pDate === TODAY ? 'Today' : fmtShort(s.pDate), dayEmpty: dTasks.length === 0,
+      dayTasks: dTasks.map((t) => this.taskRow(t, false)), weekTasks: wkTasks.map((t) => this.taskRow(t, false)), weekDays: weekDays,
+      draft: {
+        text: dp.text, factor: dp.factor, ph: isDay && dp.scope === 'day' ? 'Add a task for ' + fmtShort(s.pDate) : 'Add a task for this week',
+        dayLabel: isDay ? fmtShort(s.pDate) : 'A day',
+        scDayStyle: isDay && dp.scope === 'day' ? segOn : segOff, scWeekStyle: !isDay || dp.scope === 'week' ? segOn : segOff,
+        scDay: () => this.setState({ pView: 'day', draftP: Object.assign({}, this.state.draftP, { scope: 'day' }) }),
+        scWeek: () => this.setState({ draftP: Object.assign({}, this.state.draftP, { scope: 'week' }) }),
+        onText: (ev) => this.setState({ draftP: Object.assign({}, this.state.draftP, { text: ev.target.value }) }),
+        onFactor: (ev) => this.setState({ draftP: Object.assign({}, this.state.draftP, { factor: ev.target.value }) }),
+        onKey: (ev) => { if (ev.key === 'Enter') this.addFromPlanner(); },
+        add: () => this.addFromPlanner()
+      }
+    };
+    const tagOpts = [{ id: '', name: 'No factor link' }].concat(FACTORS.map(function (f) { return { id: f.id, name: f.name }; }));
+
+    // settings draft view
+    const d = s.set; const segOn2 = 'background: #636366; color: #FFFFFF', segOff2 = 'background: transparent; color: #C7C7CC';
+    const wTotal = d.w.physical + d.w.emotional + d.w.financial;
+    const stepW = (id, n) => { const w = Object.assign({}, this.state.set.w); w[id] = Math.max(0, Math.min(100, w[id] + n)); this.setDraft({ w: w }); };
+    const valid = wTotal === 100 && d.focus.length === 3;
+    const st = {
+      save: () => { this.commitSettings('settings'); }, saveCol: valid ? '#409CFF' : '#636366',
+      hasMsg: !!s.msg, msg: s.msg, msgCol: /^Saved|^No changes/.test(s.msg) ? '#30D158' : '#FF6961',
+      weights: PILLARS.map(function (p, i) { return { name: p.name, val: d.w[p.id], sep: i ? 'border-top: 1px solid #38383A' : '', dec: () => stepW(p.id, -5), inc: () => stepW(p.id, 5), decAria: 'Lower ' + p.name + ' weight', incAria: 'Raise ' + p.name + ' weight' }; }),
+      wNote: wTotal === 100 ? 'Total 100%. Changes apply from today on; past days keep their old weights.' : 'Total ' + wTotal + '%. Must add up to 100%.', wCol: wTotal === 100 ? '#98989F' : '#FF6961',
+      focus: FACTORS.map((f) => { const on = d.focus.indexOf(f.id) >= 0; return { name: f.name, selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #C7C7CC', pick: () => { const cur = this.state.set.focus.slice(); const i = cur.indexOf(f.id); if (i >= 0) cur.splice(i, 1); else if (cur.length < 3) cur.push(f.id); else { cur.shift(); cur.push(f.id); } this.setDraft({ focus: cur }); } }; }),
+      factors: FACTORS.map((f, i) => ({
+        name: d.names[f.id], label: f.name, inputId: 'fname-' + f.id, sep: i ? 'border-top: 1px solid #38383A' : '',
+        onName: (ev) => { const n = Object.assign({}, this.state.set.names); n[f.id] = ev.target.value; this.setDraft({ names: n }); },
+        opts: ['H', 'M', 'L'].map((k) => ({ label: INAME[k], short: k, sel: d.imp[f.id] === k ? 'true' : 'false', style: d.imp[f.id] === k ? segOn2 : segOff2, pick: () => { const m = Object.assign({}, this.state.set.imp); m[f.id] = k; this.setDraft({ imp: m }); } }))
+      })),
+      remOn: s.reminder.on, remOnStr: s.reminder.on ? 'true' : 'false', remTime: s.reminder.time,
+      remTrack: s.reminder.on ? 'background: #30D158; justify-content: flex-end' : 'background: #39393D; justify-content: flex-start',
+      remToggle: () => { const on = !this.state.reminder.on; this.setState({ reminder: Object.assign({}, this.state.reminder, { on: on }), hist: [{ date: fmtShort(TODAY), txt: 'Reminder turned ' + (on ? 'on' : 'off') }].concat(this.state.hist) }); },
+      onRemTime: (ev) => { const t = ev.target.value; this.setState({ reminder: Object.assign({}, this.state.reminder, { time: t }), hist: [{ date: fmtShort(TODAY), txt: 'Reminder time set to ' + t }].concat(this.state.hist.filter(function (h, i) { return !(i === 0 && /^Reminder time/.test(h.txt)); })) }); },
+      sources: FACTORS.map(function (f, i) { const a = []; (TIPLIB[f.id] || []).forEach(function (t) { if (a.indexOf(t.author) < 0) a.push(t.author); }); return { name: f.name, authors: a.join(', '), sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
+      hist: s.hist.map(function (h, i) { return { date: h.date, txt: h.txt, sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
+      makeCsv: () => {
+        const csv = this.buildCsv(); const name = 'better-days-' + TODAY + '.csv';
+        try { const file = new File([csv], name, { type: 'text/csv' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: 'Better Days export' }).catch(function () {}); return; } } catch (e) {}
+        this.setState({ csv: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })) });
+      }, hasCsv: !!s.csv, csv: s.csv,
+      delLabel: s.delStep === 0 ? 'Delete All Data' : 'Tap again to permanently delete everything',
+      del: () => {
+        if (this.state.delStep === 0) { this.setState({ delStep: 1 }); return; }
+        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], inp: null, seen: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans and to-dos deleted' }] });
+      }
+    };
+    // setup flow
+    const SU = [
+      { title: 'Welcome', body: 'Rate each day across three pillars (Physical, Emotional and Financial), with five factors each. Every night you score today, plan tomorrow and review your to-dos. Setup takes about two minutes.' },
+      { title: 'Pillar Weights', body: 'How much should each pillar count toward your overall day? They must add up to 100%. You can change this anytime in Settings.', isWeights: true },
+      { title: 'Default Importance', body: 'How important is each factor on a normal day? These pre-fill your first week; after that, the app recommends from your last 7 days.', isImp: true },
+      { title: 'This Week’s Focus', body: 'Pick your Big Three. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
+      { title: 'Reminder', body: 'Home-screen apps can\u2019t set alarms on their own. For a nightly nudge, add a daily repeating reminder in the iPhone Reminders or Clock app at the time you want to check in.', isRem: true },
+      { title: 'You\u2019re Set', body: 'Do your first check-in tonight from the Check-in tab. Since there was no night before, today has no expectations yet; they start tomorrow. Everything is saved on this phone.' }
+    ];
+    const sstep = s.setup ? s.setup.step : 0; const sd0 = SU[sstep];
+    const canNext = sstep === 1 ? wTotal === 100 : sstep === 3 ? d.focus.length === 3 : true;
+    const su = {
+      open: !!s.setup, num: sstep + 1, prog: Math.round((sstep + 1) / 6 * 100), title: sd0.title, body: sd0.body,
+      isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus, isRem: !!sd0.isRem,
+      backLabel: sstep === 0 ? (s.setupDone ? 'Cancel' : '') : 'Back',
+      back: () => { if (sstep === 0) { if (this.state.setupDone) this.setState({ setup: null, set: this.freshDraft() }); } else this.setState({ setup: { step: sstep - 1 } }); },
+      nextLabel: sstep === 5 ? 'Start Using the App' : sstep === 3 && d.focus.length !== 3 ? 'Pick ' + (3 - d.focus.length) + ' more' : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',
+      nextStyle: canNext ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+      next: () => { if (!canNext) return; if (sstep === 5) { if (this.commitSettings('setup')) this.setState({ tab: 'summary', setupDone: true }); } else this.setState({ setup: { step: sstep + 1 } }); }
+    };
+    // add-to-do sheet
+    const A = s.add;
+    const ad = {
+      open: A.open, text: A.text, factor: A.factor, addCol: A.text.trim() ? '#409CFF' : '#636366',
+      wkLabel: 'Week of ' + fmtShort(A.week) + (A.week === weekKey(TODAY) ? ' (this week)' : ''),
+      prevWk: () => { const w = addDays(this.state.add.week, -7); const dd = this.state.add.day; this.patchAdd({ week: w, day: dd === 'week' ? 'week' : addDays(dd, -7) }); },
+      nextWk: () => { const w = addDays(this.state.add.week, 7); const dd = this.state.add.day; this.patchAdd({ week: w, day: dd === 'week' ? 'week' : addDays(dd, 7) }); },
+      chips: [0, 1, 2, 3, 4, 5, 6].map((i) => { const k = addDays(A.week, i); const on = A.day === k; const dt = new Date(k + 'T12:00:00Z'); return { top: WD1[dt.getUTCDay()], sub: String(dt.getUTCDate()), aria: fmt(k), selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : (k === TODAY ? 'background: #2C2C2E; color: #409CFF' : 'background: #2C2C2E; color: #FFFFFF'), pick: () => this.patchAdd({ day: k }) }; })
+        .concat([{ top: 'Week', sub: 'any', aria: 'Anytime this week', selStr: A.day === 'week' ? 'true' : 'false', style: A.day === 'week' ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #FFFFFF', pick: () => this.patchAdd({ day: 'week' }) }]),
+      onText: (ev) => this.patchAdd({ text: ev.target.value }), onFactor: (ev) => this.patchAdd({ factor: ev.target.value }),
+      onKey: (ev) => { if (ev.key === 'Enter') this.submitAdd(); },
+      submit: () => this.submitAdd(), cancel: () => this.patchAdd({ open: false })
+    };
+
+    const on = '#409CFF', off2 = '#8E8E93';
+    return {
+      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', compare: s.tab === 'compare', history: s.tab === 'history', settings: s.tab === 'settings' },
+      showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
+      st: st, su: su, ad: ad, openAdd: () => this.openAdd(), hasData: hasData, noData: !hasData, hasTwo: hasTwo, notTwo: !hasTwo, oneLogged: logged.length === 1,
+      goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
+      runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
+      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, compare: s.tab === 'compare' ? on : off2, history: s.tab === 'history' ? on : off2 },
+      pl: pl, rv: rv, pn: pn, tagOpts: tagOpts,
+      tipsOn: s.online, tipsOff: !s.online && latRecs.items.length > 0,
+      offlineLabel: s.simOff ? 'Demo: turn internet back on' : 'Demo: see it without internet',
+      toggleOffline: () => this.setState({ simOff: !this.state.simOff }),
+      goPlanner: () => this.go('planner'),
+      startQs: () => this.patchInp({ phase: 'q', fi: 0, act: 0, buf: '' }),
+      toNote: () => this.patchInp({ phase: 'note' }),
+      todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,
+      latRecs: latRecs, latSafety: latSafety, openLatest: () => this.setState({ sel: lk }),
+      iv: iv, res: res, keys: keys, cmp: cmp, cal: cal, sheet: sheet,
+      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goCompare: () => this.go('compare'), goHistory: () => this.go('history'),
+      back: () => this.back(), next: () => this.next(), autoFill: () => this.autoFill(), save: () => this.save(),
+      markNA: () => { if (!this.busy) this.commitScore('NA'); },
+      onNote: (ev) => this.patchInp({ note: ev.target.value }),
+      prevMonth: () => this.shiftMonth(-1), nextMonth: () => this.shiftMonth(1), closeSheet: () => this.setState({ sel: null })
+    };
+  }
+}
