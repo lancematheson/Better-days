@@ -93,10 +93,13 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    - **Carry-over (both lists):** unfinished one-time to-dos from earlier days move to today with "Carried over from
      [date]". Anytime-this-week to-dos stay on their week.
 4. **History** — monthly calendar: each checked-in day is filled with its overall score color; days with no check-in are
-   left blank; today has a blue outline. Tap a day for its full detail (scores, importance, expected vs. actual, to-dos,
-   note, "Edited on [date]"). Every past day can be filled in or edited anytime. (The old Compare page was removed; its
+   left blank; today has a blue outline. Tap a day for its full detail: rings, grade and expected vs. actual on top, then
+   collapsed sections (Physical, Emotional, Financial with each pillar's %, To-dos with count, Note, and Journal if that day
+   has an entry). Tap a section to open it (factor scores, importance, expected); each day opens with all collapsed.
+   "Edited on [date]" shows under the date. Every past day can be filled in or edited anytime. (The old Compare page was removed; its
    key numbers live in the Summary card and each day's detail.)
-5. **Journal** — one blank page per day, ‹ › to move between days, Back to Today, word count. Saves as you type. Separate
+5. **Journal** — one blank page per day, ‹ › to move between days, Back to Today, word count. Tapping the date opens the
+   same pop-up calendar as Planner (dots on days with an entry) to jump to any day. Saves as you type. Separate
    from the check-in's short note.
 
 ## 6. Advice / tips

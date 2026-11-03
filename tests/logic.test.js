@@ -149,6 +149,21 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(T.state.tasks[T.state.tasks.length - 1].time === '', 'no time on anytime-this-week to-dos');
   ok(L.carryOver([{ id: 9, date: '2026-11-01', time: '08:00', done: false }], '2026-11-03')[0].time === '08:00', 'carried to-dos keep their time');
 }
+// Journal date picker, and History day sections that start collapsed.
+{
+  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.series = []; T.state.days = L.makeData();
+  T.state.journal = { '2026-10-20': 'Paid it off!' }; T.state.jDate = '2026-11-02';
+  T.renderVals().openJPick(); let pk = T.renderVals().pk;
+  ok(pk.open && pk.hint === 'Dots mark days you wrote in', 'journal calendar opens');
+  T.renderVals().pk.prev(); const c20 = T.renderVals().pk.cells.filter((c) => c.real)[19];
+  ok(c20.dot !== 'transparent' && /has an entry/.test(c20.aria), 'dot on days with an entry');
+  c20.pick(); ok(T.state.jDate === '2026-10-20' && !T.state.pick && T.renderVals().jn.text === 'Paid it off!', 'picking opens that page');
+  T.state.sel = '2026-10-20'; let sh = T.renderVals().sheet;
+  ok(sh.groups.every((g) => !g.open) && !sh.taskSec.open && !sh.noteSec.open && sh.hasJournal && !sh.jSec.open, 'sections start collapsed');
+  sh.groups[1].toggle(); sh = T.renderVals().sheet; ok(sh.groups[1].open && !sh.groups[0].open, 'tap opens one section');
+  sh.groups[1].toggle(); ok(!T.renderVals().sheet.groups[1].open, 'tap again closes it');
+  T.renderVals().sheet.noteSec.toggle(); T.state.sel = '2026-10-21'; ok(!T.renderVals().sheet.noteSec.open, 'another day starts collapsed');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');

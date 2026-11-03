@@ -86,6 +86,14 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await btn('Journal').click(); await p.waitForTimeout(150);
   await p.getByLabel(/Journal for/).fill('Long day but a good one.'); await p.waitForTimeout(400);
   await p.screenshot({ path: SHOTS + '/11b-journal.png' });
+  await p.getByRole('button', { name: /Pick a date/ }).click(); await p.waitForTimeout(150);
+  await p.screenshot({ path: SHOTS + '/11c-journal-pick.png' });
+  await p.getByRole('button', { name: 'Today', exact: true }).click(); await p.waitForTimeout(100);
+  await btn('History').click(); await p.getByRole('button', { name: /, today|% / }).first().click(); await p.waitForTimeout(150);
+  await p.screenshot({ path: SHOTS + '/11d-day-collapsed.png' });
+  await p.getByRole('button', { name: /Physical/ }).first().click(); await p.waitForTimeout(100);
+  await p.screenshot({ path: SHOTS + '/11e-day-open.png' });
+  await p.getByRole('button', { name: 'Close' }).click(); await btn('Journal').click();
   log('journal saved:', (await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')).journal)));
   await p.screenshot({ path: SHOTS + '/11-history.png' });
   // settings

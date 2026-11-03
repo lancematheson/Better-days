@@ -724,7 +724,8 @@ class Component extends DCLogic {
   }
   // Jump the Planner to a date picked from the pop-up calendar (Personal opens that day's Day view).
   pickDate(k) {
-    if (this.state.pMode === 'work') this.setState({ wDate: k, pick: null });
+    if (this.state.pick && this.state.pick.j) this.setState({ jDate: k, pick: null });
+    else if (this.state.pMode === 'work') this.setState({ wDate: k, pick: null });
     else this.setState({ pView: 'day', pDate: k, pick: null });
   }
   toggle(id) { const o = Object.assign({}, this.state.open); o[id] = !o[id]; this.setState({ open: o }); }
@@ -944,12 +945,17 @@ class Component extends DCLogic {
         sheet.b = badge(sd.overall); sheet.rings = rings(sd, true);
         sheet.expLine = ex.overall != null ? 'Expected ' + p1(ex.overall) + ' \u2192 actual ' + p1(sd.overall) : 'No expectations set';
         sheet.ed = expDelta(sd.overall, ex.overall);
+        // Sections start collapsed; tap a header to open it. Open state resets when another day is opened.
+        const so = s.shOpen && s.shOpen.date === k ? s.shOpen.ids : {};
+        const tg = (id) => { const cur = this.state.shOpen && this.state.shOpen.date === k ? Object.assign({}, this.state.shOpen.ids) : {}; cur[id] = !cur[id]; this.setState({ shOpen: { date: k, ids: cur } }); };
+        const sec = (id) => ({ open: !!so[id], openStr: so[id] ? 'true' : 'false', rot: so[id] ? 90 : 0, toggle: () => tg(id) });
         sheet.groups = PILLARS.map(function (p) {
-          return { name: p.name, b: badge(sd.pillars[p.id]), rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
+          return Object.assign(sec(p.id), { name: p.name, b: badge(sd.pillars[p.id]), rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
             return { name: f.name + (focusFor(k).indexOf(f.id) >= 0 ? ' ★' : ''), imp: INAME[e.imp[f.id]], score: f1(e.score[f.id]), exp: f1(e.exp[f.id]) };
-          }) };
+          }) });
         });
-        sheet.note = e.note || 'No note';
+        sheet.note = e.note || 'No note'; sheet.noteSec = sec('note'); sheet.taskSec = sec('tasks');
+        sheet.hasJournal = !!s.journal[k]; sheet.journal = s.journal[k] || ''; sheet.jSec = sec('journal');
         const st = this.tasksForDay(k, true);
         sheet.tasks = st.map((t) => this.taskRow(t, true));
         sheet.taskCount = st.length ? st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done' : 'None planned';
@@ -1104,21 +1110,22 @@ class Component extends DCLogic {
     };
 
     // pop-up calendar for jumping the Planner to any date (dots mark days with to-dos)
-    const curDate = isWorkMode ? s.wDate : (isDay ? s.pDate : s.pWeek);
+    const forJ = !!(s.pick && s.pick.j);
+    const curDate = forJ ? s.jDate : isWorkMode ? s.wDate : (isDay ? s.pDate : s.pWeek);
     let dpk = { open: false, cells: [] };
     if (s.pick) {
       const py = s.pick.y, pmn = s.pick.m; const f1st = new Date(Date.UTC(py, pmn, 1)); const off0 = (f1st.getUTCDay() + 6) % 7; const dimN = new Date(Date.UTC(py, pmn + 1, 0)).getUTCDate();
       const cells2 = []; for (let i = 0; i < off0; i++) cells2.push({ blank: true, real: false });
       for (let d = 1; d <= dimN; d++) {
         const k = py + '-' + String(pmn + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        const n = isWorkMode ? this.workForDay(k).length : this.tasksForDay(k, false).length;
-        const sel = isWorkMode || isDay ? k === curDate : weekKey(k) === s.pWeek; const isT = k === TODAY;
-        cells2.push({ blank: false, real: true, num: d, aria: fmt(k) + (n ? ', ' + n + (n === 1 ? ' to-do' : ' to-dos') : ''), selStr: sel ? 'true' : 'false',
+        const n = forJ ? (s.journal[k] ? 1 : 0) : isWorkMode ? this.workForDay(k).length : this.tasksForDay(k, false).length;
+        const sel = forJ || isWorkMode || isDay ? k === curDate : weekKey(k) === s.pWeek; const isT = k === TODAY;
+        cells2.push({ blank: false, real: true, num: d, aria: fmt(k) + (n ? (forJ ? ', has an entry' : ', ' + n + (n === 1 ? ' to-do' : ' to-dos')) : ''), selStr: sel ? 'true' : 'false',
           style: sel ? 'background: #0A84FF; color: #FFFFFF; border: 2px solid #0A84FF' : 'background: transparent; color: ' + (isT ? '#409CFF' : '#FFFFFF') + '; border: 2px solid ' + (isT ? '#409CFF' : 'transparent'),
           dot: n ? (sel ? '#FFFFFF' : '#98989F') : 'transparent', pick: () => this.pickDate(k) });
       }
-      const shiftM = (n) => { let y = this.state.pick.y, m = this.state.pick.m + n; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } this.setState({ pick: { y: y, m: m } }); };
-      dpk = { open: true, title: MONTHS[pmn] + ' ' + py, cells: cells2, hint: isWorkMode ? 'Dots mark days with work to-dos' : 'Dots mark days with to-dos',
+      const shiftM = (n) => { let y = this.state.pick.y, m = this.state.pick.m + n; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } this.setState({ pick: Object.assign({}, this.state.pick, { y: y, m: m }) }); };
+      dpk = { open: true, title: MONTHS[pmn] + ' ' + py, cells: cells2, hint: forJ ? 'Dots mark days you wrote in' : isWorkMode ? 'Dots mark days with work to-dos' : 'Dots mark days with to-dos',
         prev: () => shiftM(-1), next: () => shiftM(1), today: () => this.pickDate(TODAY),
         close: (ev) => { if (ev && ev.target !== ev.currentTarget) return; this.setState({ pick: null }); } };
     }
@@ -1128,6 +1135,7 @@ class Component extends DCLogic {
       show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', journal: s.tab === 'journal', history: s.tab === 'history', settings: s.tab === 'settings' },
       showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
       st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk,
+      openJPick: () => { const pp = this.state.jDate.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1, j: true } }); },
       openPick: () => { const st = this.state; const c = st.pMode === 'work' ? st.wDate : (st.pView === 'day' ? st.pDate : st.pWeek); const pp = c.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1 } }); }, vdb: vdb, attn: attn,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
       runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
