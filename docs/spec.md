@@ -70,9 +70,9 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      by pillar (Physical, Emotional, Financial, then Other for old untagged ones), each with ✓ / ✗. They can be checked
      off anytime during the day; this is the review step.
    - Rate: 15 pages, one per factor. A one-line box at the top lists that pillar's to-dos for the day (with ✓/✗ status) as
-     a reminder only; to-dos never change scores. Questions in order: Today's score → Today's importance → Tomorrow's
-     score → Tomorrow's importance. Importances are pre-filled (today = what you planned last night; tomorrow = most common
-     choice in the last 7 days). Phone-style keypad; typing today's score jumps to tomorrow's score; typing tomorrow's score
+     a reminder only; to-dos never change scores. Questions in order: Today's score → Today's importance → Expected
+     tomorrow (the prediction) → Tomorrow's importance. Importances are pre-filled (today = what you planned last night; tomorrow = most common
+     choice in the last 7 days). Phone-style keypad; typing today's score jumps to Expected tomorrow; typing that
      auto-advances to the next factor. Tab bar hidden during these 15 pages.
    - Plan Tomorrow: add to-dos for tomorrow (pillar required).
    - Optional free-text note, then Save Day → results (rings, expected vs. actual, Needs Attention, safety message).
