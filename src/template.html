@@ -559,7 +559,7 @@
       </sc-for>
     </div>
   </sc-if>
-  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Tap + to add a to-do for any day and pick its pillar. Today's to-dos show on the Check-in tab, grouped by pillar.</span>
+  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Tap + to add a to-do for any day, pick its pillar, and make it repeat if you like. Unfinished one-time to-dos carry over to the next day. Today's to-dos show on the Check-in tab, grouped by pillar.</span>
 </div>
 </sc-if>
 
@@ -654,50 +654,43 @@
 <sc-if value="{{show.work}}" hint-placeholder-val="{{false}}">
 <div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
   <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
-    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{wk.count}}</span>
-    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Work</h1>
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{wk.kicker}}</span>
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Work</h1>
+      <button onClick="{{wk.openAdd}}" aria-label="Add work to-do with options" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+    </div>
   </div>
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button onClick="{{wk.prev}}" aria-label="Previous day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+    <div style="display: flex; flex-direction: column; align-items: center">
+      <span style="font-size: 17px; font-weight: 700">{{wk.title}}</span>
+      <span style="font-size: 12px; color: #98989F">{{wk.count}}</span>
+    </div>
+    <button onClick="{{wk.next}}" aria-label="Next day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+  </div>
+  <sc-if value="{{wk.isOff}}" hint-placeholder-val="{{false}}"><button onClick="{{wk.toToday}}" style="align-self: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: none; background: #1C1C1E; color: #409CFF; font-size: 14px; font-weight: 600">Back to Today</button></sc-if>
   <div style="display: flex; gap: 8px">
     <label for="worktext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New work to-do</label>
-    <input id="worktext" type="text" value="{{wk.text}}" onChange="{{wk.onText}}" onKeyDown="{{wk.onKey}}" placeholder="Add a work to-do" style="flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 0 14px; font-size: 16px">
-    <button onClick="{{wk.add}}" aria-label="Add work to-do" style="width: 48px; height: 48px; border-radius: 24px; border: none; display: flex; align-items: center; justify-content: center; flex: none; {{wk.addStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <input id="worktext" type="text" value="{{wk.text}}" onChange="{{wk.onText}}" onKeyDown="{{wk.onKey}}" placeholder="{{wk.ph}}" style="flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 0 14px; font-size: 16px">
+    <button onClick="{{wk.add}}" aria-label="Add work to-do" style="width: 48px; height: 48px; border-radius: 24px; border: none; display: flex; align-items: center; justify-content: center; flex: none; {{wk.addStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M5 12l5 5 9-10"></path></svg></button>
   </div>
   <div style="background: #1C1C1E; border-radius: 20px; padding: 2px 16px 4px; display: flex; flex-direction: column">
-    <sc-if value="{{wk.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 14px 0">Nothing on your work list.</span></sc-if>
+    <sc-if value="{{wk.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 14px 0">Nothing on your work list for this day.</span></sc-if>
     <sc-for list="{{wk.items}}" as="t" hint-placeholder-count="3">
-          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; {{t.sep}}">
-            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
-              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
-              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
-            </button>
-            <span style="flex: 1; min-width: 0; font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
-            <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-          </div>
+      <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; {{t.sep}}">
+        <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+          <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+          <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+        </button>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+          <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+        </div>
+        <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
     </sc-for>
   </div>
-  <sc-if value="{{wk.hasDone}}" hint-placeholder-val="{{false}}">
-    <div style="background: #1C1C1E; border-radius: 20px; padding: 0 16px; display: flex; flex-direction: column">
-      <div style="display: flex; align-items: center; min-height: 48px">
-        <button onClick="{{wk.toggleDone}}" aria-expanded="{{wk.doneOpenStr}}" style="flex: 1; background: transparent; border: none; color: #FFFFFF; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; text-align: left; font-size: 15px; font-weight: 700"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{wk.doneRot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>{{wk.doneHead}}</button>
-        <button onClick="{{wk.clear}}" style="background: transparent; border: none; color: #409CFF; font-size: 15px; min-height: 44px; padding: 0 0 0 12px">Clear</button>
-      </div>
-      <sc-if value="{{wk.doneOpen}}" hint-placeholder-val="{{false}}">
-        <div style="display: flex; flex-direction: column; padding-bottom: 4px">
-          <sc-for list="{{wk.doneItems}}" as="t" hint-placeholder-count="1">
-          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #38383A">
-            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
-              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
-              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
-            </button>
-            <span style="flex: 1; min-width: 0; font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
-            <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-          </div>
-          </sc-for>
-        </div>
-      </sc-if>
-    </div>
-  </sc-if>
-  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Work to-dos are kept separate from your personal to-dos and aren't part of the check-in.</span>
+  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Type and press ✓ to add to this day. Tap + to make it repeat. Unfinished one-time items carry over to the next day. Work to-dos aren't part of the check-in.</span>
 </div>
 </sc-if>
 
@@ -759,14 +752,21 @@
       <div style="width: 36px; height: 5px; border-radius: 3px; background: #48484A; align-self: center"></div>
       <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center">
         <button onClick="{{ad.cancel}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; min-height: 44px; padding: 0">Cancel</button>
-        <span style="font-size: 17px; font-weight: 700">New To-Do</span>
+        <span style="font-size: 17px; font-weight: 700">{{ad.title}}</span>
         <button onClick="{{ad.submit}}" style="justify-self: end; background: transparent; border: none; font-size: 17px; font-weight: 700; min-height: 44px; padding: 0; color: {{ad.addCol}}">Add</button>
       </div>
       <label for="addtext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">To-do</label>
       <input id="addtext" type="text" value="{{ad.text}}" onChange="{{ad.onText}}" onKeyDown="{{ad.onKey}}" placeholder="What do you need to do?" style="min-height: 48px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 14px; font-size: 17px">
+      <sc-if value="{{ad.isPersonal}}" hint-placeholder-val="{{true}}">
       <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px" role="group" aria-label="Pillar">
         <sc-for list="{{ad.pillars}}" as="o" hint-placeholder-count="3">
           <button onClick="{{o.pick}}" aria-pressed="{{o.selStr}}" style="min-height: 44px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; {{o.style}}">{{o.name}}</button>
+        </sc-for>
+      </div>
+      </sc-if>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px" role="group" aria-label="Repeat">
+        <sc-for list="{{ad.reps}}" as="r" hint-placeholder-count="4">
+          <button onClick="{{r.pick}}" aria-pressed="{{r.selStr}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; {{r.style}}">{{r.label}}</button>
         </sc-for>
       </div>
       <div style="display: flex; align-items: center; justify-content: space-between">
@@ -774,7 +774,7 @@
         <span style="font-size: 14px; font-weight: 600; color: #C7C7CC">{{ad.wkLabel}}</span>
         <button onClick="{{ad.nextWk}}" aria-label="Next week" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px" role="group" aria-label="Day">
+      <div style="display: grid; grid-template-columns: repeat({{ad.chipCols}}, minmax(0, 1fr)); gap: 4px" role="group" aria-label="Day">
         <sc-for list="{{ad.chips}}" as="c" hint-placeholder-count="8">
           <button onClick="{{c.pick}}" aria-pressed="{{c.selStr}}" aria-label="{{c.aria}}" style="min-height: 48px; border-radius: 12px; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0; {{c.style}}">
             <span style="font-size: 12px; font-weight: 700">{{c.top}}</span>
@@ -782,7 +782,20 @@
           </button>
         </sc-for>
       </div>
+      <sc-if value="{{ad.hasRepNote}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #98989F; line-height: 1.35">{{ad.repNote}}</span></sc-if>
     </div>
+  </div>
+</sc-if>
+
+<!-- ================= REMOVE REPEATING TO-DO ================= -->
+<sc-if value="{{dsheet.open}}" hint-placeholder-val="{{false}}">
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: flex-end; padding: 0 8px calc(8px + env(safe-area-inset-bottom)); gap: 8px">
+    <div style="background: #2C2C2E; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden">
+      <span style="font-size: 13px; color: #98989F; text-align: center; padding: 12px 16px">“{{dsheet.text}}” repeats. Remove just this one, or stop it from here on?</span>
+      <button onClick="{{dsheet.skip}}" style="min-height: 56px; border: none; border-top: 1px solid #38383A; background: transparent; color: #409CFF; font-size: 18px">{{dsheet.one}}</button>
+      <button onClick="{{dsheet.stop}}" style="min-height: 56px; border: none; border-top: 1px solid #38383A; background: transparent; color: #FF6961; font-size: 18px">Stop repeating</button>
+    </div>
+    <button onClick="{{dsheet.cancel}}" style="min-height: 56px; border-radius: 14px; border: none; background: #2C2C2E; color: #409CFF; font-size: 18px; font-weight: 700">Cancel</button>
   </div>
 </sc-if>
 

@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, migrateTask, tipPosFromSeen, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -94,14 +94,50 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(pt.has && /Physical to-dos · 0 of 1 done/.test(pt.head), 'pillar to-dos shown on its factor pages');
   T.patchInp({ fi: 5 }); ok(!T.renderVals().iv.pt.has, 'not shown on other pillars');
 }
-// Work list is separate from personal to-dos.
+// Work list: day by day, separate from personal to-dos.
 {
-  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.workNextId = 1;
+  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.workNextId = 1; T.state.series = [];
+  const today = L.getToday(); T.state.wDate = today;
   T.state.workText = '  Send proposal '; T.addWork(); T.state.workText = 'Call client'; T.addWork();
-  ok(T.state.work.length === 2 && T.state.work[0].text === 'Send proposal' && T.state.tasks.length === 0, 'work to-dos kept separate');
-  T.toggleWork(1); let w = T.renderVals().wk;
-  ok(w.items.length === 1 && w.doneItems.length === 1 && w.count === '1 to do', 'done work moves to Done');
-  w.clear(); ok(T.state.work.length === 1, 'clear done');
+  ok(T.state.work.length === 2 && T.state.work[0].text === 'Send proposal' && T.state.work[0].date === today && T.state.tasks.length === 0, 'work to-dos kept separate, on the shown day');
+  T.toggleWork(T.state.work[0]); let w = T.renderVals().wk;
+  ok(w.items.length === 2 && w.items[1].text === 'Send proposal' && w.items[1].done && w.count === '1 of 2 done', 'done work sinks to the bottom');
+  w.next(); ok(T.renderVals().wk.empty, 'other days have their own list');
+}
+// Carry-over: unfinished one-time to-dos move to today; done ones stay put.
+{
+  const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
+  ok(out[0].date === '2026-11-02' && out[0].carried === 'Oct 30' && out[0].mark === null, 'unfinished to-do carried with a note');
+  ok(out[1].date === '2026-10-30' && out[2].date === null, 'done and anytime-this-week to-dos stay');
+  ok(L.carryOver(out, '2026-11-03')[0].carried === 'Oct 30', 'keeps the original day when carried again');
+}
+// Repeating to-dos.
+{
+  const sr = (type, days) => ({ id: 1, kind: 'personal', text: 'x', pillar: 'physical', rule: { type, days }, start: '2026-11-03', end: null, marks: {} });
+  // Nov 3 2026 is a Tuesday.
+  ok(L.repeatsOn(sr('weekly', [1]), '2026-11-03') && L.repeatsOn(sr('weekly', [1]), '2026-11-10') && !L.repeatsOn(sr('weekly', [1]), '2026-11-04'), 'weekly on Tuesday');
+  ok(!L.repeatsOn(sr('weekly', [1]), '2026-10-27'), 'nothing before the start date');
+  ok(L.repeatsOn(sr('weekdays', []), '2026-11-06') && !L.repeatsOn(sr('weekdays', []), '2026-11-07'), 'weekdays skip Saturday');
+  ok(L.repeatsOn(sr('daily', []), '2026-11-07'), 'daily');
+  ok(L.repeatLabel({ type: 'weekly', days: [3, 1] }) === 'Every Tue, Thu' && L.repeatLabel({ type: 'weekdays', days: [] }) === 'Every weekday', 'repeat labels');
+
+  const T = new L.Component({}); T.state.tasks = []; T.state.series = []; T.state.seriesNextId = 1; T.state.work = [];
+  T.state.pView = 'day'; T.state.pDate = '2026-11-03'; T.openAdd('personal');
+  T.patchAdd({ text: 'Leg day', pillar: 'physical' }); T.renderVals().ad.reps[3].pick();
+  ok(T.state.add.rep === 'weekly' && T.state.add.wdays.join() === '2026-11-03', 'weekly starts with the chosen day');
+  T.submitAdd();
+  ok(T.state.series.length === 1 && T.state.series[0].rule.days.join() === '1' && T.state.series[0].start === '2026-11-03', 'repeating to-do saved');
+  const occ = T.tasksForDay('2026-11-10', true); ok(occ.length === 1 && occ[0].text === 'Leg day' && occ[0].rec === 'Every Tue', 'shows up next Tuesday');
+  ok(T.tasksForDay('2026-11-11', true).length === 0, 'not on Wednesday');
+  T.setMark(occ[0], 'done'); ok(T.tasksForDay('2026-11-10', true)[0].done && !T.tasksForDay('2026-11-17', true)[0].done, 'each week ticked separately');
+  T.delTask(T.tasksForDay('2026-11-17', true)[0]); T.skipOne();
+  ok(T.tasksForDay('2026-11-17', true).length === 0 && T.tasksForDay('2026-11-24', true).length === 1, 'skip just one day');
+  T.delTask(T.tasksForDay('2026-11-24', true)[0]); T.stopSeries();
+  ok(T.tasksForDay('2026-11-24', true).length === 0 && T.tasksForDay('2026-12-01', true).length === 0 && T.tasksForDay('2026-11-10', true)[0].done, 'stop repeating keeps past ticks');
+  // Work repeats on weekdays and never shows in personal lists.
+  T.state.wDate = '2026-11-03'; T.openAdd('work'); T.patchAdd({ text: 'Check pipeline' }); T.renderVals().ad.reps[2].pick(); T.submitAdd();
+  ok(T.workForDay('2026-11-06').length === 1 && T.workForDay('2026-11-07').length === 0 && T.tasksForDay('2026-11-06', true).length === 0, 'work repeats stay on the Work tab');
+  T.openAdd('personal'); T.patchAdd({ text: 'No pillar' }); T.submitAdd(); ok(T.state.series.length === 2 && T.state.add.open, 'personal repeat still needs a pillar');
 }
 // Today vs. expected: actual % with the change from the prediction, to one decimal.
 {

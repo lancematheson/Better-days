@@ -56,7 +56,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   // planner add sheet
   await btn('Planner').click(); await p.waitForTimeout(150);
   await p.getByRole('button', { name: 'Add to-do' }).click(); await p.waitForTimeout(150);
-  await p.getByRole('textbox', { name: 'To-do' }).fill('Call Mom');
+  await p.getByRole('textbox', { name: 'To-do', exact: true }).fill('Call Mom');
   await p.getByRole('button', { name: 'Emotional', exact: true }).click();
   await p.screenshot({ path: SHOTS + '/09-add-sheet.png' });
   await p.getByRole('button', { name: 'Add', exact: true }).click(); await p.waitForTimeout(150);
@@ -67,9 +67,14 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   // work list
   await btn('Work').click(); await p.waitForTimeout(150);
   await p.getByLabel('New work to-do').fill('Send proposal'); await p.keyboard.press('Enter'); await p.waitForTimeout(100);
-  await p.getByLabel('New work to-do').fill('Call client'); await p.getByRole('button', { name: 'Add work to-do' }).click(); await p.waitForTimeout(100);
+  await p.getByLabel('New work to-do').fill('Call client'); await p.getByRole('button', { name: 'Add work to-do', exact: true }).click(); await p.waitForTimeout(100);
   await p.getByRole('button', { name: 'Mark done: Send proposal' }).click(); await p.waitForTimeout(100);
-  log('work list:', await p.getByText('Call client').isVisible(), await p.getByText('Done (1)').isVisible());
+  log('work list:', await p.getByText('Call client').isVisible(), await p.getByText('1 of 2 done').isVisible());
+  await p.getByRole('button', { name: 'Add work to-do with options' }).click(); await p.waitForTimeout(100);
+  await p.getByRole('textbox', { name: 'To-do', exact: true }).fill('Team standup'); await p.getByRole('button', { name: 'Weekdays' }).click();
+  await p.screenshot({ path: SHOTS + '/10d-repeat.png' });
+  await p.getByRole('button', { name: 'Add', exact: true }).click(); await p.waitForTimeout(100);
+  log('repeat added:', await p.getByText('↻ Every weekday').isVisible());
   await p.screenshot({ path: SHOTS + '/10c-work.png' });
   await btn('History').click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/11-history.png' });
