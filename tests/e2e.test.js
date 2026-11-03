@@ -76,6 +76,10 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.getByRole('button', { name: 'Add', exact: true }).click(); await p.waitForTimeout(100);
   log('repeat added:', await p.getByText('↻ Every weekday').isVisible());
   await p.screenshot({ path: SHOTS + '/10c-work.png' });
+  await p.getByRole('button', { name: /Pick a date/ }).click(); await p.waitForTimeout(150);
+  await p.screenshot({ path: SHOTS + '/10e-datepick.png' });
+  await p.getByRole('button', { name: 'Next month' }).click(); await p.getByRole('button', { name: /, December 10|Thu, Dec 10/ }).first().click(); await p.waitForTimeout(150);
+  log('jumped to:', await p.getByRole('button', { name: /Pick a date/ }).getAttribute('aria-label'));
   await btn('History').click(); await p.waitForTimeout(150);
   await btn('Journal').click(); await p.waitForTimeout(150);
   await p.getByLabel(/Journal for/).fill('Long day but a good one.'); await p.waitForTimeout(400);

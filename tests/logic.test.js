@@ -116,6 +116,17 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.renderVals().jn.next(); ok(T.renderVals().jn.text === '' && T.renderVals().jn.count === 'Blank page', 'each day starts blank');
   T.renderVals().jn.prev(); T.renderVals().jn.onText({ target: { value: '  ' } }); ok(!(today in T.state.journal), 'clearing a page removes it');
 }
+// Pop-up calendar in Planner jumps to a date.
+{
+  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.series = []; T.state.pView = 'week'; T.state.pDate = '2026-11-03'; T.state.pWeek = '2026-11-02';
+  T.addTask('Dentist', '2026-11-20', null, 'physical');
+  T.renderVals().openPick(); let pk = T.renderVals().pk;
+  ok(pk.open && pk.title === 'November 2026' && pk.cells.filter((c) => c.real).length === 30, 'calendar opens on the shown month');
+  const c20 = pk.cells.filter((c) => c.real)[19]; ok(c20.dot !== 'transparent' && /1 to-do/.test(c20.aria), 'dot on days with to-dos');
+  c20.pick(); ok(!T.state.pick && T.state.pView === 'day' && T.state.pDate === '2026-11-20', 'picking a date opens that day');
+  T.renderVals().pm.toWork(); T.renderVals().openPick(); T.renderVals().pk.next(); ok(T.renderVals().pk.title === 'December 2026', 'next month');
+  T.renderVals().pk.cells.filter((c) => c.real)[4].pick(); ok(T.state.wDate === '2026-12-05' && T.state.pMode === 'work', 'work list jumps too');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
