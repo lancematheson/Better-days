@@ -1,0 +1,1967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Better Days</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Better Days">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+body{margin:0}
+a{color:#409CFF}a:hover{color:#7AB8FF}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ln{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.tr{stroke:#409CFF;stroke-width:2;stroke-dasharray:5 4;fill:none}
+.gr{stroke:#48484A;stroke-width:1;stroke-dasharray:2 3}
+.ic{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trkB{fill:none;stroke-width:13;opacity:.22}
+.rgB{fill:none;stroke-width:13;stroke-linecap:round}
+.trkS{fill:none;stroke-width:3.5;opacity:.22}
+.rgS{fill:none;stroke-width:3.5;stroke-linecap:round}
+textarea{font-family:inherit}
+textarea::placeholder{color:#8E8E93}
+input::placeholder{color:#8E8E93}
+input,select{font-family:inherit}
+
+html,body{height:100%;margin:0;background:#000;color:#fff;overscroll-behavior:none}
+#root{position:fixed;inset:0}
+button,a{touch-action:manipulation}
+input,select,textarea{font-size:16px!important}
+*{-webkit-tap-highlight-color:transparent}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<template id="tpl">
+<div style="width: 100%; height: 100%; display: flex; flex-direction: column; background: #000000; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif; position: relative; overflow: hidden">
+
+<div class="scroller" style="flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: env(safe-area-inset-top); {{scrollPad}}">
+
+<!-- ================= SUMMARY ================= -->
+<sc-if value="{{show.summary}}" hint-placeholder-val="{{true}}">
+<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+    <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: #98989F">{{todayLabel}}</span>
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Summary</h1>
+      <button onClick="{{goSettings}}" aria-label="Settings" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #C7C7CC; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
+    </div>
+  </div>
+
+  <sc-if value="{{noData}}" hint-placeholder-val="{{false}}">
+    <div style="background: #1C1C1E; border-radius: 20px; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 20px; font-weight: 800">Welcome to Better Days</span>
+      <span style="font-size: 15px; color: #C7C7CC; line-height: 1.45">Each night, rate today's 15 factors, plan tomorrow and review your to-dos. Your rings, grades and trends fill in from there.</span>
+      <button onClick="{{goInput}}" style="min-height: 50px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Start Tonight's Check-in</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{hasData}}" hint-placeholder-val="{{true}}">
+  <button onClick="{{openLatest}}" style="text-align: left; background: #1C1C1E; border: none; border-radius: 20px; padding: 16px; color: #FFFFFF; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
+      <span style="font-size: 17px; font-weight: 700">{{lat.label}}</span>
+      <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; color: #98989F">{{lat.date}}<svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; width: 100%">
+      <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Pillar rings">
+        <sc-for list="{{lat.rings}}" as="g" hint-placeholder-count="3">
+          <circle cx="75" cy="75" r="{{g.r}}" stroke="{{g.col}}" class="trkB"></circle>
+          <circle cx="75" cy="75" r="{{g.r}}" stroke="{{g.col}}" transform="rotate(-90 75 75)" class="rgB" style="stroke-dasharray: {{g.dash}}"></circle>
+        </sc-for>
+      </svg>
+      <div style="display: flex; flex-direction: column; gap: 10px; flex: 1">
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <span style="font-size: 38px; font-weight: 800; line-height: 1; color: {{lat.b.bg}}">{{lat.b.letter}}</span>
+          <span style="font-size: 22px; font-weight: 700">{{lat.b.pct}}</span>
+        </div>
+        <sc-for list="{{lat.pillars}}" as="p" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column">
+            <span style="font-size: 12px; font-weight: 600; color: #98989F">{{p.name}}</span>
+            <span style="font-size: 17px; font-weight: 700; color: {{p.b.bg}}">{{p.b.pct}} {{p.b.letter}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="font-size: 13px; color: #98989F">{{lat.b.missed}} left on the table · <span style="font-weight: 700; color: {{lat.d.col}}">{{lat.d.txt}}</span> vs previous day</div>
+  </button>
+  </sc-if>
+
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 15px; font-weight: 700; padding: 0 4px">Previous 7 Days</span>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px">
+      <sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+        <button onClick="{{d.pick}}" aria-label="{{d.aria}}" style="background: transparent; border: none; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; min-height: 44px">
+          <span style="font-size: 12px; font-weight: 600; color: #98989F">{{d.wd}}</span>
+          <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+            <sc-for list="{{d.rings}}" as="g" hint-placeholder-count="3">
+              <circle cx="20" cy="20" r="{{g.r}}" stroke="{{g.col}}" class="trkS"></circle>
+              <circle cx="20" cy="20" r="{{g.r}}" stroke="{{g.col}}" transform="rotate(-90 20 20)" class="rgS" style="stroke-dasharray: {{g.dash}}"></circle>
+            </sc-for>
+          </svg>
+          <span style="font-size: 12px; font-weight: 700; color: {{d.col}}">{{d.letter}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 15px; font-weight: 700">Highlights</span>
+    <sc-for list="{{highlights}}" as="h" hint-placeholder-count="3">
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <span style="width: 8px; height: 8px; border-radius: 4px; margin-top: 6px; flex: none; background: {{h.col}}"></span>
+        <span style="font-size: 15px; line-height: 1.35">{{h.txt}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-for list="{{sections}}" as="x" hint-placeholder-count="4">
+    <div style="background: #1C1C1E; border-radius: 20px; overflow: hidden">
+      <button onClick="{{x.toggle}}" aria-expanded="{{x.openStr}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; padding: 14px 16px; display: flex; align-items: center; gap: 10px; text-align: left; min-height: 60px">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 700">{{x.title}}</span>
+          <span style="font-size: 13px; color: #98989F">{{x.sub}}</span>
+        </div>
+        <span style="font-size: 22px; font-weight: 800; color: {{x.valCol}}">{{x.val}}</span>
+        <span style="font-size: 13px; font-weight: 700; color: {{x.d.col}}">{{x.d.txt}}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{x.rot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+
+      <sc-if value="{{x.openChart}}" hint-placeholder-val="{{false}}">
+        <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px" role="group" aria-label="Filter by pillar">
+            <sc-for list="{{filters}}" as="c" hint-placeholder-count="4">
+              <button onClick="{{c.pick}}" style="min-height: 32px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; {{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+          <svg width="326" height="96" viewBox="0 0 326 96" role="img" aria-label="Daily scores graph">
+            <line x1="0" x2="326" y1="{{x.c.y70}}" y2="{{x.c.y70}}" class="gr"></line>
+            <path d="{{x.c.path}}" class="ln"></path>
+            <line x1="{{x.c.t.x1}}" y1="{{x.c.t.y1}}" x2="{{x.c.t.x2}}" y2="{{x.c.t.y2}}" class="tr" opacity="{{x.c.t.op}}"></line>
+            <sc-for list="{{x.c.dots}}" as="d" hint-placeholder-count="7">
+              <circle cx="{{d.cx}}" cy="{{d.cy}}" r="{{x.c.r}}" fill="{{d.fill}}"></circle>
+            </sc-for>
+          </svg>
+          <span style="font-size: 12px; color: #98989F">{{x.caption}}</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{x.pill}}" as="p" hint-placeholder-count="3">
+              <div style="background: #2C2C2E; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 12px; font-weight: 600; color: #98989F">{{p.name}}</span>
+                <span style="font-size: 17px; font-weight: 800; color: {{p.b.bg}}">{{p.b.pct}} {{p.b.letter}}</span>
+                <span style="font-size: 12px; font-weight: 700; color: {{p.d.col}}">{{p.d.txt}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{x.openBig}}" hint-placeholder-val="{{false}}">
+        <div style="padding: 0 16px 14px; display: flex; flex-direction: column">
+          <sc-for list="{{big3}}" as="f" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #38383A">
+              <div style="flex: 1; display: flex; flex-direction: column">
+                <span style="font-size: 15px; font-weight: 700">{{f.name}}</span>
+                <span style="font-size: 12px; color: #98989F">{{f.pillar}} · 30-day avg {{f.avg30}}</span>
+              </div>
+              <span style="font-size: 12px; font-weight: 700; color: {{f.d.col}}">{{f.d.txt}}</span>
+              <span style="font-size: 20px; font-weight: 800; color: {{f.b.bg}}">{{f.avg}}</span>
+            </div>
+          </sc-for>
+          <span style="font-size: 12px; color: #98989F; padding-top: 4px">7-day averages. Focus factors count 20% more this week.</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{x.openAttn}}" hint-placeholder-val="{{false}}">
+        <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{latRecs.pillars}}" as="p" hint-placeholder-count="1">
+            <div style="font-size: 14px; font-weight: 700; color: #FF6961">{{p}}</div>
+          </sc-for>
+          <sc-for list="{{latRecs.items}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 10px; border-top: 1px solid #38383A">
+              <span style="font-size: 15px; font-weight: 800; min-width: 34px; color: {{r.bg}}">{{r.score}}</span>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+                <sc-if value="{{tipsOn}}" hint-placeholder-val="{{true}}">
+                  <sc-if value="{{r.hasTip}}" hint-placeholder-val="{{true}}">
+                    <span style="font-size: 14px; color: #E5E5EA; line-height: 1.4">{{r.tip}}</span>
+                    <span style="font-size: 12px; color: #98989F; font-style: italic">— {{r.author}}, {{r.work}}</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                      <a href="{{r.url}}" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 600; color: #409CFF; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center">Open source ›</a>
+                      <button onClick="{{r.next}}" style="display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 13px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"></path></svg>New tip</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{r.noTip}}" hint-placeholder-val="{{false}}">
+                    <span style="font-size: 14px; color: #98989F">No new tips for {{r.name}} right now. Check back later.</span>
+                  </sc-if>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{tipsOff}}" hint-placeholder-val="{{false}}">
+            <div style="background: #2C2C2E; border-radius: 12px; padding: 10px 12px; font-size: 14px; color: #C7C7CC">Connect to the internet to see tips.</div>
+          </sc-if>
+          <sc-if value="{{latSafety}}" hint-placeholder-val="{{false}}">
+            <div style="background: #0A2A4A; border-radius: 14px; padding: 12px; font-size: 14px; line-height: 1.45">Your emotional scores were low. If this keeps up, it can help to talk with someone you trust or a professional. If you're ever in crisis, call or text <strong>988</strong> (US).</div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-for>
+</div>
+</sc-if>
+
+<!-- ================= CHECK-IN ================= -->
+<sc-if value="{{show.input}}" hint-placeholder-val="{{false}}">
+<div style="padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+
+  <sc-if value="{{iv.isReview}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">Step 1 of 3 · {{iv.dateLabel}}</span>
+        <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Review Tasks</h1>
+        <span style="font-size: 15px; color: #98989F">Check off what got done before you rate the day.</span>
+      </div>
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
+        <span style="font-size: 15px; font-weight: 700; padding: 8px 0">{{rv.head}}</span>
+        <sc-if value="{{rv.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 8px 0 10px; border-top: 1px solid #38383A">Nothing was planned for this day.</span></sc-if>
+        <sc-for list="{{rv.tasks}}" as="t" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; gap: 8px; min-height: 52px; border-top: 1px solid #38383A">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 16px; font-weight: 600">{{t.text}}</span>
+              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+            </div>
+            <button onClick="{{t.yes}}" aria-label="{{t.yesAria}}" aria-pressed="{{t.yesP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.yesStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M5 12l5 5 9-10"></path></svg></button>
+            <button onClick="{{t.no}}" aria-label="{{t.noAria}}" aria-pressed="{{t.noP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.noStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+      <button onClick="{{startQs}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Rate My Day</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{iv.isPlan}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; min-height: 44px">
+        <button onClick="{{back}}" style="background: transparent; border: none; color: #409CFF; font-size: 17px; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Awareness</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">Step 3 of 3 · {{pn.dateLabel}}</span>
+        <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Plan Tomorrow</h1>
+      </div>
+      <div style="background: #1C1C1E; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; gap: 8px">
+          <label for="plantask" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New task for tomorrow</label>
+          <input id="plantask" type="text" value="{{pn.draft.text}}" onChange="{{pn.draft.onText}}" onKeyDown="{{pn.draft.onKey}}" placeholder="Add a task for tomorrow" style="flex: 1; min-width: 0; min-height: 44px; border-radius: 10px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px">
+          <button onClick="{{pn.draft.add}}" aria-label="Add task" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+        <label for="plantag" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Link to factor</label>
+        <select id="plantag" value="{{pn.draft.factor}}" onChange="{{pn.draft.onFactor}}" style="min-height: 36px; border-radius: 8px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 8px; font-size: 13px; font-weight: 600">
+          <sc-for list="{{tagOpts}}" as="o" hint-placeholder-count="16"><option value="{{o.id}}">{{o.name}}</option></sc-for>
+        </select>
+      </div>
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
+        <span style="font-size: 15px; font-weight: 700; padding: 8px 0">{{pn.head}}</span>
+        <sc-if value="{{pn.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 8px 0 10px; border-top: 1px solid #38383A">Nothing planned yet.</span></sc-if>
+        <sc-for list="{{pn.tasks}}" as="t" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid #38383A">
+            <span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366; flex: none"></span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 16px">{{t.text}}</span>
+              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+            </div>
+            <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 36px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+      <button onClick="{{toNote}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Continue</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{iv.isQ}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px">
+        <button onClick="{{back}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>{{iv.backLabel}}</button>
+        <span style="font-size: 15px; font-weight: 700">{{iv.fnum}} of 15</span>
+        <sc-if value="{{iv.canNext}}" hint-placeholder-val="{{false}}">
+          <button onClick="{{next}}" style="justify-self: end; background: transparent; border: none; color: #409CFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0">Next<svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+        </sc-if>
+      </div>
+      <div style="height: 4px; background: #2C2C2E; border-radius: 2px; overflow: hidden">
+        <div style="height: 4px; background: #409CFF; border-radius: 2px; width: {{iv.prog}}%"></div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 4px 2px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #98989F">{{iv.pillar}} · {{iv.dateLabel}}</span>
+          <sc-if value="{{iv.focus}}" hint-placeholder-val="{{false}}">
+            <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">FOCUS</span>
+          </sc-if>
+        </div>
+        <span style="font-size: 30px; font-weight: 800; letter-spacing: -0.01em">{{iv.name}}</span>
+      </div>
+
+      <sc-if value="{{iv.hasLinked}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 16px; padding: 2px 12px 2px 14px; display: flex; flex-direction: column">
+          <sc-for list="{{iv.linked}}" as="t" hint-placeholder-count="1">
+            <div style="display: flex; align-items: center; gap: 8px; min-height: 48px; {{t.sep}}">
+              <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 600">{{t.text}}</span>
+              <button onClick="{{t.yes}}" aria-label="{{t.yesAria}}" aria-pressed="{{t.yesP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.yesStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M5 12l5 5 9-10"></path></svg></button>
+              <button onClick="{{t.no}}" aria-label="{{t.noAria}}" aria-pressed="{{t.noP}}" style="width: 44px; height: 36px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; {{t.noStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <span style="font-size: 13px; color: #98989F; line-height: 1.35; padding: 0 4px">0 = {{iv.lo}}<br>10 = {{iv.hi}}</span>
+
+      <div style="background: #1C1C1E; border-radius: 16px; overflow: hidden">
+        <button onClick="{{iv.r1.pick}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; text-align: left; padding: 10px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; {{iv.r1.ring}}">
+          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">1</span>
+          <span style="flex: 1; font-size: 15px; font-weight: 600">Today's score</span>
+          <span style="min-width: 72px; text-align: center; font-size: 22px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: #2C2C2E; color: {{iv.r1.col}}">{{iv.r1.disp}}</span>
+        </button>
+        <div style="height: 1px; background: #38383A; margin-left: 48px"></div>
+        <div style="padding: 8px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; box-sizing: border-box">
+          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">2</span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+            <span style="font-size: 14px; font-weight: 600; line-height: 1.25">Today's importance</span>
+            <span style="font-size: 12px; color: #98989F">{{iv.r2.tag}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 180px; flex: none" role="group" aria-label="Today's importance">
+            <sc-for list="{{iv.r2.opts}}" as="o" hint-placeholder-count="3">
+              <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 0; {{o.style}}">{{o.short}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="height: 1px; background: #38383A; margin-left: 48px"></div>
+        <button onClick="{{iv.r4.pick}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; text-align: left; padding: 10px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; {{iv.r4.ring}}">
+          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">3</span>
+          <span style="flex: 1; font-size: 15px; font-weight: 600">Tomorrow's score</span>
+          <span style="min-width: 72px; text-align: center; font-size: 22px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: #2C2C2E; color: {{iv.r4.col}}">{{iv.r4.disp}}</span>
+        </button>
+        <div style="height: 1px; background: #38383A; margin-left: 48px"></div>
+        <div style="padding: 8px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; box-sizing: border-box">
+          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">4</span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+            <span style="font-size: 14px; font-weight: 600; line-height: 1.25">Tomorrow's importance</span>
+            <span style="font-size: 12px; color: #98989F">{{iv.r3.tag}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 180px; flex: none" role="group" aria-label="Tomorrow's importance">
+            <sc-for list="{{iv.r3.opts}}" as="o" hint-placeholder-count="3">
+              <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 0; {{o.style}}">{{o.short}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px">
+        <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+          <button onClick="{{k.pick}}" aria-label="{{k.aria}}" style="height: 44px; border-radius: 12px; border: none; background: #333336; color: #FFFFFF; font-size: 24px; font-weight: 500">{{k.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <button onClick="{{markNA}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: none; background: #2C2C2E; color: #FFFFFF; font-size: 14px; font-weight: 700">N/A for {{iv.activeName}}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{iv.isNote}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; min-height: 44px">
+        <button onClick="{{back}}" style="background: transparent; border: none; color: #409CFF; font-size: 17px; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Plan</button>
+      </div>
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Note</h1>
+      <label for="daynote" style="font-size: 15px; color: #98989F">Optional. Anything worth remembering about {{iv.dateShort}}?</label>
+      <textarea id="daynote" value="{{iv.note}}" onChange="{{onNote}}" placeholder="Write a note…" style="min-height: 180px; border-radius: 16px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 14px; font-size: 17px; resize: none"></textarea>
+      <button onClick="{{save}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Save Day</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{iv.isDone}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">Saved · {{res.date}}</span>
+        <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Your Day</h1>
+      </div>
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Pillar rings">
+            <sc-for list="{{res.rings}}" as="g" hint-placeholder-count="3">
+              <circle cx="75" cy="75" r="{{g.r}}" stroke="{{g.col}}" class="trkB"></circle>
+              <circle cx="75" cy="75" r="{{g.r}}" stroke="{{g.col}}" transform="rotate(-90 75 75)" class="rgB" style="stroke-dasharray: {{g.dash}}"></circle>
+            </sc-for>
+          </svg>
+          <div style="display: flex; flex-direction: column; gap: 10px; flex: 1">
+            <div style="display: flex; align-items: baseline; gap: 8px">
+              <span style="font-size: 38px; font-weight: 800; line-height: 1; color: {{res.b.bg}}">{{res.b.letter}}</span>
+              <span style="font-size: 22px; font-weight: 700">{{res.b.pct}}</span>
+            </div>
+            <sc-for list="{{res.pillars}}" as="p" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column">
+                <span style="font-size: 12px; font-weight: 600; color: #98989F">{{p.name}}</span>
+                <span style="font-size: 17px; font-weight: 700; color: {{p.b.bg}}">{{p.b.pct}} {{p.b.letter}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background: #2C2C2E; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 14px; color: #C7C7CC">{{res.expLine}}</span>
+          <span style="font-size: 16px; font-weight: 800; color: {{res.ed.col}}">{{res.ed.txt}}</span>
+        </div>
+      </div>
+      <sc-if value="{{res.recs.has}}" hint-placeholder-val="{{true}}">
+        <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 15px; font-weight: 700">Needs Attention</span>
+          <sc-for list="{{res.recs.pillars}}" as="p" hint-placeholder-count="1">
+            <div style="font-size: 14px; font-weight: 700; color: #FF6961">{{p}}</div>
+          </sc-for>
+          <sc-for list="{{res.recs.items}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 10px; border-top: 1px solid #38383A">
+              <span style="font-size: 15px; font-weight: 800; min-width: 34px; color: {{r.bg}}">{{r.score}}</span>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+                <sc-if value="{{tipsOn}}" hint-placeholder-val="{{true}}">
+                  <sc-if value="{{r.hasTip}}" hint-placeholder-val="{{true}}">
+                    <span style="font-size: 14px; color: #E5E5EA; line-height: 1.4">{{r.tip}}</span>
+                    <span style="font-size: 12px; color: #98989F; font-style: italic">— {{r.author}}, {{r.work}}</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                      <a href="{{r.url}}" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 600; color: #409CFF; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center">Open source ›</a>
+                      <button onClick="{{r.next}}" style="display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 13px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"></path></svg>New tip</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{r.noTip}}" hint-placeholder-val="{{false}}">
+                    <span style="font-size: 14px; color: #98989F">No new tips for {{r.name}} right now. Check back later.</span>
+                  </sc-if>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{res.tipsOffShow}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 16px; padding: 12px 14px; font-size: 14px; color: #C7C7CC">Connect to the internet to see tips.</div>
+      </sc-if>
+      <sc-if value="{{res.safety}}" hint-placeholder-val="{{false}}">
+        <div style="background: #0A2A4A; border-radius: 16px; padding: 14px; font-size: 14px; line-height: 1.45">Your emotional scores were low today. If this keeps up, it can help to talk with someone you trust or a professional. If you're ever in crisis, call or text <strong>988</strong> (US).</div>
+      </sc-if>
+      <button onClick="{{goCompare}}" style="min-height: 52px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Compare With Last Entry</button>
+      <button onClick="{{goSummary}}" style="min-height: 52px; border-radius: 14px; border: none; background: #1C1C1E; color: #409CFF; font-size: 17px; font-weight: 600">Back to Summary</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<!-- ================= PLANNER ================= -->
+<sc-if value="{{show.planner}}" hint-placeholder-val="{{false}}">
+<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{pl.kicker}}</span>
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Planner</h1>
+      <button onClick="{{openAdd}}" aria-label="Add to-do" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+    </div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #1C1C1E; border-radius: 10px; padding: 2px" role="group" aria-label="Day or week">
+    <button onClick="{{pl.toDay}}" style="min-height: 34px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; {{pl.dayStyle}}">Day</button>
+    <button onClick="{{pl.toWeek}}" style="min-height: 34px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; {{pl.weekStyle}}">Week</button>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button onClick="{{pl.prev}}" aria-label="Previous" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+    <div style="display: flex; flex-direction: column; align-items: center">
+      <span style="font-size: 17px; font-weight: 700">{{pl.title}}</span>
+      <span style="font-size: 12px; color: #98989F">{{pl.count}}</span>
+    </div>
+    <button onClick="{{pl.next}}" aria-label="Next" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+  </div>
+
+  <sc-if value="{{pl.isDay}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <button onClick="{{pl.ci.go}}" style="background: #1C1C1E; border: none; border-radius: 20px; padding: 12px 16px; color: #FFFFFF; display: flex; align-items: center; gap: 12px; text-align: left; min-height: 60px">
+        <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+          <sc-for list="{{pl.ci.rings}}" as="g" hint-placeholder-count="3">
+            <circle cx="20" cy="20" r="{{g.r}}" stroke="{{g.col}}" class="trkS"></circle>
+            <circle cx="20" cy="20" r="{{g.r}}" stroke="{{g.col}}" transform="rotate(-90 20 20)" class="rgS" style="stroke-dasharray: {{g.dash}}"></circle>
+          </sc-for>
+        </svg>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 700">{{pl.ci.title}}</span>
+          <span style="font-size: 13px; color: #98989F">{{pl.ci.sub}}</span>
+        </div>
+        <span style="font-size: 15px; font-weight: 700; color: {{pl.ci.col}}">{{pl.ci.action}}</span>
+      </button>
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
+        <span style="font-size: 15px; font-weight: 700; padding: 8px 0">{{pl.dayHead}}</span>
+        <sc-if value="{{pl.dayEmpty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 8px 0 10px; border-top: 1px solid #38383A">No tasks yet. Add one above.</span></sc-if>
+        <sc-for list="{{pl.dayTasks}}" as="t" hint-placeholder-count="4">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #38383A">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+            </div>
+            <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
+        <span style="font-size: 15px; font-weight: 700; padding: 8px 0">This Week</span>
+        <sc-for list="{{pl.weekTasks}}" as="t" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #38383A">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+            </div>
+            <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pl.isWeek}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
+        <span style="font-size: 15px; font-weight: 700; padding: 8px 0">Anytime This Week</span>
+        <sc-for list="{{pl.weekTasks}}" as="t" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #38383A">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+            </div>
+            <button onClick="{{t.del}}" aria-label="Delete task" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+      <sc-for list="{{pl.weekDays}}" as="d" hint-placeholder-count="7">
+        <div style="background: #1C1C1E; border-radius: 20px; padding: 4px 16px 6px; display: flex; flex-direction: column">
+          <button onClick="{{d.open}}" style="background: transparent; border: none; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 8px 0; min-height: 44px; text-align: left">
+            <span style="font-size: 15px; font-weight: 700; color: {{d.col}}">{{d.label}}</span>
+            <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; color: #98989F">{{d.count}}<svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+          </button>
+          <sc-for list="{{d.tasks}}" as="t" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 2px 0; border-top: 1px solid #38383A">
+              <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 40px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+                <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 20px; height: 20px; border-radius: 10px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="12" height="12" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+                <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 17px; height: 17px; border-radius: 10px; border: 2px solid #636366"></span></sc-if>
+              </button>
+              <span style="flex: 1; font-size: 14px; {{t.textStyle}}">{{t.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Tap + to add a to-do for any day. Unfinished daily to-dos carry over to the next day, and linked ones show up on that factor's check-in page.</span>
+</div>
+</sc-if>
+
+<!-- ================= SETTINGS ================= -->
+<sc-if value="{{show.settings}}" hint-placeholder-val="{{false}}">
+<div style="padding: 10px 16px 28px; display: flex; flex-direction: column; gap: 8px">
+  <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px">
+    <button onClick="{{goSummary}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Summary</button>
+    <span style="font-size: 17px; font-weight: 700">Settings</span>
+    <button onClick="{{st.save}}" style="justify-self: end; background: transparent; border: none; font-size: 17px; font-weight: 700; min-height: 44px; padding: 0; color: {{st.saveCol}}">Save</button>
+  </div>
+  <sc-if value="{{st.hasMsg}}" hint-placeholder-val="{{false}}"><div style="background: #1C1C1E; border-radius: 12px; padding: 10px 14px; font-size: 14px; color: {{st.msgCol}}">{{st.msg}}</div></sc-if>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Pillar Weights</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+    <sc-for list="{{st.weights}}" as="w" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; {{w.sep}}">
+        <span style="flex: 1; font-size: 16px">{{w.name}}</span>
+        <button onClick="{{w.dec}}" aria-label="{{w.decAria}}" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #409CFF; font-size: 20px; font-weight: 700">−</button>
+        <span style="min-width: 52px; text-align: center; font-size: 17px; font-weight: 700">{{w.val}}%</span>
+        <button onClick="{{w.inc}}" aria-label="{{w.incAria}}" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #409CFF; font-size: 20px; font-weight: 700">+</button>
+      </div>
+    </sc-for>
+  </div>
+  <span style="font-size: 13px; padding: 0 16px; color: {{st.wCol}}">{{st.wNote}}</span>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">This Week's Focus · pick 3</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <sc-for list="{{st.focus}}" as="f" hint-placeholder-count="15">
+      <button onClick="{{f.pick}}" aria-pressed="{{f.selStr}}" style="min-height: 40px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; padding: 0 6px; {{f.style}}">{{f.name}}</button>
+    </sc-for>
+  </div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Factors · name and default importance</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+    <sc-for list="{{st.factors}}" as="f" hint-placeholder-count="15">
+      <div style="display: flex; align-items: center; gap: 8px; min-height: 52px; {{f.sep}}">
+        <label for="{{f.inputId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{f.label}}</label>
+        <input id="{{f.inputId}}" type="text" value="{{f.name}}" onChange="{{f.onName}}" style="flex: 1; min-width: 0; min-height: 36px; border: none; border-radius: 8px; background: #2C2C2E; color: #FFFFFF; padding: 0 10px; font-size: 15px">
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 120px" role="group" aria-label="{{f.label}} default importance">
+          <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
+            <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 32px; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; {{o.style}}">{{o.short}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Reminder</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; color: #C7C7CC">Home-screen apps can't set alarms by themselves. In the iPhone <strong style="color: #FFFFFF">Reminders</strong> app, add "Better Days check-in," tap ⓘ, turn on <strong style="color: #FFFFFF">Time</strong> and set <strong style="color: #FFFFFF">Repeat: Daily</strong>.</div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Tip Sources · need internet</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+    <sc-for list="{{st.sources}}" as="x" hint-placeholder-count="15">
+      <div style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; {{x.sep}}">
+        <span style="font-size: 15px; font-weight: 600">{{x.name}}</span>
+        <span style="font-size: 13px; color: #98989F; text-align: right">{{x.authors}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Change History</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+    <sc-for list="{{st.hist}}" as="h" hint-placeholder-count="3">
+      <div style="display: flex; gap: 12px; padding: 10px 0; {{h.sep}}">
+        <span style="font-size: 13px; color: #98989F; min-width: 46px">{{h.date}}</span>
+        <span style="font-size: 14px">{{h.txt}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Data</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+    <button onClick="{{st.makeCsv}}" style="width: 100%; min-height: 52px; background: transparent; border: none; color: #409CFF; font-size: 16px; text-align: left; padding: 0">Export CSV</button>
+    <sc-if value="{{st.hasCsv}}" hint-placeholder-val="{{false}}">
+      <a href="{{st.csv}}" download="day-score-export.csv" style="display: flex; align-items: center; min-height: 44px; border-top: 1px solid #38383A; color: #30D158; font-size: 15px; font-weight: 600; text-decoration: none">Download day-score-export.csv ›</a>
+    </sc-if>
+    <button onClick="{{st.del}}" style="width: 100%; min-height: 52px; background: transparent; border: none; border-top: 1px solid #38383A; color: #FF6961; font-size: 16px; text-align: left; padding: 0">{{st.delLabel}}</button>
+  </div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Setup</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+    <button onClick="{{runSetup}}" style="width: 100%; min-height: 52px; background: transparent; border: none; color: #409CFF; font-size: 16px; text-align: left; padding: 0">Run Setup Again</button>
+  </div>
+
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">About</span>
+  <div style="background: #1C1C1E; border-radius: 16px; padding: 12px 14px; font-size: 14px; line-height: 1.45; color: #C7C7CC">Everything works offline and is saved only on this phone. Tips need an internet connection. Export a CSV now and then as a backup. If you're ever in crisis, call or text <strong style="color: #FFFFFF">988</strong> (US).</div>
+</div>
+</sc-if>
+
+<!-- ================= COMPARE ================= -->
+<sc-if value="{{show.compare}}" hint-placeholder-val="{{false}}">
+<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{cmp.title}}</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Compare</h1>
+  </div>
+
+  <sc-if value="{{notTwo}}" hint-placeholder-val="{{false}}">
+    <div style="background: #1C1C1E; border-radius: 20px; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 17px; font-weight: 700">Nothing to compare yet</span>
+      <span style="font-size: 15px; color: #C7C7CC; line-height: 1.45">Compare shows your latest check-in next to the one before it. It fills in after your second check-in.</span>
+      <button onClick="{{goInput}}" style="min-height: 50px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Go to Check-in</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{hasTwo}}" hint-placeholder-val="{{true}}">
+  <div style="display: flex; flex-direction: column; gap: 12px">
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.9fr; gap: 6px; font-size: 12px; font-weight: 600; color: #98989F">
+      <span></span><span>{{cmp.thenShort}}</span><span>{{cmp.nowShort}}</span><span>Change</span>
+    </div>
+    <sc-for list="{{cmp.top}}" as="t" hint-placeholder-count="4">
+      <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.9fr; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid #38383A">
+        <span style="font-size: 15px; font-weight: {{t.weight}}">{{t.name}}</span>
+        <span style="font-size: 15px; font-weight: 700; color: {{t.a.bg}}">{{t.a.pct}} {{t.a.letter}}</span>
+        <span style="font-size: 15px; font-weight: 800; color: {{t.b.bg}}">{{t.b.pct}} {{t.b.letter}}</span>
+        <span style="font-size: 14px; font-weight: 800; color: {{t.d.col}}">{{t.d.txt}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+    <span style="font-size: 15px; font-weight: 700">Expected vs. Actual · {{cmp.nowShort}}</span>
+    <span style="font-size: 14px; color: #C7C7CC">{{cmp.expLine}}</span>
+    <span style="font-size: 16px; font-weight: 800; color: {{cmp.ed.col}}">{{cmp.ed.txt}}</span>
+  </div>
+
+  <sc-for list="{{cmp.groups}}" as="g" hint-placeholder-count="3">
+    <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 15px; font-weight: 700">{{g.name}}</span>
+      <div style="display: grid; grid-template-columns: 1.5fr 0.7fr 0.7fr 0.9fr 0.9fr; gap: 4px; font-size: 11px; font-weight: 600; color: #98989F">
+        <span>Factor</span><span>Then</span><span>Now</span><span>Change</span><span>Imp.</span>
+      </div>
+      <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="5">
+        <div style="display: grid; grid-template-columns: 1.5fr 0.7fr 0.7fr 0.9fr 0.9fr; gap: 4px; align-items: center; font-size: 14px; padding: 6px 0; border-top: 1px solid #38383A">
+          <span style="font-weight: 600">{{r.name}}</span>
+          <span style="color: #C7C7CC">{{r.a}}</span>
+          <span style="font-weight: 700">{{r.b}}</span>
+          <span style="font-weight: 800; color: {{r.d.col}}">{{r.d.txt}}</span>
+          <span style="font-size: 12px; color: #98989F">{{r.imp}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 15px; font-weight: 700">Notes</span>
+    <span style="font-size: 14px; color: #C7C7CC"><strong style="color: #FFFFFF">{{cmp.thenShort}}:</strong> {{cmp.noteThen}}</span>
+    <span style="font-size: 14px; color: #C7C7CC"><strong style="color: #FFFFFF">{{cmp.nowShort}}:</strong> {{cmp.noteNow}}</span>
+  </div>
+  </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<!-- ================= HISTORY ================= -->
+<sc-if value="{{show.history}}" hint-placeholder-val="{{false}}">
+<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{cal.count}}</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">History</h1>
+  </div>
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <button onClick="{{prevMonth}}" aria-label="Previous month" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+      <span style="font-size: 17px; font-weight: 700">{{cal.title}}</span>
+      <button onClick="{{nextMonth}}" aria-label="Next month" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; font-size: 12px; font-weight: 600; color: #98989F; text-align: center">
+      <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{cal.cells}}" as="c" hint-placeholder-count="35">
+        <sc-if value="{{c.blank}}" hint-placeholder-val="{{false}}">
+          <div style="height: 46px"></div>
+        </sc-if>
+        <sc-if value="{{c.real}}" hint-placeholder-val="{{true}}">
+          <button onClick="{{c.pick}}" aria-label="{{c.aria}}" style="height: 46px; border-radius: 23px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 15px; font-weight: 700; padding: 0; {{c.style}}">
+            <span>{{c.num}}</span>
+            <sc-if value="{{c.isLogged}}" hint-placeholder-val="{{false}}"><svg width="11" height="11" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
+            <sc-if value="{{c.isMissed}}" hint-placeholder-val="{{false}}"><svg width="11" height="11" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></sc-if>
+          </button>
+        </sc-if>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #C7C7CC; padding-top: 4px">
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 6px; background: #1E7B3A"></span>Logged</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 6px; background: #C4161C"></span>Missed</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 6px; border: 2px solid #409CFF"></span>Today</span>
+    </div>
+  </div>
+  <span style="font-size: 13px; color: #98989F; text-align: center">Tap any day to see what you entered.</span>
+</div>
+</sc-if>
+
+</div>
+
+<!-- ================= TAB BAR ================= -->
+<sc-if value="{{showTabs}}" hint-placeholder-val="{{true}}">
+<nav style="height: calc(56px + env(safe-area-inset-bottom)); flex: none; background: #121214; border-top: 1px solid #2C2C2E; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box" aria-label="Pages">
+  <button onClick="{{goSummary}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.summary}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle></svg>Summary</button>
+  <button onClick="{{goInput}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.input}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Check-in</button>
+  <button onClick="{{goPlanner}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.planner}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"></path></svg>Planner</button>
+  <button onClick="{{goCompare}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.compare}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"></path></svg>Compare</button>
+  <button onClick="{{goHistory}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.history}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>History</button>
+</nav>
+</sc-if>
+
+<!-- ================= ADD TO-DO SHEET ================= -->
+<sc-if value="{{ad.open}}" hint-placeholder-val="{{false}}">
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: flex-end">
+    <div style="background: #1C1C1E; border-radius: 22px 22px 0 0; padding: 8px 16px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px">
+      <div style="width: 36px; height: 5px; border-radius: 3px; background: #48484A; align-self: center"></div>
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center">
+        <button onClick="{{ad.cancel}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; min-height: 44px; padding: 0">Cancel</button>
+        <span style="font-size: 17px; font-weight: 700">New To-Do</span>
+        <button onClick="{{ad.submit}}" style="justify-self: end; background: transparent; border: none; font-size: 17px; font-weight: 700; min-height: 44px; padding: 0; color: {{ad.addCol}}">Add</button>
+      </div>
+      <label for="addtext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">To-do</label>
+      <input id="addtext" type="text" value="{{ad.text}}" onChange="{{ad.onText}}" onKeyDown="{{ad.onKey}}" placeholder="What do you need to do?" style="min-height: 48px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 14px; font-size: 17px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <button onClick="{{ad.prevWk}}" aria-label="Previous week" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+        <span style="font-size: 14px; font-weight: 600; color: #C7C7CC">{{ad.wkLabel}}</span>
+        <button onClick="{{ad.nextWk}}" aria-label="Next week" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px" role="group" aria-label="Day">
+        <sc-for list="{{ad.chips}}" as="c" hint-placeholder-count="8">
+          <button onClick="{{c.pick}}" aria-pressed="{{c.selStr}}" aria-label="{{c.aria}}" style="min-height: 48px; border-radius: 12px; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0; {{c.style}}">
+            <span style="font-size: 12px; font-weight: 700">{{c.top}}</span>
+            <span style="font-size: 11px; font-weight: 600; opacity: 0.85">{{c.sub}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; min-height: 44px; border-top: 1px solid #38383A; padding-top: 6px">
+        <label for="addtag" style="flex: 1; font-size: 15px">Link to factor</label>
+        <select id="addtag" value="{{ad.factor}}" onChange="{{ad.onFactor}}" style="min-height: 36px; border-radius: 8px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 8px; font-size: 14px; font-weight: 600">
+          <sc-for list="{{tagOpts}}" as="o" hint-placeholder-count="16"><option value="{{o.id}}">{{o.name}}</option></sc-for>
+        </select>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ================= SETUP ================= -->
+<sc-if value="{{su.open}}" hint-placeholder-val="{{false}}">
+  <div style="position: absolute; inset: 0; background: #000000; display: flex; flex-direction: column">
+    <div style="padding: calc(12px + env(safe-area-inset-top)) 16px 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px">
+        <button onClick="{{su.back}}" style="background: transparent; border: none; color: #409CFF; font-size: 17px; min-height: 44px; padding: 0">{{su.backLabel}}</button>
+        <span style="font-size: 13px; font-weight: 600; color: #98989F">Step {{su.num}} of 6</span>
+      </div>
+      <div style="height: 4px; background: #2C2C2E; border-radius: 2px; overflow: hidden"><div style="height: 4px; background: #409CFF; width: {{su.prog}}%"></div></div>
+    </div>
+    <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.02em">{{su.title}}</h1>
+      <span style="font-size: 16px; color: #C7C7CC; line-height: 1.45">{{su.body}}</span>
+
+      <sc-if value="{{su.isWeights}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+            <sc-for list="{{st.weights}}" as="w" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 56px; {{w.sep}}">
+                <span style="flex: 1; font-size: 17px">{{w.name}}</span>
+                <button onClick="{{w.dec}}" aria-label="{{w.decAria}}" style="width: 40px; height: 40px; border-radius: 20px; border: none; background: #2C2C2E; color: #409CFF; font-size: 22px; font-weight: 700">−</button>
+                <span style="min-width: 56px; text-align: center; font-size: 19px; font-weight: 800">{{w.val}}%</span>
+                <button onClick="{{w.inc}}" aria-label="{{w.incAria}}" style="width: 40px; height: 40px; border-radius: 20px; border: none; background: #2C2C2E; color: #409CFF; font-size: 22px; font-weight: 700">+</button>
+              </div>
+            </sc-for>
+          </div>
+          <span style="font-size: 14px; padding: 0 4px; color: {{st.wCol}}">{{st.wNote}}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{su.isImp}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
+          <sc-for list="{{st.factors}}" as="f" hint-placeholder-count="15">
+            <div style="display: flex; align-items: center; gap: 8px; min-height: 50px; {{f.sep}}">
+              <span style="flex: 1; font-size: 15px; font-weight: 600">{{f.name}}</span>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 150px" role="group" aria-label="{{f.label}} default importance">
+                <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 32px; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; {{o.style}}">{{o.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{su.isFocus}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 16px; padding: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{st.focus}}" as="f" hint-placeholder-count="15">
+            <button onClick="{{f.pick}}" aria-pressed="{{f.selStr}}" style="min-height: 44px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; padding: 0 6px; {{f.style}}">{{f.name}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{su.isRem}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; color: #C7C7CC">Home-screen apps can't set alarms by themselves. In the iPhone <strong style="color: #FFFFFF">Reminders</strong> app, add "Better Days check-in," tap ⓘ, turn on <strong style="color: #FFFFFF">Time</strong> and set <strong style="color: #FFFFFF">Repeat: Daily</strong>.</div>
+      </sc-if>
+    </div>
+    <div style="padding: 0 16px calc(16px + env(safe-area-inset-bottom))">
+      <button onClick="{{su.next}}" style="width: 100%; min-height: 54px; border-radius: 14px; border: none; font-size: 17px; font-weight: 700; {{su.nextStyle}}">{{su.nextLabel}}</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ================= DAY SHEET ================= -->
+<sc-if value="{{sheet.open}}" hint-placeholder-val="{{false}}">
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: flex-end">
+    <div style="background: #1C1C1E; border-radius: 22px 22px 0 0; max-height: 88%; overflow-y: auto; padding: 8px 16px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px">
+      <div style="width: 36px; height: 5px; border-radius: 3px; background: #48484A; align-self: center"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 22px; font-weight: 800">{{sheet.date}}</span>
+          <span style="font-size: 13px; color: #98989F">{{sheet.edited}}</span>
+        </div>
+        <button onClick="{{closeSheet}}" aria-label="Close" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #2C2C2E; color: #C7C7CC; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+
+      <sc-if value="{{sheet.logged}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <svg width="110" height="110" viewBox="0 0 150 150" role="img" aria-label="Pillar rings">
+              <sc-for list="{{sheet.rings}}" as="g" hint-placeholder-count="3">
+                <circle cx="75" cy="75" r="{{g.r}}" stroke="{{g.col}}" class="trkB"></circle>
+                <circle cx="75" cy="75" r="{{g.r}}" stroke="{{g.col}}" transform="rotate(-90 75 75)" class="rgB" style="stroke-dasharray: {{g.dash}}"></circle>
+              </sc-for>
+            </svg>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <div style="display: flex; align-items: baseline; gap: 8px">
+                <span style="font-size: 32px; font-weight: 800; line-height: 1; color: {{sheet.b.bg}}">{{sheet.b.letter}}</span>
+                <span style="font-size: 20px; font-weight: 700">{{sheet.b.pct}}</span>
+              </div>
+              <span style="font-size: 13px; color: #98989F">{{sheet.expLine}}</span>
+              <span style="font-size: 13px; font-weight: 700; color: {{sheet.ed.col}}">{{sheet.ed.txt}}</span>
+            </div>
+          </div>
+          <sc-for list="{{sheet.groups}}" as="g" hint-placeholder-count="3">
+            <div style="background: #2C2C2E; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px">
+                <span style="font-size: 15px; font-weight: 700">{{g.name}}</span>
+                <span style="font-size: 15px; font-weight: 800; color: {{g.b.bg}}">{{g.b.pct}} {{g.b.letter}}</span>
+              </div>
+              <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="5">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; border-top: 1px solid #3A3A3C">
+                  <span><span style="font-weight: 600">{{r.name}}</span> <span style="color: #98989F">{{r.imp}}</span></span>
+                  <span style="font-weight: 700">{{r.score}} <span style="color: #98989F; font-weight: 500">exp {{r.exp}}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="background: #2C2C2E; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px">
+              <span style="font-size: 15px; font-weight: 700">To-dos</span>
+              <span style="font-size: 13px; color: #98989F">{{sheet.taskCount}}</span>
+            </div>
+            <sc-for list="{{sheet.tasks}}" as="t" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 5px 0; border-top: 1px solid #3A3A3C">
+                <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 18px; height: 18px; border-radius: 9px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF; flex: none"><svg width="11" height="11" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+                <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 15px; height: 15px; border-radius: 9px; border: 2px solid #636366; flex: none"></span></sc-if>
+                <div style="display: flex; flex-direction: column; min-width: 0">
+                  <span style="{{t.textStyle}}">{{t.text}}</span>
+                  <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background: #2C2C2E; border-radius: 14px; padding: 12px; font-size: 14px; line-height: 1.45; color: #C7C7CC"><strong style="color: #FFFFFF">Note:</strong> {{sheet.note}}</div>
+          <button onClick="{{sheet.edit}}" style="min-height: 50px; border-radius: 14px; border: none; background: #2C2C2E; color: #409CFF; font-size: 17px; font-weight: 600">Edit This Day</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sheet.missed}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <span style="font-size: 15px; color: #C7C7CC">No check-in for this day. Missed days are left out of your averages and graphs.</span>
+          <button onClick="{{sheet.edit}}" style="min-height: 50px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Fill In This Day</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+</div>
+</template>
+<script>// Minimal template runtime for Better Days.
+// Reads the app's HTML template ({{holes}}, <sc-if>, <sc-for>) and keeps the screen in sync
+// with the app's state using a small virtual-DOM patcher. No libraries, works offline.
+(function () {
+  'use strict';
+
+  // ---------- compile the template ----------
+  function compile(node) {
+    if (node.nodeType === 3) {
+      const t = node.nodeValue;
+      if (!t.trim() && !/\S/.test(t)) return t.includes('\n') ? null : { k: 'text', parts: parseParts(t) };
+      return { k: 'text', parts: parseParts(t) };
+    }
+    if (node.nodeType !== 1) return null;
+    const tag = node.localName;
+    const kids = [];
+    const src = node.content ? node.content.childNodes : node.childNodes;
+    for (let i = 0; i < src.length; i++) { const c = compile(src[i]); if (c) kids.push(c); }
+    if (tag === 'sc-if') return { k: 'if', cond: parseParts(node.getAttribute('value') || ''), kids: kids };
+    if (tag === 'sc-for') return { k: 'for', list: parseParts(node.getAttribute('list') || ''), as: node.getAttribute('as') || 'item', kids: kids };
+    const attrs = [];
+    for (let i = 0; i < node.attributes.length; i++) {
+      const a = node.attributes[i];
+      if (a.name.indexOf('hint-') === 0) continue;
+      attrs.push({ name: a.name, parts: parseParts(a.value) });
+    }
+    return { k: 'el', tag: tag, ns: node.namespaceURI, attrs: attrs, kids: kids };
+  }
+  function parseParts(s) {
+    const out = []; const re = /\{\{\s*([^}]+?)\s*\}\}/g; let last = 0, m;
+    while ((m = re.exec(s))) { if (m.index > last) out.push(s.slice(last, m.index)); out.push({ p: m[1] }); last = re.lastIndex; }
+    if (last < s.length) out.push(s.slice(last));
+    return out;
+  }
+  function lookup(path, scope) {
+    if (path === 'true') return true; if (path === 'false') return false;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return parseFloat(path);
+    const segs = path.split('.'); let v;
+    for (let i = scope.length - 1; i >= 0; i--) { if (scope[i] && Object.prototype.hasOwnProperty.call(scope[i], segs[0])) { v = scope[i][segs[0]]; break; } }
+    for (let j = 1; j < segs.length && v != null; j++) v = v[segs[j]];
+    return v;
+  }
+  function evalParts(parts, scope) {
+    if (parts.length === 1 && typeof parts[0] === 'object') return lookup(parts[0].p, scope);
+    let s = '';
+    for (let i = 0; i < parts.length; i++) { const p = parts[i]; if (typeof p === 'string') s += p; else { const v = lookup(p.p, scope); s += v == null ? '' : v; } }
+    return s;
+  }
+
+  // ---------- template -> virtual nodes ----------
+  function build(tnodes, scope, out) {
+    for (let i = 0; i < tnodes.length; i++) {
+      const t = tnodes[i];
+      if (t.k === 'text') { out.push({ text: String(evalParts(t.parts, scope) == null ? '' : evalParts(t.parts, scope)) }); }
+      else if (t.k === 'if') { if (evalParts(t.cond, scope)) build(t.kids, scope, out); }
+      else if (t.k === 'for') {
+        const list = evalParts(t.list, scope) || [];
+        for (let j = 0; j < list.length; j++) { const o = {}; o[t.as] = list[j]; o.$index = j; build(t.kids, scope.concat([o]), out); }
+      } else {
+        const v = { tag: t.tag, ns: t.ns, attrs: {}, ev: {}, kids: [] };
+        for (let j = 0; j < t.attrs.length; j++) {
+          const a = t.attrs[j]; const val = evalParts(a.parts, scope);
+          if (a.name.indexOf('on') === 0 && a.name.length > 2) { if (typeof val === 'function') v.ev[eventName(a.name, t)] = val; }
+          else v.attrs[a.name] = val;
+        }
+        build(t.kids, scope, v.kids);
+        out.push(v);
+      }
+    }
+    return out;
+  }
+  function eventName(attr, t) {
+    const n = attr.slice(2).toLowerCase();
+    if (n === 'change') {
+      const typeAttr = t.attrs.filter(function (a) { return a.name === 'type'; })[0];
+      const type = typeAttr ? typeAttr.parts.join('') : '';
+      if (t.tag === 'textarea' || (t.tag === 'input' && (type === 'text' || type === ''))) return 'input';
+    }
+    return n;
+  }
+
+  // ---------- patch the real DOM ----------
+  function create(v) {
+    if (v.text != null) return document.createTextNode(v.text);
+    const el = v.ns && v.ns !== 'http://www.w3.org/1999/xhtml' ? document.createElementNS(v.ns, v.tag) : document.createElement(v.tag);
+    el.__ev = {};
+    updateProps(el, {}, v);
+    for (let i = 0; i < v.kids.length; i++) el.appendChild(create(v.kids[i]));
+    setValue(el, v);
+    el.__v = v;
+    return el;
+  }
+  function updateProps(el, oldA, v) {
+    const na = v.attrs;
+    for (const k in oldA) if (!(k in na)) { if (k !== 'value') el.removeAttribute(k); }
+    for (const k in na) {
+      const val = na[k];
+      if (k === 'value') continue;
+      if (val === false || val == null) { if (el.hasAttribute(k)) el.removeAttribute(k); continue; }
+      const s = val === true ? '' : String(val);
+      if (el.getAttribute(k) !== s) el.setAttribute(k, s);
+    }
+    const oldEv = el.__ev || {}; el.__ev = el.__ev || {};
+    for (const e in oldEv) if (!v.ev[e]) { el.removeEventListener(e, oldEv[e].l); delete el.__ev[e]; }
+    for (const e in v.ev) {
+      if (el.__ev[e]) { el.__ev[e].fn = v.ev[e]; continue; }
+      const rec = { fn: v.ev[e] }; rec.l = function (ev) { rec.fn(ev); };
+      el.addEventListener(e, rec.l); el.__ev[e] = rec;
+    }
+  }
+  function setValue(el, v) {
+    if (!('value' in v.attrs)) return;
+    const val = v.attrs.value == null ? '' : String(v.attrs.value);
+    if (el.value !== val) el.value = val;
+  }
+  function patch(parent, oldKids, newKids) {
+    const nodes = parent.childNodes;
+    for (let i = 0; i < newKids.length; i++) {
+      const nv = newKids[i], ov = oldKids[i], node = nodes[i];
+      if (!ov || !node) { parent.appendChild(create(nv)); continue; }
+      const sameText = nv.text != null && ov.text != null;
+      if (sameText) { if (node.nodeValue !== nv.text) node.nodeValue = nv.text; continue; }
+      if (nv.text != null || ov.text != null || nv.tag !== ov.tag) { parent.replaceChild(create(nv), node); continue; }
+      updateProps(node, ov.attrs, nv);
+      patch(node, ov.kids, nv.kids);
+      setValue(node, nv);
+      node.__v = nv;
+    }
+    while (parent.childNodes.length > newKids.length) parent.removeChild(parent.lastChild);
+  }
+
+  // ---------- component shim (same API the app logic uses) ----------
+  window.DCLogic = class DCLogic {
+    constructor(props) { this.props = props || {}; this.state = {}; }
+    setState(p) {
+      const upd = typeof p === 'function' ? p(this.state) : p;
+      this.state = Object.assign({}, this.state, upd);
+      if (this.__mount) this.__mount.schedule();
+    }
+    forceUpdate() { if (this.__mount) this.__mount.schedule(); }
+  };
+
+  window.mountApp = function (Comp, templateEl, root, afterRender) {
+    const tree = []; const src = templateEl.content.childNodes;
+    for (let i = 0; i < src.length; i++) { const c = compile(src[i]); if (c) tree.push(c); }
+    const inst = new Comp({});
+    let old = []; let queued = false;
+    const m = {
+      schedule: function () { if (queued) return; queued = true; Promise.resolve().then(m.render); },
+      render: function () {
+        queued = false;
+        const vals = inst.renderVals();
+        const nv = build(tree, [vals], []);
+        patch(root, old, nv); old = nv;
+        if (afterRender) afterRender(inst);
+      }
+    };
+    inst.__mount = m;
+    m.render();
+    if (inst.componentDidMount) inst.componentDidMount();
+    return inst;
+  };
+})();
+</script>
+<script>
+function localToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+let TODAY = localToday();
+// Saved app data lives on the phone (localStorage). Nothing is sent anywhere.
+const STORE_KEY = 'dayscore.v1';
+function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+const SAVED = loadStore();
+let START = (SAVED && SAVED.start) || TODAY;
+const FACTORS = [
+  { id: 'sleep', name: 'Sleep', p: 'physical', lo: 'barely slept or very poor sleep', hi: 'full, restful night' },
+  { id: 'exercise', name: 'Exercise', p: 'physical', lo: 'sedentary all day', hi: 'did the planned workout or very active' },
+  { id: 'nutrition', name: 'Nutrition', p: 'physical', lo: 'mostly junk or skipped meals', hi: 'balanced, on-plan eating' },
+  { id: 'hydration', name: 'Hydration', p: 'physical', lo: 'barely drank water', hi: 'hit your water goal' },
+  { id: 'energy', name: 'Body / Energy', p: 'physical', lo: 'sick, in pain or exhausted', hi: 'felt strong and energized' },
+  { id: 'mood', name: 'Mood', p: 'emotional', lo: 'low or down all day', hi: 'upbeat and positive' },
+  { id: 'stress', name: 'Stress', p: 'emotional', lo: 'overwhelmed', hi: 'calm and in control' },
+  { id: 'connection', name: 'Connection', p: 'emotional', lo: 'isolated, or conflict with people', hi: 'meaningful time with others' },
+  { id: 'purpose', name: 'Purpose', p: 'emotional', lo: 'felt wasted or aimless', hi: 'did what mattered to you' },
+  { id: 'rest', name: 'Mental Rest', p: 'emotional', lo: 'no downtime at all', hi: 'recharged with a hobby, quiet time or reflection' },
+  { id: 'spending', name: 'Spending', p: 'financial', lo: 'impulsive or well over plan', hi: 'stayed within plan' },
+  { id: 'saving', name: 'Saving', p: 'financial', lo: 'pulled from savings', hi: 'moved money toward goals' },
+  { id: 'earning', name: 'Earning / Work', p: 'financial', lo: 'unproductive or lost income', hi: 'strong work day or income progress' },
+  { id: 'obligations', name: 'Obligations', p: 'financial', lo: 'missed a bill or added debt', hi: 'everything on track or paid down' },
+  { id: 'awareness', name: 'Awareness', p: 'financial', lo: 'no idea where money stands', hi: 'checked accounts, tracked or planned' }
+];
+const PILLARS = [
+  { id: 'physical', name: 'Physical', w: 40 },
+  { id: 'emotional', name: 'Emotional', w: 35 },
+  { id: 'financial', name: 'Financial', w: 25 }
+];
+const FOCUS = (SAVED && SAVED.focus0) || ['sleep', 'exercise', 'saving'];
+const IW = { H: 3, M: 2, L: 1 };
+const INAME = { H: 'High', M: 'Medium', L: 'Low' };
+const DEF_IMP = { sleep: 'H', exercise: 'H', nutrition: 'M', hydration: 'L', energy: 'M', mood: 'H', stress: 'H', connection: 'M', purpose: 'M', rest: 'L', spending: 'H', saving: 'M', earning: 'H', obligations: 'M', awareness: 'L' };
+const BASE = { sleep: 6.0, exercise: 6.2, nutrition: 6.0, hydration: 7.0, energy: 6.6, mood: 6.9, stress: 5.9, connection: 6.7, purpose: 6.9, rest: 5.7, spending: 7.0, saving: 6.2, earning: 7.4, obligations: 8.4, awareness: 5.9 };
+// Sample of what the live tip feed returns. In the real app these load only when online,
+// skip anything already seen, and stay on the factor's topic. Listed in the order they'd be shown.
+const SRC = {
+  hub: { author: 'Andrew Huberman', work: 'Huberman Lab', url: 'https://www.hubermanlab.com' },
+  burns: { author: 'David D. Burns', work: 'Feeling Good', url: 'https://feelinggood.com' },
+  neff: { author: 'Kristin Neff', work: 'Self-Compassion', url: 'https://self-compassion.org' },
+  nag: { author: 'Emily & Amelia Nagoski', work: 'Burnout', url: 'https://www.emilynagoski.com' },
+  mcg: { author: 'Kelly McGonigal', work: 'The Upside of Stress', url: 'https://kellymcgonigal.com' },
+  wal: { author: 'Robert Waldinger & Marc Schulz', work: 'The Good Life', url: 'https://www.lifespanresearch.org' },
+  frankl: { author: 'Viktor Frankl', work: 'Man’s Search for Meaning', url: 'https://www.viktorfrankl.org' },
+  pang: { author: 'Alex Soojung-Kim Pang', work: 'Rest', url: 'https://www.hachettebookgroup.com/titles/alex-soojung-kim-pang/rest/9781541604834/' },
+  newport: { author: 'Cal Newport', work: 'Digital Minimalism', url: 'https://calnewport.com' },
+  sethi: { author: 'Ramit Sethi', work: 'I Will Teach You to Be Rich', url: 'https://www.iwillteachyoutoberich.com' },
+  collins: { author: 'JL Collins', work: 'The Simple Path to Wealth', url: 'https://jlcollinsnh.com' },
+  ramsey: { author: 'Dave Ramsey', work: 'The Total Money Makeover', url: 'https://www.ramseysolutions.com' },
+  housel: { author: 'Morgan Housel', work: 'The Psychology of Money', url: 'https://collabfund.com/blog/' },
+  robin: { author: 'Vicki Robin & Joe Dominguez', work: 'Your Money or Your Life', url: 'https://www.yourmoneyoryourlife.com' }
+};
+const RAW = {
+  sleep: [['hub', 'Get outside for morning sunlight soon after waking to help set your sleep schedule.'], ['hub', 'Keep lights dim in the late evening and avoid bright overhead light before bed.'], ['hub', 'Keep your bedroom cool and dark. A slight drop in body temperature helps you fall asleep.']],
+  exercise: [['hub', 'Build a weekly routine that mixes resistance training with cardio, and put each session on your calendar.'], ['hub', 'Include steady cardio where you can still hold a conversation, several times a week.']],
+  nutrition: [['hub', 'Build most meals around minimally processed foods.']],
+  hydration: [['hub', 'Spread water through the day instead of all at once, and add electrolytes when you sweat a lot.'], ['hub', 'Start the day with water, before your first coffee.']],
+  energy: [['hub', 'Get light and movement early in the day, and wait 90 to 120 minutes after waking before your first caffeine.'], ['hub', 'Try a short non-sleep deep rest (NSDR) session or a brief nap in the afternoon to restore energy.']],
+  mood: [['burns', 'Write down the thought that is bringing you down, spot the distortion in it (like all-or-nothing thinking), and rewrite it more accurately.'], ['neff', 'Talk to yourself the way you would talk to a good friend who is struggling.']],
+  stress: [['nag', 'When stress builds up, finish the stress cycle with physical activity, even a short walk.'], ['mcg', 'Try seeing stress as your body getting ready to meet a challenge. That view can change how stress affects you.'], ['nag', 'Other ways to finish the stress cycle: slow deep breaths, a real laugh, a long hug or a good cry.']],
+  connection: [['wal', 'Close relationships are among the strongest predictors of a happy, healthy life. Reach out to one person you care about today.'], ['wal', 'Relationships need regular upkeep, a kind of social fitness. Check in on one you have let slide.']],
+  purpose: [['frankl', 'Meaning can come from your work, from the people you love and from how you face hard things. Name one thing that gives today’s effort meaning.'], ['frankl', 'You cannot always choose what happens, but you can choose your attitude toward it.']],
+  rest: [['pang', 'Treat rest as a skill: take real breaks like walks or short naps, and protect time fully away from work.'], ['newport', 'Set aside time away from your phone and replace scrolling with a hobby you actually enjoy.'], ['pang', 'Active hobbies like sports or making things restore you more than passive downtime.']],
+  spending: [['sethi', 'Decide ahead of time what you love spending on, and cut back hard on everything else.'], ['robin', 'Before buying, ask whether it is worth the hours of your life you traded to earn the money.']],
+  saving: [['collins', 'Spend less than you earn, invest the difference in a low-cost index fund, and avoid debt.'], ['housel', 'Save even without a specific goal. Savings give you flexibility and options.'], ['sethi', 'Automate your savings so money moves before you can spend it.']],
+  earning: [['sethi', 'Focus on big wins, like negotiating your salary or growing your income, before trimming small expenses.'], ['robin', 'Figure out your real hourly wage once you subtract work costs like commuting and work clothes.']],
+  obligations: [['ramsey', 'List your debts from smallest to largest and pay off the smallest first (the debt snowball).'], ['ramsey', 'Start with a small starter emergency fund before attacking debt, so surprises do not go on a card.']],
+  awareness: [['robin', 'Track every dollar that comes in or goes out, so you know where your money really goes.'], ['housel', 'Wealth is what you do not see: the money you did not spend.']]
+};
+const TIPLIB = {};
+Object.keys(RAW).forEach(function (k) { TIPLIB[k] = RAW[k].map(function (r, i) { return Object.assign({ id: k + '-' + i, tip: r[1] }, SRC[r[0]]); }); });
+const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WD1 = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const UP = '#30D158', DOWN = '#FF6961', NEU = '#98989F';
+
+function addDays(k, n) { const d = new Date(k + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function fmt(k) { const d = new Date(k + 'T12:00:00Z'); return WD[d.getUTCDay()] + ', ' + MO[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
+function fmtShort(k) { const d = new Date(k + 'T12:00:00Z'); return MO[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
+function dayDiff(a, b) { return Math.round((new Date(b + 'T12:00:00Z') - new Date(a + 'T12:00:00Z')) / 864e5); }
+function r1(x) { return Math.round(Math.max(0, Math.min(10, x)) * 10) / 10; }
+function f1(v) { return v == null ? 'N/A' : Number(v).toFixed(1); }
+function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// Settings history: past days keep the weights and Focus that applied at the time.
+let WHIST = (SAVED && SAVED.whist) || [{ from: '2000-01-01', w: { physical: 40, emotional: 35, financial: 25 } }];
+let FHIST = (SAVED && SAVED.fhist) || [{ from: '2000-01-01', list: FOCUS.slice() }];
+if (SAVED && SAVED.names) FACTORS.forEach(function (f) { if (SAVED.names[f.id]) f.name = SAVED.names[f.id]; });
+if (SAVED && SAVED.defImp) Object.keys(SAVED.defImp).forEach(function (k) { DEF_IMP[k] = SAVED.defImp[k]; });
+function blankEntry(k) { const e = { date: k, score: {}, imp: {}, exp: {}, note: '', edited: '' }; FACTORS.forEach(function (f) { e.score[f.id] = null; e.exp[f.id] = null; e.imp[f.id] = DEF_IMP[f.id]; }); return e; }
+function histFor(h, key) { let best = h[0]; h.forEach(function (x) { if (x.from <= key && x.from >= best.from) best = x; }); return best; }
+function wFor(date) { return histFor(WHIST, date || '9999-12-31').w; }
+function focusFor(date) { return histFor(FHIST, date ? weekKey(date) : '9999-12-31').list; }
+function wt(e, f) { return IW[(e.imp && e.imp[f]) || 'M'] * (focusFor(e.date).indexOf(f) >= 0 ? 1.2 : 1); }
+function scoreDay(e, which) {
+  const res = { pillars: {}, overall: null };
+  let tot = 0, tw = 0; const PW = wFor(e.date);
+  PILLARS.forEach(function (p) {
+    let s = 0, w = 0;
+    FACTORS.forEach(function (f) {
+      if (f.p !== p.id) return;
+      const v = e[which] ? e[which][f.id] : null;
+      if (v == null) return;
+      const x = wt(e, f.id); s += v * x; w += x;
+    });
+    const pct = w ? s / w * 10 : null;
+    res.pillars[p.id] = pct;
+    if (pct != null) { tot += pct * PW[p.id]; tw += PW[p.id]; }
+  });
+  res.overall = tw ? tot / tw : null;
+  return res;
+}
+function letter(p) { const q = Math.round(p); return q >= 90 ? 'A' : q >= 80 ? 'B' : q >= 70 ? 'C' : q >= 60 ? 'D' : 'F'; }
+// Change between two shown values, computed from the rounded numbers so it always matches what is on screen.
+function dR(a, b, dec) { if (a == null || b == null) return null; return dec ? Math.round(b * 10) / 10 - Math.round(a * 10) / 10 : Math.round(b) - Math.round(a); }
+function h2r(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }); }
+function mix(a, b, t) { const A = h2r(a), B = h2r(b); return A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }); }
+// Grade colors: 50 and below full red, red to yellow 50-75, yellow 75-80, green appears from 80, full green 90+.
+function rgbOf(p) {
+  if (p <= 50) return h2r('#E0201B');
+  if (p <= 75) return mix('#E0201B', '#FFD60A', (p - 50) / 25);
+  if (p <= 80) return h2r('#FFD60A');
+  if (p < 90) return mix('#FFD60A', '#1FA34A', (p - 80) / 10);
+  return h2r('#1FA34A');
+}
+function weekKey(k) { const d = new Date(k + 'T12:00:00Z'); return addDays(k, -((d.getUTCDay() + 6) % 7)); }
+function makeTasks() {
+  const t = [
+    { text: 'Long run, 6 miles', date: '2026-11-01', factor: 'exercise', done: true },
+    { text: 'Meal prep for the week', date: '2026-11-01', factor: 'nutrition', done: true },
+    { text: 'Move $200 to savings', date: '2026-11-01', factor: 'saving', done: false },
+    { text: 'Gym: legs, 6:00 AM', date: '2026-11-02', factor: 'exercise', done: false },
+    { text: 'Pay electric bill', date: '2026-11-02', factor: 'obligations', done: true },
+    { text: 'Call Mom', date: '2026-11-02', factor: 'connection', done: false },
+    { text: 'Lights out by 10:30 PM', date: '2026-11-02', factor: 'sleep', done: false },
+    { text: 'Prep for team meeting', date: '2026-11-03', factor: 'earning', done: false },
+    { text: 'Run 3 miles', date: '2026-11-03', factor: 'exercise', done: false },
+    { text: 'Review this month’s budget', date: '2026-11-04', factor: 'awareness', done: false },
+    { text: 'Read two chapters', week: '2026-11-02', factor: 'rest', done: false },
+    { text: 'Book dentist appointment', week: '2026-11-02', factor: 'energy', done: false },
+    { text: 'Plan weekend with friends', week: '2026-11-02', factor: 'connection', done: true }
+  ];
+  return t.map(function (x, i) {
+    const o = { id: i + 1, text: x.text, date: x.date || null, week: x.week || null, factor: x.factor || '', done: x.done, mark: x.done ? 'done' : null, carried: '' };
+    if (o.date && o.date < TODAY && !o.done) { o.carried = fmtShort(o.date); o.date = TODAY; }
+    return o;
+  });
+}
+function factorName(id) { const f = FACTORS.filter(function (x) { return x.id === id; })[0]; return f ? f.name : ''; }
+function gcol(p) { if (p == null) return '#636366'; return 'rgb(' + rgbOf(p).join(',') + ')'; }
+function badge(p) { return { pct: p == null ? '–' : Math.round(p) + '%', letter: p == null ? '–' : letter(p), bg: gcol(p), missed: p == null ? '–' : (100 - Math.round(p)) + '%' }; }
+function delta(d, dec) {
+  if (d == null || isNaN(d)) return { txt: '', col: NEU };
+  const r = dec ? Math.round(d * 10) / 10 : Math.round(d);
+  const s = dec ? Math.abs(r).toFixed(1) : String(Math.abs(r));
+  if (r > 0) return { txt: '▲ ' + s, col: UP };
+  if (r < 0) return { txt: '▼ ' + s, col: DOWN };
+  return { txt: dec ? '0.0' : '0', col: NEU };
+}
+function p1(v) { return (Math.round(v * 10) / 10).toFixed(1) + '%'; }
+function expDelta(act, exp) {
+  if (act == null || exp == null) return { txt: '', col: NEU };
+  const d = Math.round((Math.round(act * 10) - Math.round(exp * 10))) / 10;
+  if (d > 0) return { txt: '\u25B2 Beat expectations by ' + d.toFixed(1) + ' points', col: UP };
+  if (d < 0) return { txt: '\u25BC Fell short by ' + Math.abs(d).toFixed(1) + ' points', col: DOWN };
+  return { txt: 'Right on expectations', col: NEU };
+}
+function rings(sd, big) {
+  const R = big ? [62, 45, 28] : [16, 11, 6];
+  return PILLARS.map(function (p, i) {
+    const v = sd ? sd.pillars[p.id] : null; const r = R[i]; const c = 2 * Math.PI * r;
+    const frac = v == null ? 0 : Math.max(0.02, Math.min(1, v / 100));
+    return { r: r, col: gcol(v), dash: (c * frac).toFixed(1) + ' ' + (c + 1).toFixed(1) };
+  });
+}
+function makeData() {
+  const R = rng(42); const days = {};
+  const missed = ['2026-09-14', '2026-09-27', '2026-10-09', '2026-10-17', '2026-10-25'];
+  const notes = {
+    '2026-10-20': 'Paid off the credit card balance.',
+    '2026-10-29': 'Late shift, only 5 hours of sleep. Planned for it.',
+    '2026-10-31': 'Halloween with the family. Too much candy, skipped the gym.',
+    '2026-11-01': 'Good long run this morning. Meal-prepped for the week.'
+  };
+  for (let i = 0; i < 60; i++) {
+    const key = addDays(START, i);
+    if (missed.indexOf(key) >= 0) continue;
+    const trend = i / 60 * 1.2; const dm = (R() - 0.5) * 2;
+    const e = { date: key, score: {}, imp: {}, exp: {}, note: notes[key] || '', edited: key === '2026-10-20' ? 'Oct 22' : '' };
+    FACTORS.forEach(function (f) {
+      let imp = DEF_IMP[f.id];
+      if (R() < 0.1) imp = imp === 'M' ? (R() < 0.5 ? 'H' : 'L') : 'M';
+      const v = BASE[f.id] + trend + dm * 0.8 + (R() - 0.5) * 3.4;
+      const x = v + 0.6 + (R() - 0.5) * 2;
+      if (f.id === 'saving' && R() < 0.35) { e.score[f.id] = null; e.exp[f.id] = null; }
+      else { e.score[f.id] = r1(v); e.exp[f.id] = r1(x); }
+      e.imp[f.id] = imp;
+    });
+    days[key] = e;
+  }
+  const o29 = days['2026-10-29']; o29.score.sleep = 3.5; o29.imp.sleep = 'L'; o29.exp.sleep = 4.0;
+  function setDay(k, sc, ex, imp) { const e = days[k]; FACTORS.forEach(function (f, i) { e.score[f.id] = sc[i]; e.exp[f.id] = ex[i]; e.imp[f.id] = imp[f.id] || DEF_IMP[f.id]; }); }
+  setDay('2026-10-31',
+    [6.0, 4.0, 3.5, 5.0, 6.0, 8.5, 7.0, 9.0, 6.5, 7.0, 5.0, null, 6.0, 8.5, 5.0],
+    [6.5, 5.0, 5.0, 6.0, 6.5, 8.0, 7.0, 8.5, 6.0, 7.0, 6.0, null, 6.0, 8.5, 5.5],
+    { exercise: 'L', nutrition: 'L' });
+  setDay('2026-11-01',
+    [7.5, 9.0, 8.0, 6.5, 8.0, 8.0, 6.0, 7.5, 8.5, 5.5, 6.5, 8.0, 7.0, 9.0, 7.5],
+    [7.0, 8.5, 7.5, 7.0, 7.5, 7.5, 6.5, 7.0, 7.5, 6.0, 7.5, 7.0, 6.5, 9.0, 7.0],
+    {});
+  return days;
+}
+function makePlans() {
+  const ex = [4.5, 7.5, 7.0, 7.0, 6.5, 7.5, 6.0, 7.0, 7.5, 5.0, 7.5, 8.0, 8.0, 9.0, 7.0];
+  const p = { imp: Object.assign({}, DEF_IMP, { sleep: 'L' }), exp: {} };
+  FACTORS.forEach(function (f, i) { p.exp[f.id] = ex[i]; });
+  const out = {}; out[TODAY] = p; return out;
+}
+function buildChart(keys, valf, W, H, withTrend, r) {
+  const n = keys.length;
+  const xs = function (i) { return n <= 1 ? W / 2 : 8 + i * (W - 16) / (n - 1); };
+  let lo = 30; keys.forEach(function (k) { const v = valf(k); if (v != null && v < lo) lo = Math.max(0, Math.floor(v / 10) * 10); });
+  const ys = function (v) { const c = Math.max(lo, Math.min(100, v)); return 6 + (100 - c) / (100 - lo) * (H - 12); };
+  let path = ''; let pen = false; const dots = []; const pts = [];
+  keys.forEach(function (k, i) {
+    const v = valf(k);
+    if (v == null) { pen = false; return; }
+    const x = xs(i), y = ys(v);
+    path += (pen ? ' L' : ' M') + x.toFixed(1) + ' ' + y.toFixed(1); pen = true;
+    dots.push({ cx: x.toFixed(1), cy: y.toFixed(1), fill: gcol(v) });
+    pts.push([i, v]);
+  });
+  const out = { path: path.trim() || 'M0 0', dots: dots, r: r, y70: ys(70).toFixed(1), t: { x1: 0, y1: 0, x2: 0, y2: 0, op: 0 } };
+  if (withTrend && pts.length > 2) {
+    let sx = 0, sy = 0, sxx = 0, sxy = 0; const m = pts.length;
+    pts.forEach(function (q) { sx += q[0]; sy += q[1]; sxx += q[0] * q[0]; sxy += q[0] * q[1]; });
+    const b = (m * sxy - sx * sy) / (m * sxx - sx * sx); const a = (sy - b * sx) / m;
+    out.t = { x1: xs(0).toFixed(1), y1: ys(a).toFixed(1), x2: xs(n - 1).toFixed(1), y2: ys(a + b * (n - 1)).toFixed(1), op: 1 };
+  }
+  return out;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.busy = false;
+    const S = SAVED || {};
+    const tParts = TODAY.split('-');
+    this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
+      tasks: S.tasks || [], nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      draftP: { text: '', scope: 'day', factor: '' }, draftC: { text: '', factor: '' },
+      online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
+      seen: S.seen || {}, set: this.freshDraft(), msg: '', reminder: S.reminder || { on: false, time: '21:00' }, setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
+      hist: S.hist || [],
+      add: { open: false, text: '', day: TODAY, week: weekKey(TODAY), factor: '' } };
+  }
+  persist() {
+    const s = this.state; const names = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; });
+    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, hist: s.hist, seen: s.seen, reminder: s.reminder,
+      setupDone: s.setupDone, whist: WHIST, fhist: FHIST, names: names, defImp: DEF_IMP, focus0: FOCUS };
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  componentDidMount() {
+    const tick = () => { const t = localToday(); if (t !== TODAY) { TODAY = t; this.forceUpdate(); } };
+    try { document.addEventListener('visibilitychange', tick); setInterval(tick, 60000); } catch (e) {}
+    this._on = () => this.setState({ online: true });
+    this._off = () => this.setState({ online: false });
+    try { window.addEventListener('online', this._on); window.addEventListener('offline', this._off); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('online', this._on); window.removeEventListener('offline', this._off); } catch (e) {}
+  }
+
+  freshDraft() {
+    const names = {}, imp = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; imp[f.id] = DEF_IMP[f.id]; });
+    return { w: Object.assign({}, wFor(TODAY)), focus: focusFor(TODAY).slice(), names: names, imp: imp };
+  }
+  setDraft(p) { this.setState({ set: Object.assign({}, this.state.set, p), msg: '' }); }
+  draftValid() { const d = this.state.set; return d.w.physical + d.w.emotional + d.w.financial === 100 && d.focus.length === 3; }
+  commitSettings(origin) {
+    const s = this.state, d = s.set; const out = [];
+    if (!this.draftValid()) { this.setState({ msg: d.focus.length !== 3 ? 'Pick exactly 3 Focus factors.' : 'Pillar weights must add up to 100%.' }); return false; }
+    const cw = wFor(TODAY);
+    if (cw.physical !== d.w.physical || cw.emotional !== d.w.emotional || cw.financial !== d.w.financial) {
+      WHIST = WHIST.filter(function (h) { return h.from !== TODAY; }).concat([{ from: TODAY, w: Object.assign({}, d.w) }]);
+      out.push('Pillar weights ' + cw.physical + '/' + cw.emotional + '/' + cw.financial + ' → ' + d.w.physical + '/' + d.w.emotional + '/' + d.w.financial + ' (past days keep old weights)');
+    }
+    const cf = focusFor(TODAY); const wk = weekKey(TODAY);
+    if (cf.slice().sort().join() !== d.focus.slice().sort().join()) {
+      FHIST = FHIST.filter(function (h) { return h.from !== wk; }).concat([{ from: wk, list: d.focus.slice() }]);
+      out.push('Focus for week of ' + fmtShort(wk) + ': ' + d.focus.map(factorName).join(', '));
+    }
+    FACTORS.forEach(function (f) {
+      const nn = (d.names[f.id] || '').trim();
+      if (nn && nn !== f.name) { out.push('Renamed ' + f.name + ' → ' + nn); f.name = nn; }
+      if (d.imp[f.id] !== DEF_IMP[f.id]) { out.push(f.name + ' default importance ' + INAME[DEF_IMP[f.id]] + ' → ' + INAME[d.imp[f.id]]); DEF_IMP[f.id] = d.imp[f.id]; }
+    });
+    if (origin === 'setup') out.push('Setup completed');
+    const hist = out.map(function (t) { return { date: fmtShort(TODAY), txt: t }; }).reverse().concat(s.hist);
+    this.setState({ hist: hist, msg: origin === 'setup' ? '' : (out.length ? 'Saved ' + out.length + (out.length === 1 ? ' change.' : ' changes.') : 'No changes to save.'), setup: null, set: this.freshDraft() });
+    return true;
+  }
+  buildCsv() {
+    const s = this.state; const head = ['date', 'overall_pct', 'physical_pct', 'emotional_pct', 'financial_pct'];
+    FACTORS.forEach(function (f) { head.push(f.id + '_score', f.id + '_importance', f.id + '_expected'); });
+    head.push('note', 'edited_on');
+    const q = function (v) { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const r1d = function (v) { return v == null ? '' : (Math.round(v * 10) / 10).toFixed(1); };
+    const rows = Object.keys(s.days).sort().map(function (k) {
+      const e = s.days[k]; const sd = scoreDay(e, 'score');
+      const row = [k, r1d(sd.overall), r1d(sd.pillars.physical), r1d(sd.pillars.emotional), r1d(sd.pillars.financial)];
+      FACTORS.forEach(function (f) { row.push(e.score[f.id] == null ? 'N/A' : e.score[f.id], e.imp[f.id], e.exp[f.id] == null ? '' : e.exp[f.id]); });
+      row.push(e.note || '', e.edited || '');
+      return row.map(q).join(',');
+    });
+    return [head.join(',')].concat(rows).join('\n');
+  }
+  tipFor(fid) { const lib = TIPLIB[fid] || []; for (let i = 0; i < lib.length; i++) { if (!this.state.seen[lib[i].id]) return lib[i]; } return null; }
+  newTip(fid) { const t = this.tipFor(fid); if (!t) return; const seen = Object.assign({}, this.state.seen); seen[t.id] = true; this.setState({ seen: seen }); }
+  patchAdd(p) { this.setState({ add: Object.assign({}, this.state.add, p) }); }
+  openAdd() {
+    const s = this.state; const day = s.pView === 'day' ? s.pDate : 'week'; const wk = s.pView === 'day' ? weekKey(s.pDate) : s.pWeek;
+    this.setState({ add: { open: true, text: '', day: day, week: wk, factor: '' } });
+  }
+  submitAdd() {
+    const a = this.state.add; if (!a.text.trim()) return;
+    const isWeek = a.day === 'week';
+    this.addTask(a.text, isWeek ? null : a.day, isWeek ? a.week : null, a.factor);
+    this.setState({ add: Object.assign({}, a, { open: false, text: '' }) });
+  }
+  addTask(text, date, week, factor) {
+    if (!text || !text.trim()) return false;
+    const t = { id: this.state.nextId, text: text.trim(), date: date, week: week, factor: factor || '', done: false, mark: null, carried: '' };
+    this.setState({ tasks: this.state.tasks.concat([t]), nextId: this.state.nextId + 1 });
+    return true;
+  }
+  toggleTask(id) { this.setState({ tasks: this.state.tasks.map(function (t) { return t.id === id ? Object.assign({}, t, { done: !t.done, mark: t.done ? null : 'done' }) : t; }) }); }
+  setMark(id, m) { this.setState({ tasks: this.state.tasks.map(function (t) { if (t.id !== id) return t; const nm = t.mark === m ? null : m; return Object.assign({}, t, { mark: nm, done: nm === 'done' }); }) }); }
+  delTask(id) { this.setState({ tasks: this.state.tasks.filter(function (t) { return t.id !== id; }) }); }
+  taskRow(t, showWhen) {
+    const bits = [];
+    if (t.factor) bits.push(factorName(t.factor));
+    if (t.carried) bits.push('Carried over from ' + t.carried);
+    if (showWhen && t.week) bits.push('This week');
+    if (t.factor && t.date && this.state.days[t.date]) { const v = this.state.days[t.date].score[t.factor]; bits.push('rated ' + f1(v)); }
+    return {
+      text: t.text, done: t.done, notDone: !t.done, doneStr: t.done ? 'true' : 'false',
+      aria: (t.done ? 'Mark not done: ' : 'Mark done: ') + t.text,
+      textStyle: t.done ? 'color: #8E8E93; text-decoration: line-through' : 'color: #FFFFFF',
+      hasSub: bits.length > 0, sub: bits.join(' · '),
+      toggle: () => this.toggleTask(t.id), del: () => this.delTask(t.id),
+      yes: () => this.setMark(t.id, 'done'), no: () => this.setMark(t.id, 'not'),
+      yesP: t.mark === 'done' ? 'true' : 'false', noP: t.mark === 'not' ? 'true' : 'false',
+      yesAria: 'Done: ' + t.text, noAria: 'Not done: ' + t.text,
+      yesStyle: t.mark === 'done' ? 'background: #1FA34A; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+      noStyle: t.mark === 'not' ? 'background: #C4161C; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93'
+    };
+  }
+  addFromPlanner() {
+    const s = this.state; const d = s.draftP;
+    const isWeek = s.pView === 'week' || d.scope === 'week';
+    const date = s.pView === 'day' ? s.pDate : s.pWeek;
+    const ok = this.addTask(d.text, isWeek ? null : date, isWeek ? weekKey(date) : null, d.factor);
+    if (ok) this.setState({ draftP: Object.assign({}, d, { text: '' }) });
+  }
+  addFromCheckin() {
+    const s = this.state; const d = s.draftC; const tom = addDays(s.inp.date, 1);
+    const ok = this.addTask(d.text, tom, null, d.factor);
+    if (ok) this.setState({ draftC: Object.assign({}, d, { text: '' }) });
+  }
+  tasksForDay(k, includeWeek) {
+    const wk = weekKey(k);
+    return this.state.tasks.filter(function (t) { return t.date === k || (includeWeek && t.week === wk); });
+  }
+
+  impPrefill(date, f) {
+    const s = this.state;
+    if (s.days[date]) return s.days[date].imp[f];
+    if (s.plans[date]) return s.plans[date].imp[f];
+    return DEF_IMP[f];
+  }
+  recImp(date, f) {
+    const s = this.state; const cnt = { H: 0, M: 0, L: 0 }; let last = DEF_IMP[f];
+    for (let i = 6; i >= 1; i--) { const e = s.days[addDays(date, -i)]; if (e) { cnt[e.imp[f]]++; last = e.imp[f]; } }
+    const today = (s.inp && s.inp.a.impToday[f]) || this.impPrefill(date, f);
+    cnt[today]++;
+    let best = DEF_IMP[f], bn = -1;
+    ['H', 'M', 'L'].forEach(function (k) { if (cnt[k] > bn) { best = k; bn = cnt[k]; } });
+    return best;
+  }
+  startInput(date) {
+    const e = this.state.days[date];
+    const a = { score: {}, impToday: {}, impTom: {}, expTom: {} };
+    if (e) FACTORS.forEach(function (f) { a.score[f.id] = e.score[f.id] == null ? 'NA' : e.score[f.id]; a.impToday[f.id] = e.imp[f.id]; });
+    this.setState({ tab: 'input', sel: null, inp: { date: date, fi: 0, act: 0, buf: '', a: a, phase: 'review', note: e ? e.note : '' } });
+  }
+  patchInp(p) { this.setState({ inp: Object.assign({}, this.state.inp, p) }); }
+  setAnswer(key, f, v) {
+    const inp = this.state.inp; const a = Object.assign({}, inp.a); a[key] = Object.assign({}, a[key]); a[key][f] = v; return a;
+  }
+  advanceFactor(inp) {
+    if (inp.fi >= 14) return Object.assign({}, inp, { phase: 'plan', buf: '', act: 0 });
+    return Object.assign({}, inp, { fi: inp.fi + 1, act: 0, buf: '' });
+  }
+  commitScore(v) {
+    const inp = this.state.inp; const f = FACTORS[inp.fi].id;
+    const key = inp.act === 0 ? 'score' : 'expTom';
+    const a = this.setAnswer(key, f, v);
+    let ni = Object.assign({}, inp, { a: a, buf: '' });
+    if (inp.act === 0) { ni.act = 3; this.setState({ inp: ni }); return; }
+    if (ni.a.score[f] === undefined) { ni.act = 0; this.setState({ inp: ni }); return; }
+    this.setState({ inp: ni });
+    this.busy = true;
+    setTimeout(() => { this.busy = false; this.setState({ inp: this.advanceFactor(this.state.inp) }); }, 350);
+  }
+  press(k) {
+    if (this.busy) return;
+    let b = this.state.inp.buf;
+    if (k === 'del') b = b.slice(0, -1);
+    else if (k === '.') { if (b && b.indexOf('.') < 0) b += '.'; }
+    else if (b === '') b = k;
+    else if (b.indexOf('.') < 0) { if (b === '1' && k === '0') b = '10'; }
+    else { const parts = b.split('.'); if (parts[1] === '' && !(parts[0] === '10' && k !== '0')) b += k; }
+    this.patchInp({ buf: b });
+    if (/^\d+\.\d$/.test(b)) {
+      this.busy = true; const v = parseFloat(b);
+      setTimeout(() => { this.busy = false; this.commitScore(v); }, 200);
+    }
+  }
+  back() {
+    const inp = this.state.inp;
+    if (inp.phase === 'note') { this.patchInp({ phase: 'plan' }); return; }
+    if (inp.phase === 'plan') { this.patchInp({ phase: 'q', fi: 14, act: 0, buf: '' }); return; }
+    if (inp.fi > 0) this.patchInp({ fi: inp.fi - 1, act: 0, buf: '' });
+    else this.patchInp({ phase: 'review', buf: '' });
+  }
+  next() { this.setState({ inp: this.advanceFactor(this.state.inp) }); }
+  autoFill() {
+    const inp = this.state.inp; const a = { score: Object.assign({}, inp.a.score), impToday: Object.assign({}, inp.a.impToday), impTom: Object.assign({}, inp.a.impTom), expTom: Object.assign({}, inp.a.expTom) };
+    const R = rng(Date.now() % 100000);
+    FACTORS.forEach(function (f) {
+      if (a.score[f.id] === undefined) a.score[f.id] = r1(BASE[f.id] + 1.2 + (R() - 0.5) * 3.6);
+      if (a.expTom[f.id] === undefined) a.expTom[f.id] = r1(BASE[f.id] + 1.5 + (R() - 0.5) * 2);
+    });
+    this.setState({ inp: Object.assign({}, inp, { a: a, phase: 'plan', buf: '', act: 0 }) });
+  }
+  save() {
+    const s = this.state; const inp = s.inp; const date = inp.date; const old = s.days[date]; const plan = s.plans[date];
+    const e = { date: date, score: {}, imp: {}, exp: {}, note: inp.note || '', edited: old ? fmtShort(TODAY) : '' };
+    FACTORS.forEach((f) => {
+      const v = inp.a.score[f.id]; e.score[f.id] = (v === 'NA' || v == null) ? null : v;
+      e.imp[f.id] = inp.a.impToday[f.id] || this.impPrefill(date, f.id);
+      e.exp[f.id] = plan ? plan.exp[f.id] : (old ? old.exp[f.id] : null);
+      if (e.score[f.id] == null) e.exp[f.id] = null;
+    });
+    const tom = addDays(date, 1); const np = { imp: {}, exp: {} };
+    FACTORS.forEach((f) => { np.imp[f.id] = inp.a.impTom[f.id] || this.recImp(date, f.id); const x = inp.a.expTom[f.id]; np.exp[f.id] = (x === 'NA' || x == null) ? null : x; });
+    const days = Object.assign({}, s.days); days[date] = e;
+    const plans = Object.assign({}, s.plans); plans[tom] = np;
+    this.setState({ days: days, plans: plans, inp: Object.assign({}, inp, { phase: 'done' }) });
+  }
+  go(tab) {
+    if (tab === 'input' && (!this.state.inp || this.state.inp.phase === 'done')) { this.startInput(TODAY); return; }
+    this.setState({ tab: tab, sel: null });
+  }
+  shiftMonth(n) {
+    let y = this.state.month.y, m = this.state.month.m + n;
+    if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
+    const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 1) return;
+    this.setState({ month: { y: y, m: m } });
+  }
+  toggle(id) { const o = Object.assign({}, this.state.open); o[id] = !o[id]; this.setState({ open: o }); }
+
+  recsFor(e) {
+    const sd = scoreDay(e, 'score');
+    const items = FACTORS.filter(function (f) { return e.score[f.id] != null && e.score[f.id] < 7.0; })
+      .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: f1(v), hasTip: !!t, noTip: !t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v * 10), gap: (10 - v) * wt(e, f.id) }; })
+      .sort(function (a, b) { return b.gap - a.gap; });
+    const pillars = PILLARS.filter(function (p) { return sd.pillars[p.id] != null && Math.round(sd.pillars[p.id]) < 70; })
+      .map(function (p) { const v = sd.pillars[p.id]; return p.name + ' is at ' + Math.round(v) + '% (' + letter(v) + ')'; });
+    const ov = sd.overall != null && Math.round(sd.overall) < 70 ? ['Overall day is at ' + Math.round(sd.overall) + '% (' + letter(sd.overall) + ')'] : [];
+    const pl = ov.concat(pillars);
+    return { has: items.length > 0 || pl.length > 0, items: items, pillars: pl, count: items.length + pl.length };
+  }
+  safetyFor(e) {
+    const sd = scoreDay(e, 'score');
+    if (sd.pillars.emotional != null && sd.pillars.emotional < 50) return true;
+    return FACTORS.some(function (f) { return f.p === 'emotional' && e.score[f.id] != null && e.score[f.id] < 5.0; });
+  }
+  pillarsOf(sd) { return PILLARS.map(function (p) { return { name: p.name, b: badge(sd.pillars[p.id]) }; }); }
+
+  renderVals() {
+    const s = this.state; const days = s.days;
+    const logged = Object.keys(days).sort();
+    const sdOf = (k) => days[k] ? scoreDay(days[k], 'score') : null;
+    const valf = (k) => { const sd = sdOf(k); if (!sd) return null; return s.filter === 'all' ? sd.overall : sd.pillars[s.filter]; };
+    const avgOf = (fn, from, to) => { let t = 0, n = 0; for (let k = from; k <= to; k = addDays(k, 1)) { const v = fn(k); if (v != null) { t += v; n++; } } return { v: n ? t / n : null, n: n }; };
+
+    // latest day
+    const hasData = logged.length > 0; const lk = hasData ? logged[logged.length - 1] : addDays(TODAY, -1); const le = days[lk] || blankEntry(lk); const lsd = scoreDay(le, 'score');
+    const pk = logged[logged.length - 2]; const psd = pk ? sdOf(pk) : null;
+    const lat = {
+      label: !hasData ? 'No Check-ins Yet' : lk === TODAY ? 'Today' : lk === addDays(TODAY, -1) ? 'Yesterday' : 'Last Logged Day',
+      date: fmtShort(lk), b: badge(lsd.overall), d: delta(psd ? dR(psd.overall, lsd.overall) : null, false),
+      pillars: this.pillarsOf(lsd), rings: rings(lsd, true)
+    };
+    if (!lat.d.txt) lat.d = { txt: '–', col: NEU };
+
+    // previous 7 days strip
+    const week = [];
+    for (let i = 6; i >= 0; i--) {
+      const k = addDays(lk, -i); const sd = sdOf(k); const d = new Date(k + 'T12:00:00Z');
+      week.push({ wd: WD1[d.getUTCDay()], rings: rings(sd, false), letter: sd ? letter(sd.overall) : '–', col: sd ? gcol(sd.overall) : '#8E8E93', aria: fmt(k) + (sd ? ', ' + Math.round(sd.overall) + '%' : ', missed'), pick: () => this.setState({ sel: k }) });
+    }
+
+    // highlights
+    let streak = 0; for (let k = lk; days[k]; k = addDays(k, -1)) streak++;
+    const fAvg = (id, from, to) => avgOf((k) => days[k] ? days[k].score[id] : null, from, to).v;
+    const moves = FACTORS.map(function (f) { const c = fAvg(f.id, addDays(lk, -6), lk), p = fAvg(f.id, addDays(lk, -13), addDays(lk, -7)); return { f: f, c: c, d: dR(p, c, true) }; }).filter(function (m) { return m.d != null; });
+    moves.sort(function (a, b) { return b.d - a.d; });
+    let beat = 0, cnt = 0;
+    for (let i = 0; i < 7; i++) { const e = days[addDays(lk, -i)]; if (!e) continue; const a = scoreDay(e, 'score').overall, x = scoreDay(e, 'exp').overall; if (a != null && x != null) { cnt++; if (Math.round(a * 10) >= Math.round(x * 10)) beat++; } }
+    const highlights = hasData ? [{ txt: streak + '-day check-in streak', col: '#409CFF' }] : [{ txt: 'Highlights appear after your first few check-ins.', col: '#409CFF' }];
+    if (moves.length && moves[0].d > 0) highlights.push({ txt: moves[0].f.name + ' is up ' + moves[0].d.toFixed(1) + ' from last week (avg ' + moves[0].c.toFixed(1) + ')', col: UP });
+    const worst = moves[moves.length - 1]; if (worst && worst.d < 0) highlights.push({ txt: worst.f.name + ' is down ' + Math.abs(worst.d).toFixed(1) + ' from last week (avg ' + worst.c.toFixed(1) + ')', col: DOWN });
+    if (cnt) highlights.push({ txt: 'Met or beat expectations on ' + beat + ' of the last ' + cnt + ' days', col: '#FFD60A' });
+
+    // sections
+    const fname = s.filter === 'all' ? 'overall' : PILLARS.filter(function (p) { return p.id === s.filter; })[0].name.toLowerCase();
+    const mkPeriod = (id, n, title, trend, r) => {
+      const from = addDays(lk, -(n - 1)); const keys = []; for (let i = 0; i < n; i++) keys.push(addDays(from, i));
+      const curAll = avgOf((k) => { const sd = sdOf(k); return sd ? sd.overall : null; }, from, lk);
+      const prevAll = avgOf((k) => { const sd = sdOf(k); return sd ? sd.overall : null; }, addDays(from, -n), addDays(from, -1));
+      const open = !!s.open[id];
+      return {
+        title: title, sub: curAll.n + ' of ' + n + ' days logged', val: badge(curAll.v).pct + ' ' + badge(curAll.v).letter, valCol: gcol(curAll.v),
+        d: delta(dR(prevAll.v, curAll.v), false),
+        rot: open ? 90 : 0, openStr: open ? 'true' : 'false', toggle: () => this.toggle(id),
+        openChart: open, openBig: false, openAttn: false,
+        c: buildChart(keys, valf, 326, 96, trend, r),
+        caption: 'Showing ' + fname + '. ' + (trend ? 'Dashed blue line is the trend. ' : 'Gaps are missed days. ') + 'Dotted line marks 70% (C).',
+        pill: PILLARS.map(function (p) {
+          const c = avgOf((k) => { const sd = sdOf(k); return sd ? sd.pillars[p.id] : null; }, from, lk).v;
+          const pv = avgOf((k) => { const sd = sdOf(k); return sd ? sd.pillars[p.id] : null; }, addDays(from, -n), addDays(from, -1)).v;
+          return { name: p.name, b: badge(c), d: delta(dR(pv, c), false) };
+        })
+      };
+    };
+    const big3 = focusFor(lk).map(function (id) {
+      const f = FACTORS.filter(function (x) { return x.id === id; })[0];
+      const cur = fAvg(id, addDays(lk, -6), lk); const prev = fAvg(id, addDays(lk, -13), addDays(lk, -7)); const m30 = fAvg(id, addDays(lk, -29), lk);
+      return { name: f.name, pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, avg: f1(cur), avg30: f1(m30), b: badge(cur == null ? null : cur * 10), d: delta(dR(prev, cur, true), true) };
+    });
+    const latRecs = this.recsFor(le); const latSafety = this.safetyFor(le);
+    const ob = !!s.open.big, oa = !!s.open.attn;
+    const blank = { c: buildChart([], valf, 326, 96, false, 3), caption: '', pill: [] };
+    const sections = [
+      mkPeriod('w7', 7, '7-Day Score', false, 4.5),
+      mkPeriod('w30', 30, '30-Day Score', true, 3),
+      Object.assign({}, blank, { title: 'Big Three', sub: big3.map(function (b) { return b.name; }).join(' · '), val: '', valCol: '#FFFFFF', d: { txt: '', col: NEU }, rot: ob ? 90 : 0, openStr: ob ? 'true' : 'false', toggle: () => this.toggle('big'), openChart: false, openBig: ob, openAttn: false }),
+      Object.assign({}, blank, { title: 'Needs Attention', sub: latRecs.count ? 'Below 70% on ' + fmtShort(lk) : 'Nothing below 70%', val: String(latRecs.count), valCol: latRecs.count ? '#FF6961' : UP, d: { txt: '', col: NEU }, rot: oa ? 90 : 0, openStr: oa ? 'true' : 'false', toggle: () => this.toggle('attn'), openChart: false, openBig: false, openAttn: oa })
+    ];
+
+    const filters = [{ id: 'all', label: 'All' }].concat(PILLARS.map(function (p) { return { id: p.id, label: p.name }; })).map((c) => ({
+      label: c.label, pick: () => this.setState({ filter: c.id }),
+      style: s.filter === c.id ? 'background: #636366; color: #FFFFFF' : 'background: transparent; color: #C7C7CC'
+    }));
+
+    // check-in
+    const inp = s.inp; let iv = { isQ: false, isNote: false, isDone: false, isReview: false, isPlan: false, linked: [] };
+    let rv = { head: '', empty: true, tasks: [] };
+    let pn = { dateLabel: '', head: '', empty: true, tasks: [], draft: {} };
+    let res = { date: '', b: badge(null), expLine: '', ed: { txt: '', col: NEU }, pillars: [], rings: [], recs: { has: false, items: [], pillars: [] }, safety: false };
+    if (inp) {
+      const f = FACTORS[inp.fi];
+      const planned = this.impPrefill(inp.date, f.id); const rec = this.recImp(inp.date, f.id);
+      const selT = inp.a.impToday[f.id] || planned; const selN = inp.a.impTom[f.id] || rec;
+      const scoreRow = (act, key) => {
+        const v = inp.a[key][f.id]; const isAct = inp.act === act;
+        let disp, col;
+        if (isAct && inp.buf) { disp = inp.buf; col = '#FFFFFF'; }
+        else if (v !== undefined) { disp = v === 'NA' ? 'N/A' : f1(v); col = v === 'NA' ? '#98989F' : gcol(v * 10); }
+        else { disp = isAct ? '_._' : '–'; col = isAct ? '#409CFF' : '#8E8E93'; }
+        return { disp: disp, col: col, ring: isAct ? 'box-shadow: inset 0 0 0 2px #0A84FF; border-radius: 16px' : '', pick: () => this.patchInp({ act: act, buf: '' }) };
+      };
+      const seg = (sel, key) => ['H', 'M', 'L'].map((k) => ({
+        label: INAME[k], short: k === 'M' ? 'Med' : INAME[k], sel: k === sel ? 'true' : 'false',
+        style: k === sel ? 'background: #636366; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
+        pick: () => this.patchInp({ a: this.setAnswer(key, f.id, k) })
+      }));
+      iv = {
+        isQ: inp.phase === 'q', isNote: inp.phase === 'note', isDone: inp.phase === 'done', isReview: inp.phase === 'review', isPlan: inp.phase === 'plan',
+        linked: this.tasksForDay(inp.date, true).filter(function (t) { return t.factor === f.id; }).map((t, i) => Object.assign(this.taskRow(t, false), { sep: i ? 'border-top: 1px solid #38383A' : '' })),
+        hasLinked: this.tasksForDay(inp.date, true).some(function (t) { return t.factor === f.id; }),
+        dateLabel: inp.date === TODAY ? 'Today' : fmtShort(inp.date), dateShort: inp.date === TODAY ? 'today' : fmtShort(inp.date),
+        backLabel: inp.fi > 0 ? FACTORS[inp.fi - 1].name : 'Tasks',
+        pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, fnum: inp.fi + 1,
+        prog: Math.round((inp.phase === 'q' ? inp.fi : 15) / 15 * 100),
+        name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
+        canNext: inp.a.score[f.id] !== undefined && inp.a.expTom[f.id] !== undefined,
+        activeName: inp.act === 0 ? 'today' : 'tomorrow',
+        r1: scoreRow(0, 'score'), r4: scoreRow(3, 'expTom'),
+        r2: { tag: (s.days[inp.date] ? 'Saved' : s.plans[inp.date] ? 'Planned last night' : 'Usual'), opts: seg(selT, 'impToday') },
+        r3: { tag: 'Recommended: ' + INAME[rec], opts: seg(selN, 'impTom') },
+        note: inp.note
+      };
+      const dayT = this.tasksForDay(inp.date, true);
+      rv = { head: (inp.date === TODAY ? 'Today' : fmtShort(inp.date)) + ' · ' + dayT.filter(function (t) { return t.done; }).length + ' of ' + dayT.length + ' done', empty: dayT.length === 0, tasks: dayT.map((t) => this.taskRow(t, true)) };
+      const tom = addDays(inp.date, 1); const tomT = this.tasksForDay(tom, false); const dc = s.draftC;
+      pn = {
+        dateLabel: fmt(tom), head: 'Tomorrow · ' + tomT.length + (tomT.length === 1 ? ' task' : ' tasks'), empty: tomT.length === 0,
+        tasks: tomT.map((t) => this.taskRow(t, false)),
+        draft: {
+          text: dc.text, factor: dc.factor,
+          onText: (ev) => this.setState({ draftC: Object.assign({}, this.state.draftC, { text: ev.target.value }) }),
+          onFactor: (ev) => this.setState({ draftC: Object.assign({}, this.state.draftC, { factor: ev.target.value }) }),
+          onKey: (ev) => { if (ev.key === 'Enter') this.addFromCheckin(); },
+          add: () => this.addFromCheckin()
+        }
+      };
+      if (inp.phase === 'done' && days[inp.date]) {
+        const e = days[inp.date]; const sd = scoreDay(e, 'score'); const ex = scoreDay(e, 'exp');
+        res = {
+          date: fmt(inp.date), b: badge(sd.overall), rings: rings(sd, true),
+          expLine: ex.overall != null ? 'Expected ' + p1(ex.overall) + ' → actual ' + p1(sd.overall) : 'No expectations were set for this day.',
+          ed: expDelta(sd.overall, ex.overall), pillars: this.pillarsOf(sd), recs: this.recsFor(e), safety: this.safetyFor(e)
+        };
+        res.tipsOffShow = res.recs.items.length > 0 && !s.online;
+      }
+    }
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del'].map((k) => ({ label: k === 'del' ? '⌫' : k, aria: k === 'del' ? 'Delete' : k === '.' ? 'Decimal point' : k, pick: () => this.press(k) }));
+
+    // compare
+    const hasTwo = logged.length > 1; const ck = logged[logged.length - 1] || TODAY, cp = logged[logged.length - 2] || addDays(ck, -1);
+    const ce = days[ck] || blankEntry(ck), pe = days[cp] || blankEntry(cp);
+    const csd = scoreDay(ce, 'score'), psd2 = scoreDay(pe, 'score'), cex = scoreDay(ce, 'exp');
+    const gap = dayDiff(cp, ck); const psdOv = psd2.overall, csdOv = csd.overall;
+    const top = [{ name: 'Overall', weight: 800, a: badge(psd2.overall), b: badge(csd.overall), d: delta(dR(psd2.overall, csd.overall), false) }].concat(PILLARS.map(function (p) {
+      const a = psd2.pillars[p.id], b = csd.pillars[p.id];
+      return { name: p.name, weight: 600, a: badge(a), b: badge(b), d: delta(dR(a, b), false) };
+    }));
+    const cmp = {
+      title: fmtShort(ck) + ' vs. ' + fmtShort(cp) + (gap > 1 ? ' (' + gap + ' days earlier)' : ''),
+      thenShort: fmtShort(cp), nowShort: fmtShort(ck), top: top,
+      expLine: cex.overall != null ? 'Expected ' + p1(cex.overall) + ' → actual ' + p1(csd.overall) : 'No expectations were set for this day.',
+      ed: expDelta(csd.overall, cex.overall),
+      groups: PILLARS.map(function (p) {
+        return { name: p.name, rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
+          const a = pe.score[f.id], b = ce.score[f.id];
+          const ia = pe.imp[f.id], ib = ce.imp[f.id];
+          const dd = delta(a != null && b != null ? b - a : null, true);
+          return { name: f.name + (focusFor(ck).indexOf(f.id) >= 0 ? ' ★' : ''), a: f1(a), b: f1(b), d: dd.txt ? dd : { txt: '–', col: NEU }, imp: ia === ib ? INAME[ia] : ia + ' → ' + ib };
+        }) };
+      }),
+      noteThen: pe.note || 'No note', noteNow: ce.note || 'No note'
+    };
+
+    // calendar
+    const y = s.month.y, m = s.month.m;
+    const first = new Date(Date.UTC(y, m, 1)); const off = (first.getUTCDay() + 6) % 7; const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    const cells = []; let lc = 0, el = 0;
+    for (let i = 0; i < off; i++) cells.push({ blank: true, real: false });
+    for (let d = 1; d <= dim; d++) {
+      const k = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      const isL = !!days[k]; const isM = !isL && k >= START && k < TODAY; const isT = k === TODAY && !isL;
+      if (isL) lc++; if (isL || isM) el++;
+      let style = 'background: transparent; color: #636366; border: 2px solid transparent';
+      if (isL) style = 'background: #1E7B3A; color: #FFFFFF; border: 2px solid #1E7B3A';
+      else if (isM) style = 'background: #C4161C; color: #FFFFFF; border: 2px solid #C4161C';
+      else if (isT) style = 'background: transparent; color: #FFFFFF; border: 2px solid #409CFF';
+      const tappable = isL || isM || isT;
+      cells.push({ blank: false, real: true, num: d, style: style, isLogged: isL, isMissed: isM, aria: fmt(k) + (isL ? ', logged' : isM ? ', missed' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
+    }
+    const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet' };
+
+    // sheet
+    let sheet = { open: false, logged: false, missed: false, date: '', edited: '', b: badge(null), rings: [], expLine: '', ed: { txt: '', col: NEU }, groups: [], note: '', tasks: [], taskCount: '', edit: () => {} };
+    if (s.sel) {
+      const e = days[s.sel]; const k = s.sel;
+      sheet = { open: true, logged: !!e, missed: !e, date: fmt(k), edited: e && e.edited ? 'Edited on ' + e.edited : (e ? 'Logged' : (k === TODAY ? 'Not logged yet' : 'Missed')), b: badge(null), rings: [], expLine: '', ed: { txt: '', col: NEU }, groups: [], note: '', tasks: [], taskCount: '', edit: () => this.startInput(k) };
+      if (e) {
+        const sd = scoreDay(e, 'score'), ex = scoreDay(e, 'exp');
+        sheet.b = badge(sd.overall); sheet.rings = rings(sd, true);
+        sheet.expLine = ex.overall != null ? 'Expected ' + p1(ex.overall) + ' \u2192 actual ' + p1(sd.overall) : 'No expectations set';
+        sheet.ed = expDelta(sd.overall, ex.overall);
+        sheet.groups = PILLARS.map(function (p) {
+          return { name: p.name, b: badge(sd.pillars[p.id]), rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
+            return { name: f.name + (focusFor(k).indexOf(f.id) >= 0 ? ' ★' : ''), imp: INAME[e.imp[f.id]], score: f1(e.score[f.id]), exp: f1(e.exp[f.id]) };
+          }) };
+        });
+        sheet.note = e.note || 'No note';
+        const st = this.tasksForDay(k, true);
+        sheet.tasks = st.map((t) => this.taskRow(t, true));
+        sheet.taskCount = st.length ? st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done' : 'None planned';
+      }
+    }
+
+    // planner
+    const isDay = s.pView === 'day'; const dp = s.draftP;
+    const segOn = 'background: #636366; color: #FFFFFF', segOff = 'background: transparent; color: #C7C7CC';
+    const wk = isDay ? weekKey(s.pDate) : s.pWeek;
+    const wkTasks = s.tasks.filter(function (t) { return t.week === wk; });
+    const dTasks = s.tasks.filter(function (t) { return t.date === s.pDate; });
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const k = addDays(wk, i); const ts = s.tasks.filter(function (t) { return t.date === k; });
+      weekDays.push({ label: fmt(k) + (k === TODAY ? ' · Today' : ''), col: k === TODAY ? '#409CFF' : '#FFFFFF', count: ts.length ? ts.filter(function (t) { return t.done; }).length + ' of ' + ts.length + ' done' : 'No tasks', tasks: ts.map((t) => this.taskRow(t, false)), open: () => this.setState({ pView: 'day', pDate: k }) });
+    }
+    const allWeek = s.tasks.filter(function (t) { return t.week === wk || (t.date && weekKey(t.date) === wk); });
+    const pdE = days[s.pDate]; const pdSd = pdE ? scoreDay(pdE, 'score') : null;
+    const ci = pdE
+      ? { title: 'Checked in · ' + Math.round(pdSd.overall) + '% ' + letter(pdSd.overall), sub: 'Tap to see scores, notes and to-dos', action: 'View', col: gcol(pdSd.overall), rings: rings(pdSd, false), go: () => this.setState({ sel: this.state.pDate }) }
+      : s.pDate <= TODAY
+        ? { title: 'Not checked in yet', sub: 'Review these to-dos and rate the day', action: 'Start', col: '#409CFF', rings: rings(null, false), go: () => this.startInput(this.state.pDate) }
+        : { title: 'Check-in opens that night', sub: 'Plan the to-dos now, rate the day later', action: '', col: '#409CFF', rings: rings(null, false), go: () => {} };
+    const pl = {
+      ci: ci,
+      isDay: isDay, isWeek: !isDay, dayStyle: isDay ? segOn : segOff, weekStyle: isDay ? segOff : segOn,
+      toDay: () => this.setState({ pView: 'day' }), toWeek: () => this.setState({ pView: 'week', pWeek: weekKey(this.state.pDate) }),
+      kicker: isDay ? (s.pDate === TODAY ? 'Today' : s.pDate === addDays(TODAY, 1) ? 'Tomorrow' : s.pDate < TODAY ? 'Past day' : 'Upcoming') : 'Week of ' + fmtShort(wk),
+      title: isDay ? fmt(s.pDate) : fmtShort(wk) + ' – ' + fmtShort(addDays(wk, 6)),
+      count: isDay ? dTasks.filter(function (t) { return t.done; }).length + ' of ' + dTasks.length + ' done' : allWeek.filter(function (t) { return t.done; }).length + ' of ' + allWeek.length + ' done this week',
+      prev: () => isDay ? this.setState({ pDate: addDays(this.state.pDate, -1) }) : this.setState({ pWeek: addDays(this.state.pWeek, -7) }),
+      next: () => isDay ? this.setState({ pDate: addDays(this.state.pDate, 1) }) : this.setState({ pWeek: addDays(this.state.pWeek, 7) }),
+      dayHead: s.pDate === TODAY ? 'Today' : fmtShort(s.pDate), dayEmpty: dTasks.length === 0,
+      dayTasks: dTasks.map((t) => this.taskRow(t, false)), weekTasks: wkTasks.map((t) => this.taskRow(t, false)), weekDays: weekDays,
+      draft: {
+        text: dp.text, factor: dp.factor, ph: isDay && dp.scope === 'day' ? 'Add a task for ' + fmtShort(s.pDate) : 'Add a task for this week',
+        dayLabel: isDay ? fmtShort(s.pDate) : 'A day',
+        scDayStyle: isDay && dp.scope === 'day' ? segOn : segOff, scWeekStyle: !isDay || dp.scope === 'week' ? segOn : segOff,
+        scDay: () => this.setState({ pView: 'day', draftP: Object.assign({}, this.state.draftP, { scope: 'day' }) }),
+        scWeek: () => this.setState({ draftP: Object.assign({}, this.state.draftP, { scope: 'week' }) }),
+        onText: (ev) => this.setState({ draftP: Object.assign({}, this.state.draftP, { text: ev.target.value }) }),
+        onFactor: (ev) => this.setState({ draftP: Object.assign({}, this.state.draftP, { factor: ev.target.value }) }),
+        onKey: (ev) => { if (ev.key === 'Enter') this.addFromPlanner(); },
+        add: () => this.addFromPlanner()
+      }
+    };
+    const tagOpts = [{ id: '', name: 'No factor link' }].concat(FACTORS.map(function (f) { return { id: f.id, name: f.name }; }));
+
+    // settings draft view
+    const d = s.set; const segOn2 = 'background: #636366; color: #FFFFFF', segOff2 = 'background: transparent; color: #C7C7CC';
+    const wTotal = d.w.physical + d.w.emotional + d.w.financial;
+    const stepW = (id, n) => { const w = Object.assign({}, this.state.set.w); w[id] = Math.max(0, Math.min(100, w[id] + n)); this.setDraft({ w: w }); };
+    const valid = wTotal === 100 && d.focus.length === 3;
+    const st = {
+      save: () => { this.commitSettings('settings'); }, saveCol: valid ? '#409CFF' : '#636366',
+      hasMsg: !!s.msg, msg: s.msg, msgCol: /^Saved|^No changes/.test(s.msg) ? '#30D158' : '#FF6961',
+      weights: PILLARS.map(function (p, i) { return { name: p.name, val: d.w[p.id], sep: i ? 'border-top: 1px solid #38383A' : '', dec: () => stepW(p.id, -5), inc: () => stepW(p.id, 5), decAria: 'Lower ' + p.name + ' weight', incAria: 'Raise ' + p.name + ' weight' }; }),
+      wNote: wTotal === 100 ? 'Total 100%. Changes apply from today on; past days keep their old weights.' : 'Total ' + wTotal + '%. Must add up to 100%.', wCol: wTotal === 100 ? '#98989F' : '#FF6961',
+      focus: FACTORS.map((f) => { const on = d.focus.indexOf(f.id) >= 0; return { name: f.name, selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #C7C7CC', pick: () => { const cur = this.state.set.focus.slice(); const i = cur.indexOf(f.id); if (i >= 0) cur.splice(i, 1); else if (cur.length < 3) cur.push(f.id); else { cur.shift(); cur.push(f.id); } this.setDraft({ focus: cur }); } }; }),
+      factors: FACTORS.map((f, i) => ({
+        name: d.names[f.id], label: f.name, inputId: 'fname-' + f.id, sep: i ? 'border-top: 1px solid #38383A' : '',
+        onName: (ev) => { const n = Object.assign({}, this.state.set.names); n[f.id] = ev.target.value; this.setDraft({ names: n }); },
+        opts: ['H', 'M', 'L'].map((k) => ({ label: INAME[k], short: k, sel: d.imp[f.id] === k ? 'true' : 'false', style: d.imp[f.id] === k ? segOn2 : segOff2, pick: () => { const m = Object.assign({}, this.state.set.imp); m[f.id] = k; this.setDraft({ imp: m }); } }))
+      })),
+      remOn: s.reminder.on, remOnStr: s.reminder.on ? 'true' : 'false', remTime: s.reminder.time,
+      remTrack: s.reminder.on ? 'background: #30D158; justify-content: flex-end' : 'background: #39393D; justify-content: flex-start',
+      remToggle: () => { const on = !this.state.reminder.on; this.setState({ reminder: Object.assign({}, this.state.reminder, { on: on }), hist: [{ date: fmtShort(TODAY), txt: 'Reminder turned ' + (on ? 'on' : 'off') }].concat(this.state.hist) }); },
+      onRemTime: (ev) => { const t = ev.target.value; this.setState({ reminder: Object.assign({}, this.state.reminder, { time: t }), hist: [{ date: fmtShort(TODAY), txt: 'Reminder time set to ' + t }].concat(this.state.hist.filter(function (h, i) { return !(i === 0 && /^Reminder time/.test(h.txt)); })) }); },
+      sources: FACTORS.map(function (f, i) { const a = []; (TIPLIB[f.id] || []).forEach(function (t) { if (a.indexOf(t.author) < 0) a.push(t.author); }); return { name: f.name, authors: a.join(', '), sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
+      hist: s.hist.map(function (h, i) { return { date: h.date, txt: h.txt, sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
+      makeCsv: () => {
+        const csv = this.buildCsv(); const name = 'better-days-' + TODAY + '.csv';
+        try { const file = new File([csv], name, { type: 'text/csv' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: 'Better Days export' }).catch(function () {}); return; } } catch (e) {}
+        this.setState({ csv: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })) });
+      }, hasCsv: !!s.csv, csv: s.csv,
+      delLabel: s.delStep === 0 ? 'Delete All Data' : 'Tap again to permanently delete everything',
+      del: () => {
+        if (this.state.delStep === 0) { this.setState({ delStep: 1 }); return; }
+        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], inp: null, seen: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans and to-dos deleted' }] });
+      }
+    };
+    // setup flow
+    const SU = [
+      { title: 'Welcome', body: 'Rate each day across three pillars (Physical, Emotional and Financial), with five factors each. Every night you score today, plan tomorrow and review your to-dos. Setup takes about two minutes.' },
+      { title: 'Pillar Weights', body: 'How much should each pillar count toward your overall day? They must add up to 100%. You can change this anytime in Settings.', isWeights: true },
+      { title: 'Default Importance', body: 'How important is each factor on a normal day? These pre-fill your first week; after that, the app recommends from your last 7 days.', isImp: true },
+      { title: 'This Week’s Focus', body: 'Pick your Big Three. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
+      { title: 'Reminder', body: 'Home-screen apps can\u2019t set alarms on their own. For a nightly nudge, add a daily repeating reminder in the iPhone Reminders or Clock app at the time you want to check in.', isRem: true },
+      { title: 'You\u2019re Set', body: 'Do your first check-in tonight from the Check-in tab. Since there was no night before, today has no expectations yet; they start tomorrow. Everything is saved on this phone.' }
+    ];
+    const sstep = s.setup ? s.setup.step : 0; const sd0 = SU[sstep];
+    const canNext = sstep === 1 ? wTotal === 100 : sstep === 3 ? d.focus.length === 3 : true;
+    const su = {
+      open: !!s.setup, num: sstep + 1, prog: Math.round((sstep + 1) / 6 * 100), title: sd0.title, body: sd0.body,
+      isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus, isRem: !!sd0.isRem,
+      backLabel: sstep === 0 ? (s.setupDone ? 'Cancel' : '') : 'Back',
+      back: () => { if (sstep === 0) { if (this.state.setupDone) this.setState({ setup: null, set: this.freshDraft() }); } else this.setState({ setup: { step: sstep - 1 } }); },
+      nextLabel: sstep === 5 ? 'Start Using the App' : sstep === 3 && d.focus.length !== 3 ? 'Pick ' + (3 - d.focus.length) + ' more' : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',
+      nextStyle: canNext ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+      next: () => { if (!canNext) return; if (sstep === 5) { if (this.commitSettings('setup')) this.setState({ tab: 'summary', setupDone: true }); } else this.setState({ setup: { step: sstep + 1 } }); }
+    };
+    // add-to-do sheet
+    const A = s.add;
+    const ad = {
+      open: A.open, text: A.text, factor: A.factor, addCol: A.text.trim() ? '#409CFF' : '#636366',
+      wkLabel: 'Week of ' + fmtShort(A.week) + (A.week === weekKey(TODAY) ? ' (this week)' : ''),
+      prevWk: () => { const w = addDays(this.state.add.week, -7); const dd = this.state.add.day; this.patchAdd({ week: w, day: dd === 'week' ? 'week' : addDays(dd, -7) }); },
+      nextWk: () => { const w = addDays(this.state.add.week, 7); const dd = this.state.add.day; this.patchAdd({ week: w, day: dd === 'week' ? 'week' : addDays(dd, 7) }); },
+      chips: [0, 1, 2, 3, 4, 5, 6].map((i) => { const k = addDays(A.week, i); const on = A.day === k; const dt = new Date(k + 'T12:00:00Z'); return { top: WD1[dt.getUTCDay()], sub: String(dt.getUTCDate()), aria: fmt(k), selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : (k === TODAY ? 'background: #2C2C2E; color: #409CFF' : 'background: #2C2C2E; color: #FFFFFF'), pick: () => this.patchAdd({ day: k }) }; })
+        .concat([{ top: 'Week', sub: 'any', aria: 'Anytime this week', selStr: A.day === 'week' ? 'true' : 'false', style: A.day === 'week' ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #FFFFFF', pick: () => this.patchAdd({ day: 'week' }) }]),
+      onText: (ev) => this.patchAdd({ text: ev.target.value }), onFactor: (ev) => this.patchAdd({ factor: ev.target.value }),
+      onKey: (ev) => { if (ev.key === 'Enter') this.submitAdd(); },
+      submit: () => this.submitAdd(), cancel: () => this.patchAdd({ open: false })
+    };
+
+    const on = '#409CFF', off2 = '#8E8E93';
+    return {
+      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', compare: s.tab === 'compare', history: s.tab === 'history', settings: s.tab === 'settings' },
+      showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
+      st: st, su: su, ad: ad, openAdd: () => this.openAdd(), hasData: hasData, noData: !hasData, hasTwo: hasTwo, notTwo: !hasTwo, oneLogged: logged.length === 1,
+      goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
+      runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
+      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, compare: s.tab === 'compare' ? on : off2, history: s.tab === 'history' ? on : off2 },
+      pl: pl, rv: rv, pn: pn, tagOpts: tagOpts,
+      tipsOn: s.online, tipsOff: !s.online && latRecs.items.length > 0,
+      offlineLabel: s.simOff ? 'Demo: turn internet back on' : 'Demo: see it without internet',
+      toggleOffline: () => this.setState({ simOff: !this.state.simOff }),
+      goPlanner: () => this.go('planner'),
+      startQs: () => this.patchInp({ phase: 'q', fi: 0, act: 0, buf: '' }),
+      toNote: () => this.patchInp({ phase: 'note' }),
+      todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,
+      latRecs: latRecs, latSafety: latSafety, openLatest: () => this.setState({ sel: lk }),
+      iv: iv, res: res, keys: keys, cmp: cmp, cal: cal, sheet: sheet,
+      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goCompare: () => this.go('compare'), goHistory: () => this.go('history'),
+      back: () => this.back(), next: () => this.next(), autoFill: () => this.autoFill(), save: () => this.save(),
+      markNA: () => { if (!this.busy) this.commitScore('NA'); },
+      onNote: (ev) => this.patchInp({ note: ev.target.value }),
+      prevMonth: () => this.shiftMonth(-1), nextMonth: () => this.shiftMonth(1), closeSheet: () => this.setState({ sel: null })
+    };
+  }
+}
+</script>
+<script>
+(function () {
+  var root = document.getElementById('root');
+  var t = null;
+  var inst = mountApp(Component, document.getElementById('tpl'), root, function (app) {
+    clearTimeout(t); t = setTimeout(function () { app.persist(); }, 250);
+  });
+  window.addEventListener('pagehide', function () { inst.persist(); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') inst.persist(); });
+  if ('serviceWorker' in navigator && location.protocol === 'https:') { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+})();
+</script>
+</body>
+</html>
