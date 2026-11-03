@@ -257,7 +257,7 @@ input,select,textarea{font-size:16px!important}
       <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 4px 0">
         <span style="font-size: 20px; font-weight: 800">{{rv.head}}</span>
       </div>
-      <span style="font-size: 13px; color: #98989F; padding: 0 4px; margin-top: -6px">Check things off anytime today. They're your reminders during the check-in.</span>
+      <span style="font-size: 13px; color: #98989F; padding: 0 4px; margin-top: -6px">Check things off anytime today. They also show on each pillar's rating pages.</span>
       <sc-if value="{{rv.empty}}" hint-placeholder-val="{{false}}"><div style="background: #1C1C1E; border-radius: 16px; padding: 14px 16px; font-size: 14px; color: #98989F">Nothing due. Add to-dos in Planner.</div></sc-if>
       <sc-for list="{{rv.groups}}" as="g" hint-placeholder-count="3">
         <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 8px; display: flex; flex-direction: column">
@@ -690,8 +690,6 @@ input,select,textarea{font-size:16px!important}
     </sc-for>
   </div>
 
-  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Reminder</span>
-  <div style="background: #1C1C1E; border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; color: #C7C7CC">Home-screen apps can't set alarms by themselves. In the iPhone <strong style="color: #FFFFFF">Reminders</strong> app, add "Better Days check-in," tap ⓘ, turn on <strong style="color: #FFFFFF">Time</strong> and set <strong style="color: #FFFFFF">Repeat: Daily</strong>.</div>
 
   <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Tip Sources · need internet</span>
   <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
@@ -896,7 +894,7 @@ input,select,textarea{font-size:16px!important}
     <div style="padding: calc(12px + env(safe-area-inset-top)) 16px 0; display: flex; flex-direction: column; gap: 10px">
       <div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px">
         <button onClick="{{su.back}}" style="background: transparent; border: none; color: #409CFF; font-size: 17px; min-height: 44px; padding: 0">{{su.backLabel}}</button>
-        <span style="font-size: 13px; font-weight: 600; color: #98989F">Step {{su.num}} of 6</span>
+        <span style="font-size: 13px; font-weight: 600; color: #98989F">Step {{su.num}} of {{su.total}}</span>
       </div>
       <div style="height: 4px; background: #2C2C2E; border-radius: 2px; overflow: hidden"><div style="height: 4px; background: #409CFF; width: {{su.prog}}%"></div></div>
     </div>
@@ -943,9 +941,6 @@ input,select,textarea{font-size:16px!important}
         </div>
       </sc-if>
 
-      <sc-if value="{{su.isRem}}" hint-placeholder-val="{{false}}">
-        <div style="background: #1C1C1E; border-radius: 16px; padding: 12px 14px; font-size: 15px; line-height: 1.45; color: #C7C7CC">Home-screen apps can't set alarms by themselves. In the iPhone <strong style="color: #FFFFFF">Reminders</strong> app, add "Better Days check-in," tap ⓘ, turn on <strong style="color: #FFFFFF">Time</strong> and set <strong style="color: #FFFFFF">Repeat: Daily</strong>.</div>
-      </sc-if>
     </div>
     <div style="padding: 0 16px calc(16px + env(safe-area-inset-bottom))">
       <button onClick="{{su.next}}" style="width: 100%; min-height: 54px; border-radius: 14px; border: none; font-size: 17px; font-weight: 700; {{su.nextStyle}}">{{su.nextLabel}}</button>
@@ -1639,13 +1634,13 @@ class Component extends DCLogic {
       workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', pick: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
-      tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', reminder: S.reminder || { on: false, time: '21:00' }, setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
+      tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
       hist: S.hist || [],
       add: { open: false, text: '', day: TODAY, week: weekKey(TODAY), pillar: '' } };
   }
   persist() {
     const s = this.state; const names = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; });
-    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, series: s.series, seriesNextId: s.seriesNextId, journal: s.journal, hist: s.hist, tipPos: s.tipPos, reminder: s.reminder,
+    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, series: s.series, seriesNextId: s.seriesNextId, journal: s.journal, hist: s.hist, tipPos: s.tipPos,
       setupDone: s.setupDone, whist: WHIST, fhist: FHIST, names: names, defImp: DEF_IMP, focus0: FOCUS };
     try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
   }
@@ -2195,10 +2190,6 @@ class Component extends DCLogic {
         onName: (ev) => { const n = Object.assign({}, this.state.set.names); n[f.id] = ev.target.value; this.setDraft({ names: n }); },
         opts: ['H', 'M', 'L'].map((k) => ({ label: INAME[k], short: k, sel: d.imp[f.id] === k ? 'true' : 'false', style: d.imp[f.id] === k ? segOn2 : segOff2, pick: () => { const m = Object.assign({}, this.state.set.imp); m[f.id] = k; this.setDraft({ imp: m }); } }))
       })),
-      remOn: s.reminder.on, remOnStr: s.reminder.on ? 'true' : 'false', remTime: s.reminder.time,
-      remTrack: s.reminder.on ? 'background: #30D158; justify-content: flex-end' : 'background: #39393D; justify-content: flex-start',
-      remToggle: () => { const on = !this.state.reminder.on; this.setState({ reminder: Object.assign({}, this.state.reminder, { on: on }), hist: [{ date: fmtShort(TODAY), txt: 'Reminder turned ' + (on ? 'on' : 'off') }].concat(this.state.hist) }); },
-      onRemTime: (ev) => { const t = ev.target.value; this.setState({ reminder: Object.assign({}, this.state.reminder, { time: t }), hist: [{ date: fmtShort(TODAY), txt: 'Reminder time set to ' + t }].concat(this.state.hist.filter(function (h, i) { return !(i === 0 && /^Reminder time/.test(h.txt)); })) }); },
       sources: FACTORS.map(function (f, i) { const a = []; (TIPLIB[f.id] || []).forEach(function (t) { if (a.indexOf(t.author) < 0) a.push(t.author); }); return { name: f.name, authors: a.join(', '), sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
       hist: s.hist.map(function (h, i) { return { date: h.date, txt: h.txt, sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
       makeCsv: () => {
@@ -2218,19 +2209,18 @@ class Component extends DCLogic {
       { title: 'Pillar Weights', body: 'How much should each pillar count toward your overall day? They must add up to 100%. You can change this anytime in Settings.', isWeights: true },
       { title: 'Default Importance', body: 'How important is each factor on a normal day? These pre-fill your first week; after that, the app recommends from your last 7 days.', isImp: true },
       { title: 'This Week’s Focus', body: 'Pick your Big Three. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
-      { title: 'Reminder', body: 'Home-screen apps can\u2019t set alarms on their own. For a nightly nudge, add a daily repeating reminder in the iPhone Reminders or Clock app at the time you want to check in.', isRem: true },
       { title: 'You\u2019re Set', body: 'Do your first check-in tonight from the Check-in tab. Since there was no night before, today has no expectations yet; they start tomorrow. Everything is saved on this phone.' }
     ];
     const sstep = s.setup ? s.setup.step : 0; const sd0 = SU[sstep];
     const canNext = sstep === 1 ? wTotal === 100 : sstep === 3 ? d.focus.length === 3 : true;
     const su = {
-      open: !!s.setup, num: sstep + 1, prog: Math.round((sstep + 1) / 6 * 100), title: sd0.title, body: sd0.body,
-      isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus, isRem: !!sd0.isRem,
+      open: !!s.setup, num: sstep + 1, total: SU.length, prog: Math.round((sstep + 1) / SU.length * 100), title: sd0.title, body: sd0.body,
+      isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus,
       backLabel: sstep === 0 ? (s.setupDone ? 'Cancel' : '') : 'Back',
       back: () => { if (sstep === 0) { if (this.state.setupDone) this.setState({ setup: null, set: this.freshDraft() }); } else this.setState({ setup: { step: sstep - 1 } }); },
-      nextLabel: sstep === 5 ? 'Start Using the App' : sstep === 3 && d.focus.length !== 3 ? 'Pick ' + (3 - d.focus.length) + ' more' : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',
+      nextLabel: sstep === SU.length - 1 ? 'Start Using the App' : sstep === 3 && d.focus.length !== 3 ? 'Pick ' + (3 - d.focus.length) + ' more' : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',
       nextStyle: canNext ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
-      next: () => { if (!canNext) return; if (sstep === 5) { if (this.commitSettings('setup')) this.setState({ tab: 'summary', setupDone: true }); } else this.setState({ setup: { step: sstep + 1 } }); }
+      next: () => { if (!canNext) return; if (sstep === SU.length - 1) { if (this.commitSettings('setup')) this.setState({ tab: 'summary', setupDone: true }); } else this.setState({ setup: { step: sstep + 1 } }); }
     };
     // add-to-do sheet
     const A = s.add; const isW = A.kind === 'work'; const wdays = A.wdays || [];

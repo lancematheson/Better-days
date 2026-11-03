@@ -127,6 +127,13 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.renderVals().pm.toWork(); T.renderVals().openPick(); T.renderVals().pk.next(); ok(T.renderVals().pk.title === 'December 2026', 'next month');
   T.renderVals().pk.cells.filter((c) => c.real)[4].pick(); ok(T.state.wDate === '2026-12-05' && T.state.pMode === 'work', 'work list jumps too');
 }
+// No reminders anywhere: setup has 5 steps and none is about reminders.
+{
+  const T = new L.Component({}); T.state.setup = { step: 0 }; const su = T.renderVals().su;
+  ok(su.total === 5, 'setup has 5 steps');
+  let titles = []; for (let i = 0; i < 5; i++) { T.state.setup = { step: i }; titles.push(T.renderVals().su.title); }
+  ok(!titles.some((t) => /remind/i.test(t)) && !('reminder' in T.state), 'no reminder step or setting');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');

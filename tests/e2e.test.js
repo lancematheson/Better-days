@@ -21,7 +21,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.screenshot({ path: SHOTS + '/01-setup.png' });
   log('setup visible:', await p.getByText('Welcome', { exact: true }).isVisible());
   // setup
-  for (let i = 0; i < 5; i++) { const c = p.getByRole('button', { name: /Continue|Start Using/ }); await c.click(); await p.waitForTimeout(120); if (i === 0) {} }
+  for (let i = 0; i < 4; i++) { const c = p.getByRole('button', { name: /Continue|Start Using/ }); await c.click(); await p.waitForTimeout(120); if (i === 0) {} }
   await p.getByRole('button', { name: 'Start Using the App' }).click(); await p.waitForTimeout(200);
   await p.screenshot({ path: SHOTS + '/02-summary-empty.png' });
   log('welcome card:', await p.getByText('Welcome to Better Days').isVisible());
@@ -45,7 +45,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   log('results:', await p.getByText('Your Day').isVisible());
   // reload -> persisted
   await p.reload(); await p.waitForTimeout(400);
-  log('after reload, setup hidden:', !(await p.getByText('Step 1 of 6').isVisible()));
+  log('after reload, setup hidden:', !(await p.getByText('Step 1 of 5').isVisible()));
   await p.screenshot({ path: SHOTS + '/07-summary-after-reload.png' });
   log('summary label:', await p.getByText('Today', { exact: true }).first().isVisible());
   const stored = await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')));
