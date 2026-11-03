@@ -450,12 +450,18 @@
 <sc-if value="{{show.planner}}" hint-placeholder-val="{{false}}">
 <div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
   <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
-    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{pl.kicker}}</span>
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{pm.kicker}}</span>
     <div style="display: flex; align-items: center; justify-content: space-between">
       <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Planner</h1>
-      <button onClick="{{openAdd}}" aria-label="Add to-do" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button onClick="{{pm.add}}" aria-label="{{pm.addAria}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
     </div>
   </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #1C1C1E; border-radius: 14px; padding: 4px" role="group" aria-label="Personal or work">
+    <button onClick="{{pm.toPersonal}}" aria-pressed="{{pm.personalStr}}" style="min-height: 44px; border: none; border-radius: 11px; font-size: 16px; font-weight: 800; {{pm.personalStyle}}">Personal</button>
+    <button onClick="{{pm.toWork}}" aria-pressed="{{pm.workStr}}" style="min-height: 44px; border: none; border-radius: 11px; font-size: 16px; font-weight: 800; {{pm.workStyle}}">Work</button>
+  </div>
+  <sc-if value="{{pm.isPersonal}}" hint-placeholder-val="{{true}}">
+  <div style="display: flex; flex-direction: column; gap: 12px">
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #1C1C1E; border-radius: 10px; padding: 2px" role="group" aria-label="Day or week">
     <button onClick="{{pl.toDay}}" style="min-height: 34px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; {{pl.dayStyle}}">Day</button>
     <button onClick="{{pl.toWeek}}" style="min-height: 34px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; {{pl.weekStyle}}">Week</button>
@@ -560,6 +566,43 @@
     </div>
   </sc-if>
   <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Tap + to add a to-do for any day, pick its pillar, and make it repeat if you like. Unfinished one-time to-dos carry over to the next day. Today's to-dos show on the Check-in tab, grouped by pillar.</span>
+  </div>
+  </sc-if>
+  <sc-if value="{{pm.isWork}}" hint-placeholder-val="{{false}}">
+  <div style="display: flex; flex-direction: column; gap: 12px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button onClick="{{wk.prev}}" aria-label="Previous day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+    <div style="display: flex; flex-direction: column; align-items: center">
+      <span style="font-size: 17px; font-weight: 700">{{wk.title}}</span>
+      <span style="font-size: 12px; color: #98989F">{{wk.count}}</span>
+    </div>
+    <button onClick="{{wk.next}}" aria-label="Next day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+  </div>
+  <sc-if value="{{wk.isOff}}" hint-placeholder-val="{{false}}"><button onClick="{{wk.toToday}}" style="align-self: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: none; background: #1C1C1E; color: #409CFF; font-size: 14px; font-weight: 600">Back to Today</button></sc-if>
+  <div style="display: flex; gap: 8px">
+    <label for="worktext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New work to-do</label>
+    <input id="worktext" type="text" value="{{wk.text}}" onChange="{{wk.onText}}" onKeyDown="{{wk.onKey}}" placeholder="{{wk.ph}}" style="flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 0 14px; font-size: 16px">
+    <button onClick="{{wk.add}}" aria-label="Add work to-do" style="width: 48px; height: 48px; border-radius: 24px; border: none; display: flex; align-items: center; justify-content: center; flex: none; {{wk.addStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M5 12l5 5 9-10"></path></svg></button>
+  </div>
+  <div style="background: #1C1C1E; border-radius: 20px; padding: 2px 16px 4px; display: flex; flex-direction: column">
+    <sc-if value="{{wk.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 14px 0">Nothing on your work list for this day.</span></sc-if>
+    <sc-for list="{{wk.items}}" as="t" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; {{t.sep}}">
+        <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+          <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+          <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+        </button>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+          <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+        </div>
+        <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+    </sc-for>
+  </div>
+  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Type and press ✓ to add to this day. Tap + to make it repeat. Unfinished one-time items carry over to the next day. Work to-dos aren't part of the check-in.</span>
+  </div>
+  </sc-if>
 </div>
 </sc-if>
 
@@ -650,50 +693,6 @@
 </div>
 </sc-if>
 
-<!-- ================= WORK ================= -->
-<sc-if value="{{show.work}}" hint-placeholder-val="{{false}}">
-<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
-  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
-    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{wk.kicker}}</span>
-    <div style="display: flex; align-items: center; justify-content: space-between">
-      <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Work</h1>
-      <button onClick="{{wk.openAdd}}" aria-label="Add work to-do with options" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
-    </div>
-  </div>
-  <div style="display: flex; align-items: center; justify-content: space-between">
-    <button onClick="{{wk.prev}}" aria-label="Previous day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
-    <div style="display: flex; flex-direction: column; align-items: center">
-      <span style="font-size: 17px; font-weight: 700">{{wk.title}}</span>
-      <span style="font-size: 12px; color: #98989F">{{wk.count}}</span>
-    </div>
-    <button onClick="{{wk.next}}" aria-label="Next day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
-  </div>
-  <sc-if value="{{wk.isOff}}" hint-placeholder-val="{{false}}"><button onClick="{{wk.toToday}}" style="align-self: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: none; background: #1C1C1E; color: #409CFF; font-size: 14px; font-weight: 600">Back to Today</button></sc-if>
-  <div style="display: flex; gap: 8px">
-    <label for="worktext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New work to-do</label>
-    <input id="worktext" type="text" value="{{wk.text}}" onChange="{{wk.onText}}" onKeyDown="{{wk.onKey}}" placeholder="{{wk.ph}}" style="flex: 1; min-width: 0; min-height: 48px; border-radius: 12px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 0 14px; font-size: 16px">
-    <button onClick="{{wk.add}}" aria-label="Add work to-do" style="width: 48px; height: 48px; border-radius: 24px; border: none; display: flex; align-items: center; justify-content: center; flex: none; {{wk.addStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M5 12l5 5 9-10"></path></svg></button>
-  </div>
-  <div style="background: #1C1C1E; border-radius: 20px; padding: 2px 16px 4px; display: flex; flex-direction: column">
-    <sc-if value="{{wk.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #98989F; padding: 14px 0">Nothing on your work list for this day.</span></sc-if>
-    <sc-for list="{{wk.items}}" as="t" hint-placeholder-count="3">
-      <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; {{t.sep}}">
-        <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
-          <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
-          <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
-        </button>
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
-          <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
-          <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
-        </div>
-        <button onClick="{{t.del}}" aria-label="Delete work to-do" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-      </div>
-    </sc-for>
-  </div>
-  <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Type and press ✓ to add to this day. Tap + to make it repeat. Unfinished one-time items carry over to the next day. Work to-dos aren't part of the check-in.</span>
-</div>
-</sc-if>
-
 <!-- ================= HISTORY ================= -->
 <sc-if value="{{show.history}}" hint-placeholder-val="{{false}}">
 <div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
@@ -732,6 +731,28 @@
 </div>
 </sc-if>
 
+<!-- ================= JOURNAL ================= -->
+<sc-if value="{{show.journal}}" hint-placeholder-val="{{false}}">
+<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px; min-height: 100%; box-sizing: border-box">
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{jn.kicker}}</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Journal</h1>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <button onClick="{{jn.prev}}" aria-label="Previous day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+    <div style="display: flex; flex-direction: column; align-items: center">
+      <span style="font-size: 17px; font-weight: 700">{{jn.title}}</span>
+      <span style="font-size: 12px; color: #98989F">{{jn.count}}</span>
+    </div>
+    <button onClick="{{jn.next}}" aria-label="Next day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
+  </div>
+  <sc-if value="{{jn.isOff}}" hint-placeholder-val="{{false}}"><button onClick="{{jn.toToday}}" style="align-self: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: none; background: #1C1C1E; color: #409CFF; font-size: 14px; font-weight: 600">Back to Today</button></sc-if>
+  <label for="journaltext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Journal for {{jn.title}}</label>
+  <textarea id="journaltext" value="{{jn.text}}" onChange="{{jn.onText}}" placeholder="Write anything…" style="flex: 1; min-height: 420px; border-radius: 16px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 16px; font-size: 17px; line-height: 1.5; resize: none"></textarea>
+  <span style="font-size: 12px; color: #98989F; text-align: center">Saves as you type. One page per day, kept only on this phone.</span>
+</div>
+</sc-if>
+
 </div>
 
 <!-- ================= TAB BAR ================= -->
@@ -740,8 +761,8 @@
   <button onClick="{{goSummary}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.summary}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle></svg>Summary</button>
   <button onClick="{{goInput}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.input}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Check-in</button>
   <button onClick="{{goPlanner}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.planner}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"></path></svg>Planner</button>
-  <button onClick="{{goWork}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.work}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5"></rect><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"></path></svg>Work</button>
   <button onClick="{{goHistory}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.history}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>History</button>
+  <button onClick="{{goJournal}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.journal}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"></path><path d="M6 3v18M4 7h4M4 12h4M4 17h4M10 8h6M10 12h5"></path></svg>Journal</button>
 </nav>
 </sc-if>
 

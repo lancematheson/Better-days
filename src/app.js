@@ -439,7 +439,7 @@ class Component extends DCLogic {
     const tParts = TODAY.split('-');
     this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
       tasks: carryOver((S.tasks || []).map(migrateTask), TODAY), work: carryOver((S.work || []).map(function (w) { return w.date ? w : Object.assign({}, w, { date: TODAY, carried: '' }); }), TODAY),
-      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
       tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', reminder: S.reminder || { on: false, time: '21:00' }, setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
@@ -448,7 +448,7 @@ class Component extends DCLogic {
   }
   persist() {
     const s = this.state; const names = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; });
-    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, series: s.series, seriesNextId: s.seriesNextId, hist: s.hist, tipPos: s.tipPos, reminder: s.reminder,
+    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, series: s.series, seriesNextId: s.seriesNextId, journal: s.journal, hist: s.hist, tipPos: s.tipPos, reminder: s.reminder,
       setupDone: s.setupDone, whist: WHIST, fhist: FHIST, names: names, defImp: DEF_IMP, focus0: FOCUS };
     try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
   }
@@ -495,14 +495,14 @@ class Component extends DCLogic {
   buildCsv() {
     const s = this.state; const head = ['date', 'overall_pct', 'physical_pct', 'emotional_pct', 'financial_pct'];
     FACTORS.forEach(function (f) { head.push(f.id + '_score', f.id + '_importance', f.id + '_expected'); });
-    head.push('note', 'edited_on');
+    head.push('note', 'edited_on', 'journal');
     const q = function (v) { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
     const r1d = function (v) { return v == null ? '' : (Math.round(v * 10) / 10).toFixed(1); };
     const rows = Object.keys(s.days).sort().map(function (k) {
       const e = s.days[k]; const sd = scoreDay(e, 'score');
       const row = [k, r1d(sd.overall), r1d(sd.pillars.physical), r1d(sd.pillars.emotional), r1d(sd.pillars.financial)];
       FACTORS.forEach(function (f) { row.push(e.score[f.id] == null ? 'N/A' : e.score[f.id], e.imp[f.id], e.exp[f.id] == null ? '' : e.exp[f.id]); });
-      row.push(e.note || '', e.edited || '');
+      row.push(e.note || '', e.edited || '', s.journal[k] || '');
       return row.map(q).join(',');
     });
     return [head.join(',')].concat(rows).join('\n');
@@ -1007,7 +1007,7 @@ class Component extends DCLogic {
       delLabel: s.delStep === 0 ? 'Delete All Data' : 'Tap again to permanently delete everything',
       del: () => {
         if (this.state.delStep === 0) { this.setState({ delStep: 1 }); return; }
-        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], work: [], series: [], inp: null, tipPos: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans and to-dos (personal and work) deleted' }] });
+        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], work: [], series: [], journal: {}, inp: null, tipPos: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans, to-dos and journal pages deleted' }] });
       }
     };
     // setup flow
@@ -1076,14 +1076,34 @@ class Component extends DCLogic {
       items: wOpen.concat(wDone).map((w, i) => Object.assign(this.taskRow(w, false), { toggle: () => this.toggleWork(w), del: () => this.delWork(w), sep: i ? 'border-top: 1px solid #38383A' : '' }))
     };
 
+    // planner: one tab, switch between personal and work
+    const isWorkMode = s.pMode === 'work';
+    const pm = {
+      isPersonal: !isWorkMode, isWork: isWorkMode, kicker: isWorkMode ? wk2.kicker : pl.kicker,
+      add: () => this.openAdd(isWorkMode ? 'work' : 'personal'), addAria: isWorkMode ? 'Add work to-do with options' : 'Add to-do',
+      personalStr: isWorkMode ? 'false' : 'true', workStr: isWorkMode ? 'true' : 'false',
+      personalStyle: isWorkMode ? 'background: transparent; color: #C7C7CC' : 'background: #0A84FF; color: #FFFFFF',
+      workStyle: isWorkMode ? 'background: #0A84FF; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
+      toPersonal: () => this.setState({ pMode: 'personal' }), toWork: () => this.setState({ pMode: 'work', wDate: this.state.pView === 'day' ? this.state.pDate : this.state.wDate })
+    };
+    // journal: one free-writing page per day
+    const jt = s.journal[s.jDate] || ''; const words = jt.trim() ? jt.trim().split(/\s+/).length : 0;
+    const jn = {
+      kicker: s.jDate === TODAY ? 'Today' : s.jDate === addDays(TODAY, -1) ? 'Yesterday' : s.jDate < TODAY ? 'Past day' : 'Upcoming',
+      title: fmt(s.jDate), count: words ? words + (words === 1 ? ' word' : ' words') : 'Blank page', text: jt,
+      onText: (ev) => { const j = Object.assign({}, this.state.journal); const v = ev.target.value; if (v.trim()) j[this.state.jDate] = v; else delete j[this.state.jDate]; this.setState({ journal: j }); },
+      prev: () => this.setState({ jDate: addDays(this.state.jDate, -1) }), next: () => this.setState({ jDate: addDays(this.state.jDate, 1) }),
+      isOff: s.jDate !== TODAY, toToday: () => this.setState({ jDate: TODAY })
+    };
+
     const on = '#409CFF', off2 = '#8E8E93';
     return {
-      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', work: s.tab === 'work', history: s.tab === 'history', settings: s.tab === 'settings' },
+      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', journal: s.tab === 'journal', history: s.tab === 'history', settings: s.tab === 'settings' },
       showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
-      st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, vdb: vdb, attn: attn,
+      st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, vdb: vdb, attn: attn,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
       runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
-      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, work: s.tab === 'work' ? on : off2, history: s.tab === 'history' ? on : off2 },
+      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, journal: s.tab === 'journal' ? on : off2, history: s.tab === 'history' ? on : off2 },
       pl: pl, rv: rv, pn: pn,
       tipsOn: s.online, tipsOff: !s.online && latRecs.items.length > 0,
       offlineLabel: s.simOff ? 'Demo: turn internet back on' : 'Demo: see it without internet',
@@ -1093,7 +1113,7 @@ class Component extends DCLogic {
       todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,
       latRecs: latRecs, latSafety: latSafety, openLatest: () => this.setState({ sel: lk }),
       iv: iv, res: res, keys: keys, cal: cal, sheet: sheet,
-      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goWork: () => this.go('work'), goHistory: () => this.go('history'),
+      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goJournal: () => this.go('journal'), goHistory: () => this.go('history'),
       back: () => this.back(), next: () => this.next(), autoFill: () => this.autoFill(), save: () => this.save(),
       markNA: () => { if (!this.busy) this.commitScore('NA'); },
       onNote: (ev) => this.patchInp({ note: ev.target.value }),

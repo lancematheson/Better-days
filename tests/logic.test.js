@@ -104,6 +104,18 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(w.items.length === 2 && w.items[1].text === 'Send proposal' && w.items[1].done && w.count === '1 of 2 done', 'done work sinks to the bottom');
   w.next(); ok(T.renderVals().wk.empty, 'other days have their own list');
 }
+// Planner switches between personal and work; Journal keeps one page per day.
+{
+  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.series = []; T.state.journal = {};
+  let r = T.renderVals(); ok(r.pm.isPersonal && !r.pm.isWork, 'planner opens on Personal');
+  r.pm.toWork(); r = T.renderVals(); ok(r.pm.isWork && r.pm.addAria === 'Add work to-do with options', 'switch to Work');
+  r.pm.add(); ok(T.state.add.kind === 'work', '+ adds a work to-do in Work mode');
+  const today = L.getToday(); T.state.jDate = today;
+  T.renderVals().jn.onText({ target: { value: 'Good day today' } });
+  ok(T.state.journal[today] === 'Good day today' && T.renderVals().jn.count === '3 words', 'journal saves per day');
+  T.renderVals().jn.next(); ok(T.renderVals().jn.text === '' && T.renderVals().jn.count === 'Blank page', 'each day starts blank');
+  T.renderVals().jn.prev(); T.renderVals().jn.onText({ target: { value: '  ' } }); ok(!(today in T.state.journal), 'clearing a page removes it');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
@@ -171,7 +183,7 @@ ok(L.wFor(today).physical === 45 && L.wFor(L.addDays(today, -1)).physical === 40
 
 // CSV export.
 const csv = C.buildCsv().split('\n');
-ok(csv[0].split(',').length === 5 + 15 * 3 + 2, 'CSV columns');
+ok(csv[0].split(',').length === 5 + 15 * 3 + 3, 'CSV columns (with journal)');
 ok(csv.length === Object.keys(C.state.days).length + 1, 'CSV one row per day');
 
 console.log(`\n${passes} passed, ${fails} failed`);

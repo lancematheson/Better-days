@@ -65,7 +65,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await btn('Check-in').click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/10b-checkin-tab.png' });
   // work list
-  await btn('Work').click(); await p.waitForTimeout(150);
+  await btn('Planner').click(); await p.getByRole('button', { name: 'Work', exact: true }).click(); await p.waitForTimeout(150);
   await p.getByLabel('New work to-do').fill('Send proposal'); await p.keyboard.press('Enter'); await p.waitForTimeout(100);
   await p.getByLabel('New work to-do').fill('Call client'); await p.getByRole('button', { name: 'Add work to-do', exact: true }).click(); await p.waitForTimeout(100);
   await p.getByRole('button', { name: 'Mark done: Send proposal' }).click(); await p.waitForTimeout(100);
@@ -77,6 +77,10 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   log('repeat added:', await p.getByText('↻ Every weekday').isVisible());
   await p.screenshot({ path: SHOTS + '/10c-work.png' });
   await btn('History').click(); await p.waitForTimeout(150);
+  await btn('Journal').click(); await p.waitForTimeout(150);
+  await p.getByLabel(/Journal for/).fill('Long day but a good one.'); await p.waitForTimeout(400);
+  await p.screenshot({ path: SHOTS + '/11b-journal.png' });
+  log('journal saved:', (await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')).journal)));
   await p.screenshot({ path: SHOTS + '/11-history.png' });
   // settings
   await btn('Summary').click(); await p.getByRole('button', { name: 'Settings' }).click(); await p.waitForTimeout(150);
