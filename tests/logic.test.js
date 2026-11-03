@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, fmtTime, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -16,17 +16,19 @@ const ok = (c, m) => { if (c) passes++; else { fails++; console.log('FAIL', m); 
 const near = (a, b, t = 1e-6) => Math.abs(a - b) < t;
 const hex = (c) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase();
 
-// Scoring: all 5.0, Medium; Sleep 10.0 High (Focus). Physical = (36+12+30)/(3.6+2.4+6) = 6.5 -> 65%.
+// Scoring: all 5.0, Medium; Sleep 10.0 High. Focus is Sleep, Mood, Saving (×1.2).
+// Physical = (10×3.6 + 4×(5×2)) / (3.6 + 4×2) = 76 / 11.6 = 6.5517 -> 65.517%.
+// Emotional = (5×2.4 + 4×(5×2)) / (2.4 + 8) = 52 / 10.4 = 5 -> 50%. Financial likewise 50%.
 const e = { date: '2026-11-02', score: {}, imp: {}, exp: {} };
 L.FACTORS.forEach((f) => { e.score[f.id] = 5; e.imp[f.id] = 'M'; e.exp[f.id] = 5; });
 e.score.sleep = 10; e.imp.sleep = 'H';
 let sd = L.scoreDay(e, 'score');
-ok(near(sd.pillars.physical, 65), 'physical weighted 65%');
+ok(near(sd.pillars.physical, 760 / 11.6), 'physical weighted 65.5%');
 ok(near(sd.pillars.emotional, 50) && near(sd.pillars.financial, 50), 'emotional and financial 50%');
-ok(near(sd.overall, 56), 'overall = 65*0.40 + 50*0.35 + 50*0.25 = 56');
+ok(near(sd.overall, (760 / 11.6) * 0.40 + 50 * 0.35 + 50 * 0.25), 'overall = 65.52*0.40 + 50*0.35 + 50*0.25 = 56.21');
 const e2 = JSON.parse(JSON.stringify(e)); L.FACTORS.filter((f) => f.p === 'financial').forEach((f) => { e2.score[f.id] = null; });
 sd = L.scoreDay(e2, 'score');
-ok(sd.pillars.financial === null && near(sd.overall, (65 * 40 + 50 * 35) / 75), 'all-N/A pillar skipped, others re-normalize');
+ok(sd.pillars.financial === null && near(sd.overall, ((760 / 11.6) * 40 + 50 * 35) / 75), 'all-N/A pillar skipped, others re-normalize');
 
 // Grades use the shown (rounded) percent.
 [[90, 'A'], [89.6, 'A'], [89.4, 'B'], [80, 'B'], [69.7, 'C'], [69.4, 'D'], [60, 'D'], [59.4, 'F'], [0, 'F']].forEach(([p, g]) => ok(L.letter(p) === g, `letter(${p}) = ${g}`));
@@ -164,6 +166,17 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   sh.groups[1].toggle(); ok(!T.renderVals().sheet.groups[1].open, 'tap again closes it');
   T.renderVals().sheet.noteSec.toggle(); ok(!T.renderVals().sheet.noteSec.open, 'note can be closed');
   T.renderVals().sheet.taskSec.toggle(); T.state.sel = '2026-10-21'; ok(T.renderVals().sheet.noteSec.open && !T.renderVals().sheet.taskSec.open, 'another day starts fresh');
+}
+// Focus: one factor per pillar.
+{
+  ok(L.focusOk(['sleep', 'mood', 'saving']) && !L.focusOk(['sleep', 'exercise', 'saving']) && !L.focusOk(['sleep', 'mood']), 'one per pillar rule');
+  const T = new L.Component({}); T.state.set = T.freshDraft(); T.state.set.focus = ['sleep', 'exercise', 'saving'];
+  let st = T.renderVals().st; ok(st.focusNote === 'Still need: Emotional.', 'tells you which pillar is missing');
+  st.save(); ok(/one Focus factor from each pillar/.test(T.state.msg), 'cannot save without one per pillar');
+  T.renderVals().st.focusGroups[1].opts[1].pick(); ok(T.state.set.focus.join() === 'sleep,stress,saving', 'pick fills the missing pillar');
+  T.renderVals().st.focusGroups[0].opts[1].pick(); ok(T.state.set.focus.join() === 'exercise,stress,saving', 'tapping another in a pillar swaps it');
+  T.state.setup = { step: 3 }; T.state.set.focus = ['exercise', 'saving']; let su = T.renderVals().su;
+  ok(su.nextLabel === 'Pick Emotional' && /background: #2C2C2E/.test(su.nextStyle), 'setup waits for one per pillar');
 }
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {

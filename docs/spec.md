@@ -35,7 +35,7 @@ and a daily journal.
 ## 3. Scoring
 - **Scores:** 0.0–10.0, always typed with one decimal (4.0, 6.5, 10.0). N/A is allowed and is left out of the math.
 - **Importance weights:** High = 3, Medium = 2, Low = 1.
-- **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), picked in Settings or setup. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
+- **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), **exactly one from each pillar**, picked in Settings or setup (factors are grouped by pillar; tapping another factor in a pillar swaps that pillar's pick; Save / Continue wait until all three pillars have one). Default for new users: Sleep, Mood, Saving. Past weeks keep whatever Focus they had. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
 - **Pillar %** = Σ(score × weight) ÷ Σ(weight) × 10.
 - **Pillar weights:** percentages that total 100, set at setup (default 40/35/25), editable later with dated history; past days keep the weights in effect at the time. Same for Focus and factor edits.
 - **Overall %** = weighted average of the pillars (pillars with all N/A are skipped and the rest re-normalize).
@@ -115,7 +115,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 
 ## 7. Settings & setup
 - First launch runs a 5-step setup: Welcome → Pillar weights → Default importance → This week's Focus → Done. "Run Setup Again" in Settings.
-- Settings: pillar weights (must total 100), Focus (pick 3), factor names + default importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
+- Settings: pillar weights (must total 100), Focus (one per pillar), factor names + default importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
 - No reminders or alarms anywhere in the app (removed by decision; see §9).
 
 ## 8. Data & platform

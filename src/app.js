@@ -28,7 +28,7 @@ const PILLARS = [
   { id: 'emotional', name: 'Emotional', w: 35 },
   { id: 'financial', name: 'Financial', w: 25 }
 ];
-const FOCUS = (SAVED && SAVED.focus0) || ['sleep', 'exercise', 'saving'];
+const FOCUS = (SAVED && SAVED.focus0) || ['sleep', 'mood', 'saving'];
 const IW = { H: 3, M: 2, L: 1 };
 const INAME = { H: 'High', M: 'Medium', L: 'Low' };
 const DEF_IMP = { sleep: 'H', exercise: 'H', nutrition: 'M', hydration: 'L', energy: 'M', mood: 'H', stress: 'H', connection: 'M', purpose: 'M', rest: 'L', spending: 'H', saving: 'M', earning: 'H', obligations: 'M', awareness: 'L' };
@@ -336,6 +336,9 @@ function carryOver(list, today) {
   });
   return changed ? out : list;
 }
+// Focus ("Big Three") is one factor from each pillar.
+function focusMissing(list) { return PILLARS.filter(function (p) { return !list.some(function (id) { return pillarOfFactor(id) === p.id; }); }); }
+function focusOk(list) { return list.length === 3 && focusMissing(list).length === 0; }
 function factorName(id) { const f = FACTORS.filter(function (x) { return x.id === id; })[0]; return f ? f.name : ''; }
 function gcol(p) { if (p == null) return '#636366'; return 'rgb(' + rgbOf(p).join(',') + ')'; }
 function badge(p) { return { pct: p == null ? '–' : Math.round(p) + '%', letter: p == null ? '–' : letter(p), bg: gcol(p), missed: p == null ? '–' : (100 - Math.round(p)) + '%' }; }
@@ -472,10 +475,10 @@ class Component extends DCLogic {
     return { w: Object.assign({}, wFor(TODAY)), focus: focusFor(TODAY).slice(), names: names, imp: imp };
   }
   setDraft(p) { this.setState({ set: Object.assign({}, this.state.set, p), msg: '' }); }
-  draftValid() { const d = this.state.set; return d.w.physical + d.w.emotional + d.w.financial === 100 && d.focus.length === 3; }
+  draftValid() { const d = this.state.set; return d.w.physical + d.w.emotional + d.w.financial === 100 && focusOk(d.focus); }
   commitSettings(origin) {
     const s = this.state, d = s.set; const out = [];
-    if (!this.draftValid()) { this.setState({ msg: d.focus.length !== 3 ? 'Pick exactly 3 Focus factors.' : 'Pillar weights must add up to 100%.' }); return false; }
+    if (!this.draftValid()) { this.setState({ msg: !focusOk(d.focus) ? 'Pick one Focus factor from each pillar.' : 'Pillar weights must add up to 100%.' }); return false; }
     const cw = wFor(TODAY);
     if (cw.physical !== d.w.physical || cw.emotional !== d.w.emotional || cw.financial !== d.w.financial) {
       WHIST = WHIST.filter(function (h) { return h.from !== TODAY; }).concat([{ from: TODAY, w: Object.assign({}, d.w) }]);
@@ -1000,13 +1003,16 @@ class Component extends DCLogic {
     const d = s.set; const segOn2 = 'background: #636366; color: #FFFFFF', segOff2 = 'background: transparent; color: #C7C7CC';
     const wTotal = d.w.physical + d.w.emotional + d.w.financial;
     const stepW = (id, n) => { const w = Object.assign({}, this.state.set.w); w[id] = Math.max(0, Math.min(100, w[id] + n)); this.setDraft({ w: w }); };
-    const valid = wTotal === 100 && d.focus.length === 3;
+    const valid = wTotal === 100 && focusOk(d.focus);
+    const fMiss = focusMissing(d.focus);
     const st = {
       save: () => { this.commitSettings('settings'); }, saveCol: valid ? '#409CFF' : '#636366',
       hasMsg: !!s.msg, msg: s.msg, msgCol: /^Saved|^No changes/.test(s.msg) ? '#30D158' : '#FF6961',
       weights: PILLARS.map(function (p, i) { return { name: p.name, val: d.w[p.id], sep: i ? 'border-top: 1px solid #38383A' : '', dec: () => stepW(p.id, -5), inc: () => stepW(p.id, 5), decAria: 'Lower ' + p.name + ' weight', incAria: 'Raise ' + p.name + ' weight' }; }),
       wNote: wTotal === 100 ? 'Total 100%. Changes apply from today on; past days keep their old weights.' : 'Total ' + wTotal + '%. Must add up to 100%.', wCol: wTotal === 100 ? '#98989F' : '#FF6961',
-      focus: FACTORS.map((f) => { const on = d.focus.indexOf(f.id) >= 0; return { name: f.name, selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #C7C7CC', pick: () => { const cur = this.state.set.focus.slice(); const i = cur.indexOf(f.id); if (i >= 0) cur.splice(i, 1); else if (cur.length < 3) cur.push(f.id); else { cur.shift(); cur.push(f.id); } this.setDraft({ focus: cur }); } }; }),
+      // Focus: one per pillar. Tapping a factor replaces that pillar's pick.
+      focusGroups: PILLARS.map((p) => ({ name: p.name, col: PCOL[p.id], opts: FACTORS.filter(function (f) { return f.p === p.id; }).map((f) => { const on = d.focus.indexOf(f.id) >= 0; return { name: f.name, selStr: on ? 'true' : 'false', style: on ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #C7C7CC', pick: () => { const cur = this.state.set.focus.filter(function (id) { return pillarOfFactor(id) !== p.id; }); cur.push(f.id); this.setDraft({ focus: PILLARS.map(function (q) { return cur.filter(function (id) { return pillarOfFactor(id) === q.id; })[0]; }).filter(Boolean) }); } }; }) })),
+      focusNote: fMiss.length ? 'Still need: ' + fMiss.map(function (p) { return p.name; }).join(', ') + '.' : 'One from each pillar. Focus factors count 20% more this week.', focusNoteCol: fMiss.length ? '#FF6961' : '#98989F',
       factors: FACTORS.map((f, i) => ({
         name: d.names[f.id], label: f.name, inputId: 'fname-' + f.id, sep: i ? 'border-top: 1px solid #38383A' : '',
         onName: (ev) => { const n = Object.assign({}, this.state.set.names); n[f.id] = ev.target.value; this.setDraft({ names: n }); },
@@ -1030,17 +1036,17 @@ class Component extends DCLogic {
       { title: 'Welcome', body: 'Rate each day across three pillars (Physical, Emotional and Financial), with five factors each. Every night you score today, plan tomorrow and review your to-dos. Setup takes about two minutes.' },
       { title: 'Pillar Weights', body: 'How much should each pillar count toward your overall day? They must add up to 100%. You can change this anytime in Settings.', isWeights: true },
       { title: 'Default Importance', body: 'How important is each factor on a normal day? These pre-fill your first week; after that, the app recommends from your last 7 days.', isImp: true },
-      { title: 'This Week’s Focus', body: 'Pick your Big Three. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
+      { title: 'This Week’s Focus', body: 'Pick your Big Three: one factor from each pillar. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
       { title: 'You\u2019re Set', body: 'Do your first check-in tonight from the Check-in tab. Since there was no night before, today has no expectations yet; they start tomorrow. Everything is saved on this phone.' }
     ];
     const sstep = s.setup ? s.setup.step : 0; const sd0 = SU[sstep];
-    const canNext = sstep === 1 ? wTotal === 100 : sstep === 3 ? d.focus.length === 3 : true;
+    const canNext = sstep === 1 ? wTotal === 100 : sstep === 3 ? focusOk(d.focus) : true;
     const su = {
       open: !!s.setup, num: sstep + 1, total: SU.length, prog: Math.round((sstep + 1) / SU.length * 100), title: sd0.title, body: sd0.body,
       isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus,
       backLabel: sstep === 0 ? (s.setupDone ? 'Cancel' : '') : 'Back',
       back: () => { if (sstep === 0) { if (this.state.setupDone) this.setState({ setup: null, set: this.freshDraft() }); } else this.setState({ setup: { step: sstep - 1 } }); },
-      nextLabel: sstep === SU.length - 1 ? 'Start Using the App' : sstep === 3 && d.focus.length !== 3 ? 'Pick ' + (3 - d.focus.length) + ' more' : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',
+      nextLabel: sstep === SU.length - 1 ? 'Start Using the App' : sstep === 3 && !focusOk(d.focus) ? 'Pick ' + fMiss.map(function (p) { return p.name; }).join(', ') : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',
       nextStyle: canNext ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
       next: () => { if (!canNext) return; if (sstep === SU.length - 1) { if (this.commitSettings('setup')) this.setState({ tab: 'summary', setupDone: true }); } else this.setState({ setup: { step: sstep + 1 } }); }
     };
