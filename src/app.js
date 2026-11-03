@@ -675,18 +675,20 @@ class Component extends DCLogic {
     };
     if (!lat.d.txt) lat.d = { txt: '–', col: NEU };
 
-    // vs. day before: latest check-in compared with the one before it
-    const vdb = { show: !!psd, title: pk ? 'vs. ' + (dayDiff(pk, lk) === 1 ? 'Day Before' : fmtShort(pk)) : '', rows: [], lines: [] };
-    if (psd) {
-      vdb.rows = [{ name: 'Overall', weight: 800, b: badge(lsd.overall), d: delta(dR(psd.overall, lsd.overall), false) }].concat(PILLARS.map(function (p) {
-        return { name: p.name, weight: 600, b: badge(lsd.pillars[p.id]), d: delta(dR(psd.pillars[p.id], lsd.pillars[p.id]), false) };
-      })).map(function (r) { if (!r.d.txt) r.d = { txt: '–', col: NEU }; return r; });
-      const pe0 = days[pk];
-      const fm = FACTORS.map(function (f) { const a = pe0.score[f.id], b = le.score[f.id]; return { f: f, a: a, b: b, d: a != null && b != null ? dR(a, b, true) : null }; }).filter(function (m) { return m.d != null; });
+    // vs. expected: the latest check-in compared with what was predicted for it the night before
+    const lex = scoreDay(le, 'exp');
+    const vdb = { show: hasData && lex.overall != null, title: lat.label + ' vs. Expected', rows: [], lines: [] };
+    if (vdb.show) {
+      const row = function (name, weight, act, exp) {
+        const d = delta(dR(exp, act, true), true);
+        return { name: name, weight: weight, b: badge(act), exp: exp == null ? 'no prediction' : 'expected ' + Math.round(exp) + '%', d: d.txt ? d : { txt: '–', col: NEU } };
+      };
+      vdb.rows = [row('Overall', 800, lsd.overall, lex.overall)].concat(PILLARS.map(function (p) { return row(p.name, 600, lsd.pillars[p.id], lex.pillars[p.id]); }));
+      const fm = FACTORS.map(function (f) { const x = le.exp[f.id], a = le.score[f.id]; return { f: f, x: x, a: a, d: x != null && a != null ? dR(x, a, true) : null }; }).filter(function (m) { return m.d != null; });
       fm.sort(function (x, y) { return y.d - x.d; });
-      if (fm.length && fm[0].d > 0) vdb.lines.push({ txt: fm[0].f.name + ' up ' + fm[0].d.toFixed(1) + ' (' + f1(fm[0].a) + ' → ' + f1(fm[0].b) + ')', col: UP });
-      const lo = fm[fm.length - 1]; if (lo && lo.d < 0) vdb.lines.push({ txt: lo.f.name + ' down ' + Math.abs(lo.d).toFixed(1) + ' (' + f1(lo.a) + ' → ' + f1(lo.b) + ')', col: DOWN });
-      if (!vdb.lines.length) vdb.lines.push({ txt: 'No factor changed', col: NEU });
+      if (fm.length && fm[0].d > 0) vdb.lines.push({ txt: fm[0].f.name + ' beat by ' + fm[0].d.toFixed(1) + ' (expected ' + f1(fm[0].x) + ', got ' + f1(fm[0].a) + ')', col: UP });
+      const lo = fm[fm.length - 1]; if (lo && lo.d < 0) vdb.lines.push({ txt: lo.f.name + ' short by ' + Math.abs(lo.d).toFixed(1) + ' (expected ' + f1(lo.x) + ', got ' + f1(lo.a) + ')', col: DOWN });
+      if (!vdb.lines.length) vdb.lines.push({ txt: 'Every factor landed right on expectations', col: NEU });
     }
 
     // previous 7 days strip

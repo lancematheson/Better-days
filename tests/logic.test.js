@@ -103,12 +103,16 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(w.items.length === 1 && w.doneItems.length === 1 && w.count === '1 to do', 'done work moves to Done');
   w.clear(); ok(T.state.work.length === 1, 'clear done');
 }
-// vs. day before matches the shown numbers.
+// Today vs. expected: actual % with the change from the prediction, to one decimal.
 {
-  const vd = v.vdb; const ks = Object.keys(C.state.days).sort(); const a = L.scoreDay(C.state.days[ks[ks.length - 2]], 'score'), b = L.scoreDay(C.state.days[ks[ks.length - 1]], 'score');
-  ok(vd.rows[0].b.pct === Math.round(b.overall) + '%', 'vs day before: overall shown');
-  const d = Math.round(b.overall) - Math.round(a.overall); ok(vd.rows[0].d.txt === (d > 0 ? '▲ ' + d : d < 0 ? '▼ ' + -d : '0'), 'vs day before: change from rounded numbers');
-  ok(vd.rows.length === 4 && vd.lines.length >= 1, 'vs day before: pillars and factor lines');
+  const vd = v.vdb; const ks = Object.keys(C.state.days).sort(); const e = C.state.days[ks[ks.length - 1]];
+  const a = L.scoreDay(e, 'score'), x = L.scoreDay(e, 'exp');
+  ok(vd.show && vd.rows[0].b.pct === Math.round(a.overall) + '%' && vd.rows[0].exp === 'expected ' + Math.round(x.overall) + '%', 'vs expected: overall shown');
+  const d = Math.round(a.overall * 10) / 10 - Math.round(x.overall * 10) / 10; const r = Math.round(d * 10) / 10;
+  ok(vd.rows[0].d.txt === (r > 0 ? '▲ ' + r.toFixed(1) : r < 0 ? '▼ ' + Math.abs(r).toFixed(1) : '0.0'), 'vs expected: one-decimal change');
+  ok(vd.rows.length === 4 && vd.lines.length >= 1, 'vs expected: pillars and factor lines');
+  const T = new L.Component({}); T.state.days = { [L.getToday()]: Object.assign({}, e, { date: L.getToday(), exp: {} }) };
+  ok(!T.renderVals().vdb.show, 'hidden when no prediction was made');
 }
 // History calendar: checked-in days use their grade color; days without a check-in are blank.
 {
