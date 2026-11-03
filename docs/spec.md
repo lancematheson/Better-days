@@ -8,7 +8,8 @@ Code: https://github.com/lancematheson/Better-days  (source in src/, built app i
 ## 1. Purpose
 Rate each day across three pillars: **Physical, Emotional, Financial**. Each pillar has five factors.
 Every night: score today, set its importance, predict tomorrow, and plan to-dos. The app shows grades,
-trends, what dragged the day down, and expected vs. actual.
+trends, what dragged the day down, and expected vs. actual. It also holds a personal and a work to-do list
+and a daily journal.
 
 ## 2. Factors (15, editable in Settings)
 | Pillar | Factor | 0 means | 10 means | Default importance |
@@ -45,41 +46,76 @@ trends, what dragged the day down, and expected vs. actual.
 
 ## 4. Colors (dark background)
 - 50% and below: full red (#E0201B)
-- 50–75%: red → orange → yellow
-- 75–80%: yellow (#FFD60A)
-- 80–90%: yellow → green (green appears above 80)
-- 90% and up: full green (#1FA34A)
-Used on rings, grades, graphs and dots. Calendar uses separate logged (green ✓) / missed (red ✗) colors.
+- 50–70%: red → orange → yellow
+- 70–75%: yellow (#FFD60A)
+- 75–85%: yellow → green (green starts showing above 75)
+- 85% and up: full green (#1FA34A)
+Used on rings, grades, graphs, dots and the History calendar (each checked-in day is filled with its overall color).
+Pillar tags on to-dos use their own colors so they never read as grades: Physical cyan, Emotional pink, Financial purple.
 
 ## 5. Pages (iOS tab bar, Apple Fitness–style dark look)
-1. **Summary** — gear icon opens Settings. Yesterday's (latest) day as three nested rings in grade colors (outer Physical, middle Emotional, inner Financial) with overall grade; previous 7 days as mini rings (tap to open a day); Highlights (streak, biggest improvement, biggest drop, expectation record); expandable cards: 7-Day Score, 30-Day Score (graph with trend line, pillar filter), Big Three, Needs Attention (tips).
-2. **Check-in** (nightly, one session):
-   - Step 1 Review Tasks: each to-do gets ✓ / ✗ buttons.
-   - Step 2 Rate: 15 pages, one per factor. Linked to-dos shown at the top as name + ✓ / ✗. Questions in order: Today's score → Today's importance → Tomorrow's score → Tomorrow's importance. Importances are pre-filled (today = what you planned last night; tomorrow = most common choice in the last 7 days). Phone-style keypad; typing today's score jumps to tomorrow's score; typing tomorrow's score auto-advances to the next factor. Tab bar hidden during these 15 pages.
-   - Step 3 Plan Tomorrow: add to-dos for tomorrow (optional factor link).
+Tabs, in order: Summary · Check-in · Planner · History · Journal.
+
+1. **Summary** — gear icon opens Settings. Top to bottom:
+   - Latest day as three nested rings in grade colors (outer Physical, middle Emotional, inner Financial) with overall grade.
+   - **[Today/Yesterday] vs. Expected**: overall and each pillar as actual %, change from the prediction made the night
+     before (one decimal, in points) and "expected N%"; plus the factor that beat its prediction most and the one that fell
+     shortest. Hidden when that day had no prediction.
+   - Previous 7 days as mini rings (tap to open a day).
+   - Needs Attention (expandable; tips).
+   - Highlights (streak, biggest improvement, biggest drop, expectation record).
+   - Expandable cards: 7-Day Score, 30-Day Score (graph with trend line, pillar filter), Big Three.
+2. **Check-in**:
+   - Opens on a big **Start Today's Check-in** button (or "Edit…" if already saved), with **today's to-dos below**, grouped
+     by pillar (Physical, Emotional, Financial, then Other for old untagged ones), each with ✓ / ✗. They can be checked
+     off anytime during the day; this is the review step.
+   - Rate: 15 pages, one per factor. A one-line box at the top lists that pillar's to-dos for the day (with ✓/✗ status) as
+     a reminder only; to-dos never change scores. Questions in order: Today's score → Today's importance → Tomorrow's
+     score → Tomorrow's importance. Importances are pre-filled (today = what you planned last night; tomorrow = most common
+     choice in the last 7 days). Phone-style keypad; typing today's score jumps to tomorrow's score; typing tomorrow's score
+     auto-advances to the next factor. Tab bar hidden during these 15 pages.
+   - Plan Tomorrow: add to-dos for tomorrow (pillar required).
    - Optional free-text note, then Save Day → results (rings, expected vs. actual, Needs Attention, safety message).
-3. **Planner** — Day / Week views. Blue + opens an add sheet: text, day chips (M–S or "Week" for anytime), week arrows to plan ahead, optional factor link. Unfinished daily to-dos carry over to the next day. Day view shows that day's check-in status (view it, or start it).
-4. **Compare** — latest check-in vs. the one before it: overall, pillars, every factor (then/now/change/importance), expected vs. actual, both notes. Needs two check-ins.
-5. **History** — monthly calendar: logged = green ✓, missed = red ✗, today = blue outline. Tap a day for its full detail (scores, importance, expected, to-dos, note, "Edited on [date]"). Every past day can be filled in or edited anytime.
+3. **Planner** — a big **Personal | Work** switch at the top. Tapping the date opens a **pop-up month calendar** (dots on
+   days with to-dos in the current list; Today button); picking a day jumps the list to it. This calendar only picks dates
+   and is separate from History.
+   - **Personal:** Day / Week views. Blue + opens an add sheet: text, **pillar (required: Physical / Emotional /
+     Financial)**, repeat (below), day chips (M–S or "Week" for anytime), week arrows to plan ahead. Each to-do shows a
+     colored pillar tag. Day view shows that day's check-in status (view it, or start it).
+   - **Work:** one list per day with ‹ › arrows and Back to Today; quick-add box for the shown day; + opens the same add
+     sheet without pillars. Done items sink to the bottom. Work to-dos are never part of the check-in or scores.
+   - **Repeating to-dos (both lists):** Once / Daily / Weekdays / Weekly (pick one or more days, e.g. "Every Tue" for leg
+     day). Each day's copy is checked off separately. A missed repeat just stays not done on its day (it does not carry
+     over). × on a repeat asks: skip only that day, or stop repeating (past check marks are kept).
+   - **Carry-over (both lists):** unfinished one-time to-dos from earlier days move to today with "Carried over from
+     [date]". Anytime-this-week to-dos stay on their week.
+4. **History** — monthly calendar: each checked-in day is filled with its overall score color; days with no check-in are
+   left blank; today has a blue outline. Tap a day for its full detail (scores, importance, expected vs. actual, to-dos,
+   note, "Edited on [date]"). Every past day can be filled in or edited anytime. (The old Compare page was removed; its
+   key numbers live in the Summary card and each day's detail.)
+5. **Journal** — one blank page per day, ‹ › to move between days, Back to Today, word count. Saves as you type. Separate
+   from the check-in's short note.
 
 ## 6. Advice / tips
 - Shown for anything **below 70%** (factor < 7.0, or a pillar/overall below 70%).
 - **Only with internet.** Offline: "Connect to the internet to see tips."
-- Never repeat; ↻ New tip moves to the next unseen tip; when exhausted: "No new tips for X right now."
+- **Never run out:** ↻ New tip always shows another tip. Each factor's tips go in order the first time through, then
+  start a new shuffled round; the same tip never shows twice in a row. (Older saves pick up after the tips already seen.)
 - Each tip shows the advice, author + book/show, and "Open source ›".
-- Sources: **Physical** — Andrew Huberman (Huberman Lab). **Emotional** — David Burns (Feeling Good), Kristin Neff (Self-Compassion), Emily & Amelia Nagoski (Burnout), Kelly McGonigal (The Upside of Stress), Robert Waldinger & Marc Schulz (The Good Life), Viktor Frankl (Man's Search for Meaning), Alex Soojung-Kim Pang (Rest), Cal Newport (Digital Minimalism). **Financial** — Morgan Housel (The Psychology of Money), Ramit Sethi (I Will Teach You to Be Rich), JL Collins (The Simple Path to Wealth), Dave Ramsey (The Total Money Makeover), Vicki Robin & Joe Dominguez (Your Money or Your Life).
-- Current build: 33 built-in tips written in plain words from each source's main ideas. Live pulling from the sources needs a small server (future).
+- Sources: **Physical** — Andrew Huberman (Huberman Lab), Matthew Walker (Why We Sleep), Peter Attia (Outlive), Michael
+  Pollan (Food Rules), Mayo Clinic (hydration guidance). **Emotional** — David Burns (Feeling Good), Kristin Neff (Self-Compassion), Emily & Amelia Nagoski (Burnout), Kelly McGonigal (The Upside of Stress), Robert Waldinger & Marc Schulz (The Good Life), Viktor Frankl (Man's Search for Meaning), Alex Soojung-Kim Pang (Rest), Cal Newport (Digital Minimalism), Martin Seligman (Flourish). **Financial** — Morgan Housel (The Psychology of Money), Ramit Sethi (I Will Teach You to Be Rich), JL Collins (The Simple Path to Wealth), Dave Ramsey (The Total Money Makeover), Vicki Robin & Joe Dominguez (Your Money or Your Life), Cal Newport (Deep Work).
+- Current build: 150 built-in tips (10 per factor) written in plain words from each source's main ideas. Live pulling from the sources needs a small server (future).
 - **Safety net (always offline):** if the Emotional pillar or any emotional factor is below 50%, show a gentle message to reach out to someone and the 988 crisis line.
 
 ## 7. Settings & setup
-- First launch runs a 6-step setup: Welcome → Pillar weights → Default importance → This week's Focus → Reminder → Done. "Run Setup Again" in Settings.
-- Settings: pillar weights (must total 100), Focus (pick 3), factor names + default importance, reminder info, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice), About.
-- Reminders: home-screen web apps can't schedule alarms; users set a daily repeating reminder in iPhone Reminders.
+- First launch runs a 5-step setup: Welcome → Pillar weights → Default importance → This week's Focus → Done. "Run Setup Again" in Settings.
+- Settings: pillar weights (must total 100), Focus (pick 3), factor names + default importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
+- No reminders or alarms anywhere in the app (removed by decision; see §9).
 
 ## 8. Data & platform
 - Works offline. All data saved only on the phone (browser storage). No accounts, no cloud, no passcode.
 - Days follow the calendar (midnight to midnight). Missed days are left out of all averages and graphs.
-- CSV export: one row per day with overall/pillar %, every factor's score, importance and expected score, note, edited date. Deleting the home-screen app deletes its data, so export now and then.
+- CSV export: one row per day with overall/pillar %, every factor's score, importance and expected score, note, edited date, journal text. Deleting the home-screen app deletes its data, so export now and then.
 - Installed via Safari → Share → Add to Home Screen. Anyone with the link can install it; each person's data is separate.
 
 ## 9. Decisions explicitly rejected
@@ -87,10 +123,14 @@ Used on rings, grades, graphs and dots. Calendar uses separate logged (green ✓
 - Nightly "gut check" rating.
 - Per-factor notes (one note per day only).
 - iCloud sync, passcode / Face ID, CSV import.
+- Reminders / alarms of any kind (setup step and Settings section removed).
+- Compare page (replaced by the Summary "vs. Expected" card).
 
 ## 10. Ideas / next steps
 - Sunday-night Focus prompt and weekly review (decided, not built yet).
 - Send Feedback button for beta testers.
 - Live tip feeds (needs a small server).
+- **HubSpot tasks in the Work list** — tabled; plan ready in `docs/future-integrations.md`.
+- **Automatic calendar sync** (Apple / Google Calendar) — tabled; plan ready in `docs/future-integrations.md`.
 - Native iOS app (Swift) for real reminders and App Store distribution (needs a Mac; $99/yr Apple Developer Program for TestFlight/App Store).
 - Smaller-screen polish (iPhone SE needs a short scroll on check-in pages).
