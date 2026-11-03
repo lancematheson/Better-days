@@ -275,7 +275,7 @@ function makeTasks() {
     { text: 'Long run, 6 miles', date: '2026-11-01', factor: 'exercise', done: true },
     { text: 'Meal prep for the week', date: '2026-11-01', factor: 'nutrition', done: true },
     { text: 'Move $200 to savings', date: '2026-11-01', factor: 'saving', done: false },
-    { text: 'Gym: legs, 6:00 AM', date: '2026-11-02', factor: 'exercise', done: false },
+    { text: 'Gym: legs', date: '2026-11-02', factor: 'exercise', done: false, time: '06:00' },
     { text: 'Pay electric bill', date: '2026-11-02', factor: 'obligations', done: true },
     { text: 'Call Mom', date: '2026-11-02', factor: 'connection', done: false },
     { text: 'Lights out by 10:30 PM', date: '2026-11-02', factor: 'sleep', done: false },
@@ -287,7 +287,7 @@ function makeTasks() {
     { text: 'Plan weekend with friends', week: '2026-11-02', factor: 'connection', done: true }
   ];
   return t.map(function (x, i) {
-    const o = { id: i + 1, text: x.text, date: x.date || null, week: x.week || null, factor: x.factor || '', done: x.done, mark: x.done ? 'done' : null, carried: '' };
+    const o = { id: i + 1, text: x.text, date: x.date || null, week: x.week || null, factor: x.factor || '', time: x.time || '', done: x.done, mark: x.done ? 'done' : null, carried: '' };
     if (o.date && o.date < TODAY && !o.done) { o.carried = fmtShort(o.date); o.date = TODAY; }
     return migrateTask(o);
   });
@@ -298,9 +298,9 @@ function makeWork() {
 }
 function makeSeries() {
   return [
-    { id: 1, kind: 'personal', text: 'Leg day', pillar: 'physical', rule: { type: 'weekly', days: [1] }, start: '2026-10-01', end: null, marks: { '2026-10-27': 'done' } },
+    { id: 1, kind: 'personal', text: 'Leg day', time: '17:30', pillar: 'physical', rule: { type: 'weekly', days: [1] }, start: '2026-10-01', end: null, marks: { '2026-10-27': 'done' } },
     { id: 2, kind: 'personal', text: 'Take vitamins', pillar: 'physical', rule: { type: 'daily', days: [] }, start: '2026-10-25', end: null, marks: {} },
-    { id: 3, kind: 'work', text: 'Check pipeline', pillar: '', rule: { type: 'weekdays', days: [] }, start: '2026-10-01', end: null, marks: {} }
+    { id: 3, kind: 'work', text: 'Check pipeline', time: '09:00', pillar: '', rule: { type: 'weekdays', days: [] }, start: '2026-10-01', end: null, marks: {} }
   ];
 }
 const PCOL = { physical: '#64D2FF', emotional: '#FF6FAE', financial: '#BF5AF2' };
@@ -317,6 +317,10 @@ function repeatsOn(sr, k) {
   const d = dow0(k); const r = sr.rule;
   return r.type === 'daily' || (r.type === 'weekdays' && d < 5) || (r.type === 'weekly' && r.days.indexOf(d) >= 0);
 }
+// Optional start time on to-dos, stored as 'HH:MM' (24h); shown as '6:00 AM'.
+function fmtTime(t) { if (!t) return ''; const p = t.split(':'); const h = +p[0]; return (h % 12 || 12) + ':' + p[1] + ' ' + (h < 12 ? 'AM' : 'PM'); }
+// Timed to-dos first, in time order; untimed keep their order after them.
+function byTime(list) { return list.map(function (t, i) { return [t, i]; }).sort(function (a, b) { const x = a[0].time || '', y = b[0].time || ''; if (x && y && x !== y) return x < y ? -1 : 1; if (x && !y) return -1; if (!x && y) return 1; return a[1] - b[1]; }).map(function (p) { return p[0]; }); }
 function repeatLabel(r) {
   if (r.type === 'daily') return 'Every day';
   if (r.type === 'weekdays') return 'Every weekday';
@@ -520,21 +524,21 @@ class Component extends DCLogic {
     let day, wk;
     if (kind === 'work') { day = s.wDate; wk = weekKey(s.wDate); }
     else { day = s.pView === 'day' ? s.pDate : 'week'; wk = s.pView === 'day' ? weekKey(s.pDate) : s.pWeek; }
-    this.setState({ add: { open: true, kind: kind, text: '', day: day, week: wk, pillar: '', rep: 'none', wdays: day === 'week' ? [] : [day] } });
+    this.setState({ add: { open: true, kind: kind, text: '', day: day, week: wk, pillar: '', time: '', rep: 'none', wdays: day === 'week' ? [] : [day] } });
   }
   addReady(a) { return !!a.text.trim() && (a.kind === 'work' || !!a.pillar) && (a.rep !== 'weekly' || a.wdays.length > 0); }
   submitAdd() {
     const a = this.state.add; if (!this.addReady(a)) return;
     if (a.rep !== 'none') {
       const start = a.rep === 'weekly' ? a.wdays.slice().sort()[0] : (a.day === 'week' ? a.week : a.day);
-      this.addSeries(a.kind, a.text, a.pillar, { type: a.rep, days: a.rep === 'weekly' ? a.wdays.map(dow0) : [] }, start);
-    } else if (a.kind === 'work') this.addWorkItem(a.text, a.day === 'week' ? a.week : a.day);
-    else { const isWeek = a.day === 'week'; this.addTask(a.text, isWeek ? null : a.day, isWeek ? a.week : null, a.pillar); }
+      this.addSeries(a.kind, a.text, a.pillar, { type: a.rep, days: a.rep === 'weekly' ? a.wdays.map(dow0) : [] }, start, a.time);
+    } else if (a.kind === 'work') this.addWorkItem(a.text, a.day === 'week' ? a.week : a.day, a.time);
+    else { const isWeek = a.day === 'week'; this.addTask(a.text, isWeek ? null : a.day, isWeek ? a.week : null, a.pillar, isWeek ? '' : a.time); }
     this.setState({ add: Object.assign({}, this.state.add, { open: false, text: '' }) });
   }
-  addSeries(kind, text, pillar, rule, start) {
+  addSeries(kind, text, pillar, rule, start, time) {
     if (!text || !text.trim() || (kind === 'personal' && !pillar)) return false;
-    const sr = { id: this.state.seriesNextId, kind: kind, text: text.trim(), pillar: kind === 'personal' ? pillar : '', rule: rule, start: start, end: null, marks: {} };
+    const sr = { id: this.state.seriesNextId, kind: kind, text: text.trim(), time: time || '', pillar: kind === 'personal' ? pillar : '', rule: rule, start: start, end: null, marks: {} };
     this.setState({ series: this.state.series.concat([sr]), seriesNextId: this.state.seriesNextId + 1 });
     return true;
   }
@@ -542,15 +546,15 @@ class Component extends DCLogic {
   occurrences(kind, k) {
     return this.state.series.filter(function (sr) { return sr.kind === kind && repeatsOn(sr, k); }).map(function (sr) {
       const m = sr.marks[k] || null;
-      return { id: 's' + sr.id + '@' + k, sid: sr.id, date: k, week: null, text: sr.text, pillar: sr.pillar, done: m === 'done', mark: m, carried: '', rec: repeatLabel(sr.rule) };
+      return { id: 's' + sr.id + '@' + k, sid: sr.id, date: k, week: null, text: sr.text, time: sr.time || '', pillar: sr.pillar, done: m === 'done', mark: m, carried: '', rec: repeatLabel(sr.rule) };
     });
   }
   markSeries(sid, k, fn) {
     this.setState({ series: this.state.series.map(function (sr) { if (sr.id !== sid) return sr; const marks = Object.assign({}, sr.marks); const nm = fn(marks[k] || null); if (nm) marks[k] = nm; else delete marks[k]; return Object.assign({}, sr, { marks: marks }); }) });
   }
-  addTask(text, date, week, pillar) {
+  addTask(text, date, week, pillar, time) {
     if (!text || !text.trim() || !pillar) return false;
-    const t = { id: this.state.nextId, text: text.trim(), date: date, week: week, pillar: pillar, done: false, mark: null, carried: '' };
+    const t = { id: this.state.nextId, text: text.trim(), date: date, week: week, pillar: pillar, time: time || '', done: false, mark: null, carried: '' };
     this.setState({ tasks: this.state.tasks.concat([t]), nextId: this.state.nextId + 1 });
     return true;
   }
@@ -573,9 +577,9 @@ class Component extends DCLogic {
     this.setState({ delAsk: null, series: this.state.series.map(function (sr) { return sr.id === d.sid ? Object.assign({}, sr, { end: addDays(d.date, -1) }) : sr; }).filter(function (sr) { return !sr.end || sr.end >= sr.start; }) });
   }
   // Work to-dos: day by day, separate from personal to-dos and never part of the check-in.
-  addWorkItem(text, date) {
+  addWorkItem(text, date, time) {
     if (!text || !text.trim()) return false;
-    this.setState({ work: this.state.work.concat([{ id: this.state.workNextId, text: text.trim(), date: date, done: false, carried: '' }]), workNextId: this.state.workNextId + 1 });
+    this.setState({ work: this.state.work.concat([{ id: this.state.workNextId, text: text.trim(), date: date, time: time || '', done: false, carried: '' }]), workNextId: this.state.workNextId + 1 });
     return true;
   }
   addWork() { if (this.addWorkItem(this.state.workText, this.state.wDate)) this.setState({ workText: '' }); }
@@ -587,9 +591,10 @@ class Component extends DCLogic {
     if (w.sid) { this.setState({ delAsk: { sid: w.sid, date: w.date, text: w.text } }); return; }
     this.setState({ work: this.state.work.filter(function (x) { return x.id !== w.id; }) });
   }
-  workForDay(k) { return this.state.work.filter(function (w) { return w.date === k; }).concat(this.occurrences('work', k)); }
+  workForDay(k) { return byTime(this.state.work.filter(function (w) { return w.date === k; }).concat(this.occurrences('work', k))); }
   taskRow(t, showWhen) {
     const bits = [];
+    if (t.time) bits.push(fmtTime(t.time));
     if (t.rec) bits.push('↻ ' + t.rec);
     if (t.carried) bits.push('Carried over from ' + t.carried);
     if (showWhen && t.week) bits.push('This week');
@@ -618,7 +623,7 @@ class Component extends DCLogic {
   }
   tasksForDay(k, includeWeek) {
     const wk = weekKey(k);
-    return this.state.tasks.filter(function (t) { return t.date === k || (includeWeek && t.week === wk); }).concat(this.occurrences('personal', k));
+    return byTime(this.state.tasks.filter(function (t) { return t.date === k || (includeWeek && t.week === wk); }).concat(this.occurrences('personal', k)));
   }
 
   impPrefill(date, f) {
@@ -1049,6 +1054,8 @@ class Component extends DCLogic {
         style: A.rep === r[0] ? 'background: #636366; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
         pick: () => { const a = this.state.add; const d = a.day === 'week' ? a.week : a.day; this.patchAdd({ rep: r[0], day: d, wdays: [d] }); } })),
       hasRepNote: !!repNote, repNote: repNote,
+      time: A.time || '', hasTime: !!A.time, timeOff: A.day === 'week' && A.rep === 'none',
+      onTime: (ev) => this.patchAdd({ time: ev.target.value || '' }), clearTime: () => this.patchAdd({ time: '' }),
       wkLabel: 'Week of ' + fmtShort(A.week) + (A.week === weekKey(TODAY) ? ' (this week)' : ''),
       prevWk: () => { const a = this.state.add; this.patchAdd({ week: addDays(a.week, -7), day: a.day === 'week' ? 'week' : addDays(a.day, -7), wdays: a.wdays.map((k) => addDays(k, -7)) }); },
       nextWk: () => { const a = this.state.add; this.patchAdd({ week: addDays(a.week, 7), day: a.day === 'week' ? 'week' : addDays(a.day, 7), wdays: a.wdays.map((k) => addDays(k, 7)) }); },

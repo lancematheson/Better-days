@@ -87,6 +87,9 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    - **Repeating to-dos (both lists):** Once / Daily / Weekdays / Weekly (pick one or more days, e.g. "Every Tue" for leg
      day). Each day's copy is checked off separately. A missed repeat just stays not done on its day (it does not carry
      over). × on a repeat asks: skip only that day, or stop repeating (past check marks are kept).
+   - **Optional time (both lists):** the add sheet has an optional start time (iPhone time wheel; × clears it). Shown as
+     "6:00 AM" on the row; timed to-dos sort first in time order, untimed after. Not offered for anytime-this-week
+     to-dos. Repeats and carried-over to-dos keep their time.
    - **Carry-over (both lists):** unfinished one-time to-dos from earlier days move to today with "Carried over from
      [date]". Anytime-this-week to-dos stay on their week.
 4. **History** — monthly calendar: each checked-in day is filled with its overall score color; days with no check-in are

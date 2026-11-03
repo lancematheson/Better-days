@@ -57,10 +57,12 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await btn('Planner').click(); await p.waitForTimeout(150);
   await p.getByRole('button', { name: 'Add to-do' }).click(); await p.waitForTimeout(150);
   await p.getByRole('textbox', { name: 'To-do', exact: true }).fill('Call Mom');
+  await p.getByLabel(/^Time/).fill('18:30');
   await p.getByRole('button', { name: 'Emotional', exact: true }).click();
   await p.screenshot({ path: SHOTS + '/09-add-sheet.png' });
   await p.getByRole('button', { name: 'Add', exact: true }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/10-planner.png' });
+  log('time on to-do:', await p.getByText('6:30 PM').first().isVisible());
   // check-in tab: start button on top, today's to-dos grouped by pillar
   await btn('Check-in').click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/10b-checkin-tab.png' });

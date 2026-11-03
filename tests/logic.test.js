@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, fmtTime, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -133,6 +133,21 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(su.total === 5, 'setup has 5 steps');
   let titles = []; for (let i = 0; i < 5; i++) { T.state.setup = { step: i }; titles.push(T.renderVals().su.title); }
   ok(!titles.some((t) => /remind/i.test(t)) && !('reminder' in T.state), 'no reminder step or setting');
+}
+// Optional times: shown as 6:00 AM, timed to-dos first in time order, kept on repeats and work.
+{
+  ok(L.fmtTime('06:00') === '6:00 AM' && L.fmtTime('17:30') === '5:30 PM' && L.fmtTime('00:15') === '12:15 AM' && L.fmtTime('12:00') === '12:00 PM' && L.fmtTime('') === '', 'time format');
+  const T = new L.Component({}); T.state.tasks = []; T.state.series = []; T.state.seriesNextId = 1; T.state.work = []; T.state.nextId = 1;
+  const d = '2026-11-10';
+  T.addTask('No time', d, null, 'physical'); T.addTask('Late', d, null, 'physical', '18:00'); T.addTask('Early', d, null, 'emotional', '07:15');
+  T.addSeries('personal', 'Leg day', 'physical', { type: 'weekly', days: [1] }, '2026-11-03', '17:30');
+  const order = T.tasksForDay(d, true).map((t) => t.text); ok(order.join() === 'Early,Leg day,Late,No time', 'sorted by time, untimed last');
+  ok(T.taskRow(T.tasksForDay(d, true)[1], false).sub === '5:30 PM · ↻ Every Tue', 'time shown on the row');
+  T.state.wDate = d; T.openAdd('work'); T.patchAdd({ text: 'Standup', time: '09:00' }); T.submitAdd();
+  ok(T.state.work[0].time === '09:00', 'work to-do keeps its time');
+  T.state.pView = 'week'; T.state.pWeek = '2026-11-09'; T.openAdd('personal'); T.patchAdd({ text: 'Anytime', pillar: 'physical', time: '10:00' }); T.submitAdd();
+  ok(T.state.tasks[T.state.tasks.length - 1].time === '', 'no time on anytime-this-week to-dos');
+  ok(L.carryOver([{ id: 9, date: '2026-11-01', time: '08:00', done: false }], '2026-11-03')[0].time === '08:00', 'carried to-dos keep their time');
 }
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {

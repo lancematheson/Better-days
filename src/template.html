@@ -801,6 +801,11 @@
           </button>
         </sc-for>
       </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; border-top: 1px solid #38383A; padding-top: 8px">
+        <label for="addtime" style="flex: 1; font-size: 15px; font-weight: 600">Time <span style="font-weight: 400; color: #98989F">(optional)</span></label>
+        <input id="addtime" type="time" value="{{ad.time}}" onChange="{{ad.onTime}}" disabled="{{ad.timeOff}}" style="min-height: 40px; min-width: 120px; border-radius: 10px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 10px; font-size: 16px; font-weight: 600">
+        <sc-if value="{{ad.hasTime}}" hint-placeholder-val="{{false}}"><button onClick="{{ad.clearTime}}" aria-label="Clear time" style="width: 36px; height: 40px; border: none; background: transparent; color: #8E8E93; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></sc-if>
+      </div>
       <sc-if value="{{ad.hasRepNote}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #98989F; line-height: 1.35">{{ad.repNote}}</span></sc-if>
     </div>
   </div>

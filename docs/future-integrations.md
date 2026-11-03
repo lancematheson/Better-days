@@ -60,7 +60,8 @@ own every 15 to 60 minutes (iPhone Settings → Calendar → Accounts → Fetch)
 
 **Steps**
 1. Worker route `GET /cal/<secret>.ics` builds an iCalendar file from the stored to-dos:
-   - One-time to-dos become all-day `VEVENT`s (`DTSTART;VALUE=DATE`). Anytime-this-week ones go on the week's
+   - To-dos with a time become 30-minute events at that time (`DTSTART`/`DTEND` with the phone's time zone, sent as
+     `TZID`). Without a time they become all-day `VEVENT`s (`DTSTART;VALUE=DATE`). Anytime-this-week ones go on the week's
      Monday with "(this week)".
    - Repeats become one `VEVENT` with `RRULE`: daily → `FREQ=DAILY`; weekdays → `FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`;
      weekly → `FREQ=WEEKLY;BYDAY=<days>`. Skipped days go in `EXDATE`, and "stop repeating" becomes `UNTIL`.
