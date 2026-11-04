@@ -138,5 +138,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 - Live tip feeds (needs a small server).
 - **HubSpot tasks in the Work list** — tabled; plan ready in `docs/future-integrations.md`.
 - **Automatic calendar sync** (Apple / Google Calendar) — tabled; plan ready in `docs/future-integrations.md`.
+- **AI photo to-dos** (photo of a list or paper calendar → reviewed to-dos on the right Planner days) — tabled until the
+  middleman server exists; plan ready in `docs/future-integrations.md`.
 - Native iOS app (Swift) for real reminders and App Store distribution (needs a Mac; $99/yr Apple Developer Program for TestFlight/App Store).
 - Smaller-screen polish (iPhone SE needs a short scroll on check-in pages).

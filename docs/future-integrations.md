@@ -1,4 +1,4 @@
-# Future Integrations: HubSpot and Calendar Sync
+# Future Integrations: HubSpot, Calendar Sync and AI Photo To-dos
 
 Status: **tabled by Lance (Nov 2026).** Nothing here is built. This is the agreed path for when he wants them.
 Read `docs/spec.md` first; these plans assume the app as described there.
@@ -98,7 +98,47 @@ added to the iPhone). Edits made in the calendar flow back into the app. It sync
 - **Native iOS app with EventKit:** true two-way sync with Apple Calendar, but means a Swift rewrite, a Mac and
   $99/yr. Already listed in spec §10.
 
+## 3. AI photo to-dos ("snap a list")
+**Goal:** in Planner, a camera button lets Lance take or pick a photo of a handwritten or printed list, or a paper
+calendar. AI reads it and proposes to-dos with dates and times, then he reviews them and adds them to the Planner.
+This does not involve Apple Calendar.
+
+**Decided (Nov 2026):** wait for the middleman server. The AI key stays on the server and never goes on the phone.
+(Rejected for now: keeping a personal key on the phone, which would have been simpler.)
+
+**Steps**
+1. **Anthropic account and key.** Lance creates an account at console.anthropic.com, adds a little credit and sets a
+   monthly spend limit. The key is stored as a Worker secret (`ANTHROPIC_API_KEY`).
+2. **Worker route `POST /ai/todos`** (same secret check as the other routes). The body holds the photo (shrunk on the
+   phone to about 1500px on the long side, JPEG, base64), today's date, the shown Planner day, and whether
+   Personal or Work is open. The route calls the Claude Messages API with the image and a tool or JSON schema that
+   returns `[{ text, date (YYYY-MM-DD or null), time (HH:MM or null), pillar (physical|emotional|financial|null),
+   repeat (none|daily|weekdays|weekly + days) , confidence }]`. The prompt resolves relative or partial dates
+   ("Tue", "the 14th") against today, and ignores crossed-out items. Use the current Claude model with vision; check
+   the model ID and pricing when building (load the `claude-api` skill). Nothing is stored on the server.
+3. **App changes**
+   - A camera button next to + in Planner (both modes) opens `<input type="file" accept="image/*">`, which gives
+     iPhone's Take Photo / Photo Library choice.
+   - While it works, show "Reading your photo…". If it's offline or fails, show a clear message, and the photo is
+     never kept.
+   - **Review sheet (always):** one row per suggested to-do with a checkbox, editable text, day, optional time,
+     pillar buttons (Personal) and repeat. Rows missing a pillar are flagged. Then "Add N to-dos".
+   - It adds through the existing `addTask` / `addWorkItem` / `addSeries`, so carry-over, sorting, the check-in and the
+     pop-up calendar all work with no other changes.
+   - Hidden for anyone without server access set up in Settings (beta testers), the same as the other integrations.
+4. **Tests:** fake the route in `tests/logic.test.js` (review rows map to the right lists, unchecked rows are skipped,
+   personal rows need a pillar); add a review-sheet screenshot to the end-to-end test.
+
+**Cost and privacy:** roughly 1 to 2 cents per photo. The photo is sent to Anthropic only to be read, and the app
+keeps only the to-dos Lance approves. Spec §8 (data and privacy) must be updated when this ships.
+
+**Effort:** 1 to 2 days, or about 1 day if the server already exists.
+
+**Stopgap (no AI, no server), if wanted sooner:** a "Paste list" box. iPhone Live Text copies the text from a photo,
+each pasted line becomes a row in the same review sheet, and Lance sets days and pillars by hand. About half a day.
+
 ## Suggested order when un-tabled
 1. Build the middleman server and the Settings on/off switch with the secret.
 2. Calendar subscription (Option A): the quickest visible win, and it proves out the server.
-3. HubSpot tasks, once HubSpot private-app access is approved.
+3. AI photo to-dos (reuses the server, plus the review sheet).
+4. HubSpot tasks, once HubSpot private-app access is approved.
