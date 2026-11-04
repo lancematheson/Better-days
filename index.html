@@ -492,7 +492,11 @@ input,select,textarea{font-size:16px!important}
     <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{pm.kicker}}</span>
     <div style="display: flex; align-items: center; justify-content: space-between">
       <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Planner</h1>
-      <button onClick="{{pm.add}}" aria-label="{{pm.addAria}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <label for="scanfile" style="min-height: 44px; padding: 0 14px; border-radius: 22px; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M8 9h8M8 12h8M8 15h5"></path></svg>Scan</label>
+        <input id="scanfile" type="file" accept="image/*" onChange="{{onScanFile}}" aria-label="Scan a photo of a list" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden">
+        <button onClick="{{pm.add}}" aria-label="{{pm.addAria}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+      </div>
     </div>
   </div>
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #1C1C1E; border-radius: 14px; padding: 4px" role="group" aria-label="Personal or work">
@@ -885,6 +889,66 @@ input,select,textarea{font-size:16px!important}
         <span style="font-size: 12px; color: #98989F">{{pk.hint}}</span>
         <button onClick="{{pk.today}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 15px; font-weight: 600">Today</button>
       </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ================= SCAN A LIST ================= -->
+<sc-if value="{{scv.open}}" hint-placeholder-val="{{false}}">
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: flex-end">
+    <div style="background: #1C1C1E; border-radius: 22px 22px 0 0; max-height: 90%; display: flex; flex-direction: column; padding: 8px 16px calc(16px + env(safe-area-inset-bottom)); gap: 10px">
+      <div style="width: 36px; height: 5px; border-radius: 3px; background: #48484A; align-self: center"></div>
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center">
+        <button onClick="{{scv.cancel}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; min-height: 44px; padding: 0">Cancel</button>
+        <span style="font-size: 17px; font-weight: 700">{{scv.title}}</span>
+        <span></span>
+      </div>
+      <sc-if value="{{scv.reading}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 24px 4px 32px">
+          <span style="font-size: 16px; font-weight: 600; text-align: center">{{scv.status}}</span>
+          <div style="height: 6px; background: #2C2C2E; border-radius: 3px; overflow: hidden"><div style="height: 6px; background: #409CFF; width: {{scv.pct}}%"></div></div>
+          <span style="font-size: 13px; color: #98989F; text-align: center">Reading happens on your phone. The photo isn't saved or sent anywhere.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{scv.error}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 4px 24px">
+          <span style="font-size: 15px; color: #C7C7CC; line-height: 1.45; text-align: center">{{scv.msg}}</span>
+          <label for="scanfile" style="min-height: 50px; border-radius: 14px; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center">Try Another Photo</label>
+        </div>
+      </sc-if>
+      <sc-if value="{{scv.review}}" hint-placeholder-val="{{true}}">
+        <span style="font-size: 13px; color: #98989F">{{scv.note}}</span>
+        <div style="flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #2C2C2E; border-radius: 14px; padding: 0 12px">
+          <sc-for list="{{scv.rows}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; gap: 8px; padding: 10px 0; {{r.sep}}">
+              <button onClick="{{r.toggle}}" aria-label="{{r.aria}}" aria-pressed="{{r.onStr}}" style="width: 44px; height: 44px; margin-left: -8px; background: transparent; border: none; display: flex; align-items: flex-start; justify-content: center; padding-top: 10px; flex: none">
+                <sc-if value="{{r.on}}" hint-placeholder-val="{{true}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+                <sc-if value="{{r.notOn}}" hint-placeholder-val="{{false}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+              </button>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; {{r.rowStyle}}">
+                <label for="{{r.textId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">To-do text</label>
+                <input id="{{r.textId}}" type="text" value="{{r.text}}" onChange="{{r.onText}}" style="min-height: 40px; border-radius: 10px; border: none; background: #3A3A3C; color: #FFFFFF; padding: 0 10px; font-size: 16px; font-weight: 600">
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+                  <label for="{{r.dateId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Day</label>
+                  <input id="{{r.dateId}}" type="date" value="{{r.date}}" onChange="{{r.onDate}}" style="min-height: 36px; border-radius: 8px; border: none; background: #3A3A3C; color: #FFFFFF; padding: 0 8px; font-size: 16px">
+                  <label for="{{r.timeId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Time (optional)</label>
+                  <input id="{{r.timeId}}" type="time" value="{{r.time}}" onChange="{{r.onTime}}" style="min-height: 36px; min-width: 96px; border-radius: 8px; border: none; background: #3A3A3C; color: #FFFFFF; padding: 0 8px; font-size: 16px">
+                  <sc-if value="{{r.hasRep}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{r.rep}}</span></sc-if>
+                </div>
+                <sc-if value="{{scv.isPersonal}}" hint-placeholder-val="{{true}}">
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px" role="group" aria-label="Pillar">
+                    <sc-for list="{{r.pillars}}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{o.pick}}" aria-pressed="{{o.selStr}}" style="min-height: 36px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; {{o.style}}">{{o.name}}</button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{r.needPillar}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; font-weight: 700; color: #FF9F0A">Pick a pillar</span></sc-if>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{scv.add}}" style="min-height: 52px; border-radius: 14px; border: none; font-size: 17px; font-weight: 700; {{scv.addStyle}}">{{scv.addLabel}}</button>
+      </sc-if>
     </div>
   </div>
 </sc-if>
@@ -1572,6 +1636,113 @@ function carryOver(list, today) {
   });
   return changed ? out : list;
 }
+// ---------- Scan: read a photo of a list on the phone and turn each line into a to-do ----------
+// The text reader (Tesseract, in vendor/ocr/) runs on the phone; nothing is sent anywhere.
+// parseScan is plain text-in, rows-out so it can be tested without a photo.
+const MON3 = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const WDAYS = [['mon', 'monday'], ['tue', 'tues', 'tuesday'], ['wed', 'weds', 'wednesday'], ['thu', 'thur', 'thurs', 'thursday'], ['fri', 'friday'], ['sat', 'saturday'], ['sun', 'sunday']];
+const WD_RE = WDAYS.map(function (w) { return w.slice().sort(function (a, b) { return b.length - a.length; }).join('|'); }).join('|');
+const MON_RE = 'jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?';
+const PILLAR_WORDS = {
+  physical: ['gym', 'run', 'running', 'jog', 'walk', 'workout', 'work out', 'lift', 'legs', 'leg day', 'yoga', 'stretch', 'swim', 'bike', 'hike', 'sleep', 'nap', 'bed', 'doctor', 'dr', 'dentist', 'physio', 'meal', 'meal prep', 'cook', 'eat', 'groceries', 'grocery', 'water', 'vitamins', 'steps', 'exercise', 'training', 'haircut'],
+  emotional: ['call', 'text', 'mom', 'dad', 'family', 'friend', 'friends', 'date', 'kids', 'wife', 'husband', 'journal', 'read', 'book', 'meditate', 'therapy', 'pray', 'church', 'birthday', 'gift', 'card', 'visit', 'dinner with', 'lunch with', 'coffee with', 'relax', 'hobby', 'movie', 'thank'],
+  financial: ['pay', 'bill', 'bills', 'rent', 'mortgage', 'budget', 'bank', 'save', 'savings', 'invest', 'invoice', 'tax', 'taxes', 'insurance', 'credit', 'loan', 'debt', 'refund', 'money', 'transfer', 'deposit', 'paycheck', 'subscription', 'cancel', 'return', 'quote', 'estimate', '$']
+};
+function guessPillar(t) {
+  const lt = ' ' + t.toLowerCase().replace(/[^a-z0-9$ ]/g, ' ') + ' ';
+  let best = '', bn = 0;
+  Object.keys(PILLAR_WORDS).forEach(function (p) {
+    let n = 0; PILLAR_WORDS[p].forEach(function (w) { if (w === '$' ? t.indexOf('$') >= 0 : lt.indexOf(' ' + w + ' ') >= 0) n++; });
+    if (n > bn) { bn = n; best = p; }
+  });
+  return best;
+}
+function ymd(y, m, d) { const dt = new Date(Date.UTC(y, m, d)); if (dt.getUTCMonth() !== m) return null; return dt.toISOString().slice(0, 10); }
+// A month/day with no year: this year, unless that was more than 60 days ago (then next year).
+function withYear(today, m, d, y) {
+  if (y) return ymd(y < 100 ? 2000 + y : y, m, d);
+  const ty = +today.slice(0, 4); const k = ymd(ty, m, d); if (!k) return null;
+  return dayDiff(k, today) > 60 ? ymd(ty + 1, m, d) : k;
+}
+function parseScanLine(raw, today) {
+  let t = ' ' + raw.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim() + ' ';
+  // bullets, checkboxes, list numbers
+  t = ' ' + t.trim().replace(/^(?:[-–—•*·●▪■□☐☑☒✓✔>~=+]+|\[\s?[xX✓ ]?\s?\]|\(\s?\)|\d{1,2}[.)](?!\d))\s*/, '') + ' ';
+  let date = null, time = '', rep = 'none', days = [];
+  const cut = function (re, fn) { const m = t.match(re); if (!m) return false; const r = fn(m); if (r === false) return false; t = t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length); return true; };
+  // repeats
+  cut(/\b(?:every\s?day|daily)\b/i, function () { rep = 'daily'; });
+  if (rep === 'none') cut(/\b(?:every\s+)?weekdays\b/i, function () { rep = 'weekdays'; });
+  if (rep === 'none') cut(new RegExp('\\b(?:every|each)\\s+(' + WD_RE + ')s?\\b', 'i'), function (m) { const w = m[1].toLowerCase(); rep = 'weekly'; days = [WDAYS.findIndex(function (a) { return a.indexOf(w) >= 0; })]; });
+  // times
+  cut(/\b(noon|midday)\b/i, function () { time = '12:00'; });
+  if (!time) cut(/\bmidnight\b/i, function () { time = '00:00'; });
+  if (!time) cut(/(?:@|\bat\s+)?\b(\d{1,2})(?::|\.)?(\d{2})?\s*(a\.?m\.?|p\.?m\.?|a|p)(?![a-z])/i, function (m) {
+    let h = +m[1]; const mi = m[2] ? +m[2] : 0; if (h < 1 || h > 12 || mi > 59) return false;
+    const pm = /p/i.test(m[3]); if (pm && h < 12) h += 12; if (!pm && h === 12) h = 0;
+    time = String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0');
+  });
+  if (!time) cut(/(?:@|\bat\s+)?\b(\d{1,2}):(\d{2})\b/, function (m) {
+    let h = +m[1]; const mi = +m[2]; if (h > 23 || mi > 59) return false;
+    if (h >= 1 && h <= 6) h += 12; // "3:30 meeting" is almost always afternoon
+    time = String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0');
+  });
+  // dates
+  if (rep === 'none') {
+    cut(/\b(today|tonight)\b/i, function () { date = today; });
+    if (!date) cut(/\b(tomorrow|tmrw|tmr)\b/i, function () { date = addDays(today, 1); });
+    if (!date) cut(new RegExp('\\b(' + MON_RE + ')\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?\\b', 'i'), function (m) { const k = withYear(today, MON3.indexOf(m[1].slice(0, 3).toLowerCase()), +m[2], m[3] ? +m[3] : 0); if (!k) return false; date = k; });
+    if (!date) cut(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?(' + MON_RE + ')\\b\\.?', 'i'), function (m) { const k = withYear(today, MON3.indexOf(m[2].slice(0, 3).toLowerCase()), +m[1], 0); if (!k) return false; date = k; });
+    if (!date) cut(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/, function (m) { const k = withYear(today, +m[1] - 1, +m[2], m[3] ? +m[3] : 0); if (!k) return false; date = k; });
+    if (!date) cut(new RegExp('\\b(?:next\\s+|this\\s+|on\\s+)?(' + WD_RE + ')\\.?\\b', 'i'), function (m) {
+      const w = m[1].toLowerCase(); const i = WDAYS.findIndex(function (a) { return a.indexOf(w) >= 0; });
+      date = addDays(today, (i - dow0(today) + 7) % 7);
+    });
+  }
+  // tidy what's left: stray connectors and punctuation at the ends
+  let text = t.replace(/\s+/g, ' ').trim();
+  for (let i = 0; i < 3; i++) text = text.replace(/^(?:at|on|by|due|@|[-–—,:;.|])\s*/i, '').replace(/\s*(?:at|on|by|due|@|[-–—,:;|])$/i, '').trim();
+  return { text: text, date: date, time: time, rep: rep, days: days };
+}
+function parseScan(fullText, today) {
+  const seen = {}; const out = [];
+  String(fullText || '').split(/\r?\n/).forEach(function (line) {
+    if ((line.match(/[A-Za-z]/g) || []).length < 2) return;
+    const r = parseScanLine(line, today);
+    if ((r.text.match(/[A-Za-z]/g) || []).length < 2) return;
+    if (/^(?:my\s+)?(?:to[\s-]?do'?s?|things to do|tasks|list|to[\s-]?do list|this week|today)\s*:?$/i.test(r.text)) return; // list headings
+    const key = r.text.toLowerCase(); if (seen[key]) return; seen[key] = true;
+    r.pillar = guessPillar(r.text); out.push(r);
+  });
+  return out;
+}
+// Loads the reader on first use (about 7 MB, then kept on the phone) and reads one photo.
+let OCR_LOAD = null;
+function ocrBase() { return new URL('vendor/ocr/', location.href).href; }
+function loadOcr() {
+  if (typeof window === 'undefined') return Promise.reject(new Error('no window'));
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (!OCR_LOAD) OCR_LOAD = new Promise(function (res, rej) { const sc = document.createElement('script'); sc.src = ocrBase() + 'tesseract.min.js'; sc.onload = function () { res(window.Tesseract); }; sc.onerror = function () { OCR_LOAD = null; rej(new Error('load')); }; document.head.appendChild(sc); });
+  return OCR_LOAD;
+}
+// Shrink big photos (keeps memory low on the phone) and respect the photo's rotation.
+function photoCanvas(file) {
+  const draw = function (src, w, h) { const sc = Math.min(1, 2000 / Math.max(w, h)); const c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return c; };
+  if (window.createImageBitmap) return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (b) { return draw(b, b.width, b.height); });
+  return new Promise(function (res, rej) { const im = new Image(); im.onload = function () { res(draw(im, im.naturalWidth, im.naturalHeight)); }; im.onerror = rej; im.src = URL.createObjectURL(file); });
+}
+function readPhoto(file, onProgress) {
+  let worker = null;
+  return loadOcr().then(function (T) {
+    const b = ocrBase();
+    return T.createWorker('eng', 1, { workerPath: b + 'worker.min.js', corePath: b, langPath: b, gzip: true, workerBlobURL: false,
+      logger: function (m) { if (onProgress && m && typeof m.progress === 'number') onProgress(m.status, m.progress); } });
+  }).then(function (w) { worker = w; return photoCanvas(file); })
+    .then(function (c) { return worker.recognize(c); })
+    .then(function (r) { const txt = r && r.data ? r.data.text : ''; return worker.terminate().then(function () { return txt; }); })
+    .catch(function (e) { if (worker) worker.terminate(); throw e; });
+}
+
 // Focus ("Big Three") is one factor from each pillar.
 function focusMissing(list) { return PILLARS.filter(function (p) { return !list.some(function (id) { return pillarOfFactor(id) === p.id; }); }); }
 function focusOk(list) { return list.length === 3 && focusMissing(list).length === 0; }
@@ -1682,7 +1853,7 @@ class Component extends DCLogic {
     const tParts = TODAY.split('-');
     this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
       tasks: carryOver((S.tasks || []).map(migrateTask), TODAY), work: carryOver((S.work || []).map(function (w) { return w.date ? w : Object.assign({}, w, { date: TODAY, carried: '' }); }), TODAY),
-      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', pick: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
       tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
@@ -1960,6 +2131,37 @@ class Component extends DCLogic {
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
     const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 1) return;
     this.setState({ month: { y: y, m: m } });
+  }
+  // Scan: photo -> on-phone text reading -> review sheet -> to-dos on the right days.
+  onScanFile(ev) {
+    const f = ev && ev.target && ev.target.files && ev.target.files[0]; if (!f) return;
+    try { ev.target.value = ''; } catch (e) {}
+    const kind = this.state.pMode === 'work' ? 'work' : 'personal';
+    const def = kind === 'work' ? this.state.wDate : this.state.pDate;
+    this.setState({ scan: { step: 'reading', kind: kind, def: def, status: 'Getting ready…', pct: 0, rows: [] } });
+    readPhoto(f, (st, p) => { if (!this.state.scan || this.state.scan.step !== 'reading') return; this.patchScan({ status: st === 'recognizing text' ? 'Reading your list…' : 'Getting ready… (first time takes a bit longer)', pct: Math.round(p * 100) }); })
+      .then((txt) => { if (this.state.scan) this.showScan(txt); })
+      .catch(() => { if (this.state.scan) this.patchScan({ step: 'error', msg: navigator.onLine === false ? 'The first scan needs internet to download the text reader. After that, scanning works offline.' : 'Couldn’t read that photo. Try again with the list flat, well lit and filling the frame.' }); });
+  }
+  showScan(txt) {
+    const sc = this.state.scan; const rows = parseScan(txt, TODAY);
+    let n = 0;
+    this.setState({ scan: Object.assign({}, sc, { step: rows.length ? 'review' : 'error', msg: rows.length ? '' : 'No list found in that photo. Printed text works best; try a clearer, closer photo.',
+      rows: rows.map(function (r) { return { id: ++n, on: true, text: r.text, date: r.date || sc.def, time: r.time, rep: r.rep, days: r.days, pillar: sc.kind === 'work' ? '' : r.pillar }; }) }) });
+  }
+  patchScan(p) { this.setState({ scan: Object.assign({}, this.state.scan, p) }); }
+  patchScanRow(id, p) { this.patchScan({ rows: this.state.scan.rows.map(function (r) { return r.id === id ? Object.assign({}, r, p) : r; }) }); }
+  scanRowOk(sc, r) { return !!r.text.trim() && !!r.date && (sc.kind === 'work' || !!r.pillar); }
+  addScanned() {
+    const sc = this.state.scan; let added = 0;
+    sc.rows.forEach((r) => {
+      if (!r.on || !this.scanRowOk(sc, r)) return;
+      if (r.rep !== 'none') this.addSeries(sc.kind, r.text, r.pillar, { type: r.rep, days: r.rep === 'weekly' ? r.days : [] }, r.date, r.time);
+      else if (sc.kind === 'work') this.addWorkItem(r.text, r.date, r.time);
+      else this.addTask(r.text, r.date, null, r.pillar, r.time);
+      added++;
+    });
+    if (added) this.setState({ scan: null });
   }
   // Jump the Planner to a date picked from the pop-up calendar (Personal opens that day's Day view).
   pickDate(k) {
@@ -2375,11 +2577,32 @@ class Component extends DCLogic {
         close: (ev) => { if (ev && ev.target !== ev.currentTarget) return; this.setState({ pick: null }); } };
     }
 
+    // scan sheet
+    let scv = { open: false, rows: [] };
+    if (s.scan) {
+      const sc = s.scan; const ok = sc.rows.filter((r) => r.on && this.scanRowOk(sc, r)).length;
+      const needP = sc.kind === 'personal' && sc.rows.some(function (r) { return r.on && !r.pillar; });
+      scv = { open: true, reading: sc.step === 'reading', review: sc.step === 'review', error: sc.step === 'error', status: sc.status, pct: sc.pct || 0, msg: sc.msg || '',
+        title: sc.kind === 'work' ? 'Scanned Work To-Dos' : 'Scanned To-Dos', isPersonal: sc.kind === 'personal',
+        note: needP ? 'Tap a pillar for the ones marked “Pick a pillar.”' : 'Untick anything it misread. Tap a field to fix it.',
+        addLabel: ok ? 'Add ' + ok + (ok === 1 ? ' to-do' : ' to-dos') : 'Nothing to add', addStyle: ok ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+        add: () => this.addScanned(), cancel: () => this.setState({ scan: null }),
+        rows: sc.rows.map((r, i) => ({
+          on: r.on, notOn: !r.on, onStr: r.on ? 'true' : 'false', toggle: () => this.patchScanRow(r.id, { on: !r.on }), rowStyle: r.on ? '' : 'opacity: 0.45;', sep: i ? 'border-top: 1px solid #38383A;' : '',
+          text: r.text, textId: 'scantext-' + r.id, dateId: 'scandate-' + r.id, timeId: 'scantime-' + r.id, date: r.date || '', time: r.time || '',
+          onText: (ev) => this.patchScanRow(r.id, { text: ev.target.value }), onDate: (ev) => this.patchScanRow(r.id, { date: ev.target.value || r.date }), onTime: (ev) => this.patchScanRow(r.id, { time: ev.target.value || '' }),
+          hasRep: r.rep !== 'none', rep: '↻ ' + repeatLabel({ type: r.rep, days: r.days }),
+          needPillar: sc.kind === 'personal' && !r.pillar, aria: (r.on ? 'Skip: ' : 'Include: ') + r.text,
+          pillars: sc.kind === 'personal' ? PILLARS.map((p) => { const onP = r.pillar === p.id; return { name: p.name, selStr: onP ? 'true' : 'false', style: onP ? 'background: ' + PCOL[p.id] + '; color: #000000' : 'background: #2C2C2E; color: ' + PCOL[p.id], pick: () => this.patchScanRow(r.id, { pillar: p.id }) }; }) : []
+        }))
+      };
+    }
+
     const on = '#409CFF', off2 = '#8E8E93';
     return {
       show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', journal: s.tab === 'journal', history: s.tab === 'history', settings: s.tab === 'settings' },
       showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
-      st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk,
+      st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
       openJPick: () => { const pp = this.state.jDate.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1, j: true } }); },
       openPick: () => { const st = this.state; const c = st.pMode === 'work' ? st.wDate : (st.pView === 'day' ? st.pDate : st.pWeek); const pp = c.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1 } }); }, vdb: vdb, attn: attn,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),

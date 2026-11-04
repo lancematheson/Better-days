@@ -453,7 +453,11 @@
     <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{pm.kicker}}</span>
     <div style="display: flex; align-items: center; justify-content: space-between">
       <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Planner</h1>
-      <button onClick="{{pm.add}}" aria-label="{{pm.addAria}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <label for="scanfile" style="min-height: 44px; padding: 0 14px; border-radius: 22px; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M8 9h8M8 12h8M8 15h5"></path></svg>Scan</label>
+        <input id="scanfile" type="file" accept="image/*" onChange="{{onScanFile}}" aria-label="Scan a photo of a list" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden">
+        <button onClick="{{pm.add}}" aria-label="{{pm.addAria}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #0A84FF; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+      </div>
     </div>
   </div>
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #1C1C1E; border-radius: 14px; padding: 4px" role="group" aria-label="Personal or work">
@@ -846,6 +850,66 @@
         <span style="font-size: 12px; color: #98989F">{{pk.hint}}</span>
         <button onClick="{{pk.today}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #2C2C2E; color: #409CFF; font-size: 15px; font-weight: 600">Today</button>
       </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ================= SCAN A LIST ================= -->
+<sc-if value="{{scv.open}}" hint-placeholder-val="{{false}}">
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: flex-end">
+    <div style="background: #1C1C1E; border-radius: 22px 22px 0 0; max-height: 90%; display: flex; flex-direction: column; padding: 8px 16px calc(16px + env(safe-area-inset-bottom)); gap: 10px">
+      <div style="width: 36px; height: 5px; border-radius: 3px; background: #48484A; align-self: center"></div>
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center">
+        <button onClick="{{scv.cancel}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; min-height: 44px; padding: 0">Cancel</button>
+        <span style="font-size: 17px; font-weight: 700">{{scv.title}}</span>
+        <span></span>
+      </div>
+      <sc-if value="{{scv.reading}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 24px 4px 32px">
+          <span style="font-size: 16px; font-weight: 600; text-align: center">{{scv.status}}</span>
+          <div style="height: 6px; background: #2C2C2E; border-radius: 3px; overflow: hidden"><div style="height: 6px; background: #409CFF; width: {{scv.pct}}%"></div></div>
+          <span style="font-size: 13px; color: #98989F; text-align: center">Reading happens on your phone. The photo isn't saved or sent anywhere.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{scv.error}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 4px 24px">
+          <span style="font-size: 15px; color: #C7C7CC; line-height: 1.45; text-align: center">{{scv.msg}}</span>
+          <label for="scanfile" style="min-height: 50px; border-radius: 14px; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center">Try Another Photo</label>
+        </div>
+      </sc-if>
+      <sc-if value="{{scv.review}}" hint-placeholder-val="{{true}}">
+        <span style="font-size: 13px; color: #98989F">{{scv.note}}</span>
+        <div style="flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #2C2C2E; border-radius: 14px; padding: 0 12px">
+          <sc-for list="{{scv.rows}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; gap: 8px; padding: 10px 0; {{r.sep}}">
+              <button onClick="{{r.toggle}}" aria-label="{{r.aria}}" aria-pressed="{{r.onStr}}" style="width: 44px; height: 44px; margin-left: -8px; background: transparent; border: none; display: flex; align-items: flex-start; justify-content: center; padding-top: 10px; flex: none">
+                <sc-if value="{{r.on}}" hint-placeholder-val="{{true}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+                <sc-if value="{{r.notOn}}" hint-placeholder-val="{{false}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+              </button>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; {{r.rowStyle}}">
+                <label for="{{r.textId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">To-do text</label>
+                <input id="{{r.textId}}" type="text" value="{{r.text}}" onChange="{{r.onText}}" style="min-height: 40px; border-radius: 10px; border: none; background: #3A3A3C; color: #FFFFFF; padding: 0 10px; font-size: 16px; font-weight: 600">
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+                  <label for="{{r.dateId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Day</label>
+                  <input id="{{r.dateId}}" type="date" value="{{r.date}}" onChange="{{r.onDate}}" style="min-height: 36px; border-radius: 8px; border: none; background: #3A3A3C; color: #FFFFFF; padding: 0 8px; font-size: 16px">
+                  <label for="{{r.timeId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Time (optional)</label>
+                  <input id="{{r.timeId}}" type="time" value="{{r.time}}" onChange="{{r.onTime}}" style="min-height: 36px; min-width: 96px; border-radius: 8px; border: none; background: #3A3A3C; color: #FFFFFF; padding: 0 8px; font-size: 16px">
+                  <sc-if value="{{r.hasRep}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{r.rep}}</span></sc-if>
+                </div>
+                <sc-if value="{{scv.isPersonal}}" hint-placeholder-val="{{true}}">
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px" role="group" aria-label="Pillar">
+                    <sc-for list="{{r.pillars}}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{o.pick}}" aria-pressed="{{o.selStr}}" style="min-height: 36px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; {{o.style}}">{{o.name}}</button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{r.needPillar}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; font-weight: 700; color: #FF9F0A">Pick a pillar</span></sc-if>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{scv.add}}" style="min-height: 52px; border-radius: 14px; border: none; font-size: 17px; font-weight: 700; {{scv.addStyle}}">{{scv.addLabel}}</button>
+      </sc-if>
     </div>
   </div>
 </sc-if>

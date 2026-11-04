@@ -90,6 +90,16 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    - **Optional time (both lists):** the add sheet has an optional start time (iPhone time wheel; × clears it). Shown as
      "6:00 AM" on the row; timed to-dos sort first in time order, untimed after. Not offered for anytime-this-week
      to-dos. Repeats and carried-over to-dos keep their time.
+   - **Scan (both lists):** the Scan button (next to +) takes or picks a photo of a list. A text reader running on the
+     phone (Tesseract, bundled in `vendor/ocr/`, about 7 MB downloaded on the first scan, then works offline) reads it;
+     the photo is never saved or sent anywhere, and there's no AI or cost. Each line becomes a to-do: bullets, checkboxes,
+     numbers and headings like "To do" are dropped; days ("today", "tomorrow", weekday names → the next one on or after
+     today, "Nov 14", "14th of Jan", "11/14"; month/day with no year more than 60 days past → next year), times ("3pm",
+     "6:30 pm", "noon"; a bare "3:30" means 1–6 → PM, 7–11 → AM) and repeats ("daily", "weekdays", "every Tue") are
+     picked out. Personal rows get a pillar guessed from keywords (gym, call, pay, …). A review sheet shows every row
+     (tick/untick, edit text, day, time, pillar); rows with no date use the day shown in Planner; personal rows without a
+     pillar wait for one tap. Best on printed or neat text; messy handwriting and calendar grids read poorly. There is
+     no manual paste/typing import (decided).
    - **Carry-over (both lists):** unfinished one-time to-dos from earlier days move to today with "Carried over from
      [date]". Anytime-this-week to-dos stay on their week.
 4. **History** — monthly calendar: each checked-in day is filled with its overall score color; days with no check-in are
@@ -131,6 +141,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 - iCloud sync, passcode / Face ID, CSV import.
 - Reminders / alarms of any kind (setup step and Settings section removed).
 - Compare page (replaced by the Summary "vs. Expected" card).
+- Paste-a-list import (Lance wants Scan only).
 
 ## 10. Ideas / next steps
 - Sunday-night Focus prompt and weekly review (decided, not built yet).
@@ -138,7 +149,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 - Live tip feeds (needs a small server).
 - **HubSpot tasks in the Work list** — tabled; plan ready in `docs/future-integrations.md`.
 - **Automatic calendar sync** (Apple / Google Calendar) — tabled; plan ready in `docs/future-integrations.md`.
-- **AI photo to-dos** (photo of a list or paper calendar → reviewed to-dos on the right Planner days) — tabled until the
-  middleman server exists; plan ready in `docs/future-integrations.md`.
+- **AI photo reading** (better handwriting and calendar grids than the on-phone Scan) — tabled until the middleman
+  server exists; plan ready in `docs/future-integrations.md`. Would plug into the same Scan review sheet.
 - Native iOS app (Swift) for real reminders and App Store distribution (needs a Mac; $99/yr Apple Developer Program for TestFlight/App Store).
 - Smaller-screen polish (iPhone SE needs a short scroll on check-in pages).

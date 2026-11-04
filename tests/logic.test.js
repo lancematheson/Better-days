@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -177,6 +177,41 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.renderVals().st.focusGroups[0].opts[1].pick(); ok(T.state.set.focus.join() === 'exercise,stress,saving', 'tapping another in a pillar swaps it');
   T.state.setup = { step: 3 }; T.state.set.focus = ['exercise', 'saving']; let su = T.renderVals().su;
   ok(su.nextLabel === 'Pick Emotional' && /background: #2C2C2E/.test(su.nextStyle), 'setup waits for one per pillar');
+}
+// Scan: reading lines of a list (today is Mon Nov 2 2026 in these tests).
+{
+  const P = (line) => L.parseScan(line, '2026-11-02')[0];
+  let r = P('- Dentist Tue 3pm'); ok(r.text === 'Dentist' && r.date === '2026-11-03' && r.time === '15:00' && r.pillar === 'physical', 'bullet, weekday, 3pm, pillar guess');
+  r = P('☐ Pay rent Nov 14'); ok(r.text === 'Pay rent' && r.date === '2026-11-14' && r.pillar === 'financial', 'checkbox, month day');
+  r = P('2. Call Mom tomorrow at 6:30 pm'); ok(r.text === 'Call Mom' && r.date === '2026-11-03' && r.time === '18:30' && r.pillar === 'emotional', 'numbered, tomorrow, at 6:30 pm');
+  r = P('Team lunch 12/1 noon'); ok(r.text === 'Team lunch' && r.date === '2026-12-01' && r.time === '12:00', 'numeric date and noon');
+  r = P('Haircut 3:30'); ok(r.time === '15:30' && r.date === null, 'bare 3:30 means afternoon; no date stays empty');
+  r = P('Standup 9:15'); ok(r.time === '09:15', 'bare 9:15 means morning');
+  r = P('Renew passport 14th of January'); ok(r.text === 'Renew passport' && r.date === '2027-01-14', 'day-of-month, rolls to next year');
+  r = P('Oct 30 budget review'); ok(r.date === '2026-10-30', 'recent past date stays this year');
+  r = P('Leg day every Tuesday 5:30pm'); ok(r.text === 'Leg day' && r.rep === 'weekly' && r.days.join() === '1' && r.time === '17:30', 'every Tuesday becomes a weekly repeat');
+  r = P('Vitamins daily'); ok(r.rep === 'daily' && r.text === 'Vitamins', 'daily repeat');
+  r = P('Sunday - meal prep'); ok(r.text === 'meal prep' && r.date === '2026-11-08', 'weekday first, dash removed');
+  r = P('Buy milk'); ok(r.text === 'Buy milk' && r.date === null && r.time === '' && r.pillar === '', 'plain line, no guess');
+  const many = L.parseScan('Groceries\n\n  ~~ \n12\nGroceries\n• Gym 6am', '2026-11-02');
+  ok(many.length === 2 && many[1].time === '06:00', 'skips blanks, noise and repeats');
+  ok(!P('Feb 30 thing').date, 'impossible dates are ignored');
+  ok(L.parseScan('To Do:\nTo-do list\nTasks\nWalk dog', '2026-11-02').length === 1, 'list headings skipped');
+
+  // Review sheet adds to the right list and day.
+  const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.series = []; T.state.seriesNextId = 1; T.state.nextId = 1; T.state.workNextId = 1;
+  T.state.pMode = 'personal'; T.state.pDate = '2026-11-05';
+  T.state.scan = { step: 'reading', kind: 'personal', def: '2026-11-05', rows: [] };
+  T.showScan('Dentist Tue 3pm\nBuy milk\nLeg day every Tuesday\nPay rent Nov 14');
+  let sv = T.renderVals().scv; ok(sv.review && sv.rows.length === 4 && sv.rows[1].date === '2026-11-05' && sv.rows[1].needPillar, 'review: undated lines use the shown day; missing pillar flagged');
+  ok(sv.addLabel === 'Add 3 to-dos', 'rows without a pillar are not added yet');
+  sv.rows[1].pillars[0].pick(); sv = T.renderVals().scv; ok(sv.addLabel === 'Add 4 to-dos', 'picking a pillar includes it');
+  sv.rows[3].toggle(); T.renderVals().scv.add();
+  ok(!T.state.scan && T.state.tasks.length === 2 && T.state.series.length === 1 && !T.state.tasks.some((t) => t.text === 'Pay rent'), 'adds checked rows; unticked skipped');
+  ok(T.state.tasks[0].date === '2026-11-03' && T.state.tasks[0].time === '15:00' && T.state.series[0].rule.type === 'weekly', 'dates, times and repeats kept');
+  T.state.scan = { step: 'reading', kind: 'work', def: '2026-11-05', rows: [] }; T.showScan('Send proposal Fri'); T.renderVals().scv.add();
+  ok(T.state.work.length === 1 && T.state.work[0].date === '2026-11-06' && T.state.tasks.length === 2, 'work scans go to the Work list');
+  T.state.scan = { step: 'reading', kind: 'work', def: '2026-11-05', rows: [] }; T.showScan('@@ 12 ~~'); ok(T.renderVals().scv.error, 'nothing readable shows a message');
 }
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {

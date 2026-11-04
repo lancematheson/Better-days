@@ -63,6 +63,18 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.getByRole('button', { name: 'Add', exact: true }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/10-planner.png' });
   log('time on to-do:', await p.getByText('6:30 PM').first().isVisible());
+  // scan a photo of a printed list (reader runs on the phone from vendor/ocr)
+  const pg2 = await b.newPage({ viewport: { width: 700, height: 420 } });
+  await pg2.setContent('<body style="margin:0;background:#fff"><div style="font:30px Georgia,serif;color:#111;padding:30px 40px;line-height:1.6">To do<br>- Dentist Tue 3pm<br>- Pay rent Nov 14<br>- Call Mom tomorrow<br>- Buy milk</div></body>');
+  const photo = SHOTS + '/scan-input.png'; await pg2.screenshot({ path: photo }); await pg2.close();
+  await btn('Planner').click(); await p.waitForTimeout(100);
+  const t0 = Date.now(); await p.setInputFiles('#scanfile', photo);
+  await p.getByText(/^Add \d+ to-do/).waitFor({ timeout: 90000 });
+  await p.screenshot({ path: SHOTS + '/10f-scan-review.png' });
+  const vals = await p.$$eval('input[id^="scantext-"]', (els) => els.map((e) => e.value));
+  log('scan read in', Math.round((Date.now() - t0) / 1000) + 's:', vals);
+  await p.getByRole('button', { name: /^Add \d+ to-do/ }).click(); await p.waitForTimeout(500);
+  log('scan added:', (await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')).tasks.map((t) => t.text + '@' + t.date + ' ' + t.time))));
   // check-in tab: start button on top, today's to-dos grouped by pillar
   await btn('Check-in').click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/10b-checkin-tab.png' });

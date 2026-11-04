@@ -134,8 +134,8 @@ keeps only the to-dos Lance approves. Spec §8 (data and privacy) must be update
 
 **Effort:** 1 to 2 days, or about 1 day if the server already exists.
 
-**Stopgap (no AI, no server), if wanted sooner:** a "Paste list" box. iPhone Live Text copies the text from a photo,
-each pasted line becomes a row in the same review sheet, and Lance sets days and pillars by hand. About half a day.
+**Already built (no AI):** Scan reads photos on the phone with Tesseract and fills the same review sheet. The AI version
+would only replace the reading step (better with handwriting and calendar grids). Paste-a-list was declined.
 
 ## Suggested order when un-tabled
 1. Build the middleman server and the Settings on/off switch with the secret.
