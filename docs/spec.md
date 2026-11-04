@@ -91,7 +91,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      "6:00 AM" on the row; timed to-dos sort first in time order, untimed after. Not offered for anytime-this-week
      to-dos. Repeats and carried-over to-dos keep their time.
    - **Scan (both lists):** the Scan button (next to +) takes or picks a photo of a list. A text reader running on the
-     phone (Tesseract, bundled in `vendor/ocr/`, about 7 MB downloaded on the first scan, then works offline) reads it;
+     phone (Tesseract, bundled in `vendor/ocr/`, about 7 MB downloaded on the first scan and stored on the phone, then works offline) reads it;
      the photo is never saved or sent anywhere, and there's no AI or cost. Each line becomes a to-do: bullets, checkboxes,
      numbers and headings like "To do" are dropped; days ("today", "tomorrow", weekday names → the next one on or after
      today, "Nov 14", "14th of Jan", "11/14"; month/day with no year more than 60 days past → next year), times ("3pm",

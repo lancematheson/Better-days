@@ -27,7 +27,8 @@ in the same commit.
 - `src/runtime.js` — tiny template renderer and DOM patcher (no libraries; npm is unavailable in some environments).
 - `src/styles.css`, `src/icon.svg` — styles and icon source.
 - `vendor/ocr/` — bundled on-phone text reader for Scan (Tesseract.js 5.1.1 + core + English data, Apache-2.0/MIT,
-  from the npm registry). Loaded only on the first scan; don't edit.
+  from the npm registry). Loaded only on the first scan; don't edit. The English data is gzip renamed to
+  `eng-traineddata.wasm` so GitHub Pages and the preview host both serve it.
 - `tools/build.py` — builds `index.html`, `sw.js` and `manifest.webmanifest` at the repo root from `src/`.
 - `tools/make-icons.js` — regenerates `icon-*.png` from `src/icon.svg` (needs Playwright).
 - Root files (`index.html`, `sw.js`, `manifest.webmanifest`, `icon-*.png`, `.nojekyll`) are what users download. Never

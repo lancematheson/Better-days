@@ -1731,11 +1731,30 @@ function photoCanvas(file) {
   if (window.createImageBitmap) return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (b) { return draw(b, b.width, b.height); });
   return new Promise(function (res, rej) { const im = new Image(); im.onload = function () { res(draw(im, im.naturalWidth, im.naturalHeight)); }; im.onerror = rej; im.src = URL.createObjectURL(file); });
 }
+function ocrStore(mode, fn) {
+  return new Promise(function (res, rej) {
+    const rq = indexedDB.open('keyval-store'); rq.onupgradeneeded = function () { rq.result.createObjectStore('keyval'); };
+    rq.onerror = function () { rej(rq.error); };
+    rq.onsuccess = function () { const db = rq.result; const tx = db.transaction('keyval', mode); const q = fn(tx.objectStore('keyval')); tx.oncomplete = function () { db.close(); res(q && q.result); }; tx.onerror = function () { db.close(); rej(tx.error); }; };
+  });
+}
+function ocrPrimeData() {
+  const KEY = './eng.traineddata';
+  return ocrStore('readonly', function (st) { return st.get(KEY); }).then(function (have) {
+    if (have) return;
+    return fetch(ocrBase() + 'eng-traineddata.wasm').then(function (r) { if (!r.ok) throw new Error('data'); return r.arrayBuffer(); })
+      .then(function (buf) { return ocrStore('readwrite', function (st) { return st.put(new Uint8Array(buf), KEY); }); });
+  });
+}
 function readPhoto(file, onProgress) {
   let worker = null;
-  return loadOcr().then(function (T) {
+  // The English data ships as eng-traineddata.wasm (gzip inside) so every host serves it. The reader looks in its
+  // own on-phone store (IndexedDB 'keyval-store' / 'keyval', key './eng.traineddata') before downloading, so the app
+  // puts the data there first; after that it is read from the phone, even offline.
+  let T0 = null;
+  return loadOcr().then(function (T) { T0 = T; return ocrPrimeData(); }).then(function () {
     const b = ocrBase();
-    return T.createWorker('eng', 1, { workerPath: b + 'worker.min.js', corePath: b, langPath: b, gzip: true, workerBlobURL: false,
+    return T0.createWorker('eng', 1, { workerPath: b + 'worker.min.js', corePath: b, langPath: b, workerBlobURL: false,
       logger: function (m) { if (onProgress && m && typeof m.progress === 'number') onProgress(m.status, m.progress); } });
   }).then(function (w) { worker = w; return photoCanvas(file); })
     .then(function (c) { return worker.recognize(c); })
