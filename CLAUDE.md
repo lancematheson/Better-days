@@ -10,7 +10,10 @@ in the same commit.
 
 ## Working with Lance
 - He's usually on his phone and isn't a programmer: keep replies short and in plain language.
-- When he describes changes, keep a numbered change list and **don't build or push until he says "update the app."**
+- When he describes changes, keep a numbered change list and **don't push to `main` until he says "update the app."**
+- He likes to try changes first: build a private **preview** as a claude.ai Artifact (the built `index.html` with
+  `window.BD_DEMO = true` set before the app script, which loads sample data when the preview has none saved) and
+  send him the link. Work in progress can be committed to a non-`main` branch (Pages only serves `main`).
 - Ask when a request could mean more than one thing; don't guess on anything expensive to redo.
 - Double-check math and run the tests before saying something is done.
 - Pushing to `main` publishes to everyone using the app (including beta testers) within a minute or two.
