@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -212,6 +212,32 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.state.scan = { step: 'reading', kind: 'work', def: '2026-11-05', rows: [] }; T.showScan('Send proposal Fri'); T.renderVals().scv.add();
   ok(T.state.work.length === 1 && T.state.work[0].date === '2026-11-06' && T.state.tasks.length === 2, 'work scans go to the Work list');
   T.state.scan = { step: 'reading', kind: 'work', def: '2026-11-05', rows: [] }; T.showScan('@@ 12 ~~'); ok(T.renderVals().scv.error, 'nothing readable shows a message');
+}
+// Swipe check-in: up = Good 9, right = Okay 7, down = Bad 4, left = back. Importance comes from Settings.
+{
+  ok(L.swipeDir(0, -90, 70) === 'good' && L.swipeDir(0, 90, 70) === 'bad' && L.swipeDir(90, 10, 70) === 'okay' && L.swipeDir(-90, 0, 70) === 'back' && L.swipeDir(30, -40, 70) === null, 'swipe directions');
+  const T = new L.Component({}); T.state.days = {}; T.state.plans = {}; T.state.tasks = []; T.state.series = [];
+  const d = L.getToday(); T.startInput(d); T.renderVals().rv.start();
+  let iv = T.renderVals().iv; ok(iv.isToday && iv.fnum === 1 && iv.impName === 'High', 'first card asks about today; importance from Settings');
+  iv.good(); iv = T.renderVals().iv; ok(iv.isTom && iv.todayAns === 'Good' && T.state.inp.a.score.sleep === 9, 'good = 9, then asks expected tomorrow');
+  iv.goBack(); ok(T.state.inp.act === 0 && T.state.inp.fi === 0, 'left/back returns to today');
+  T.renderVals().iv.okay(); T.renderVals().iv.bad(); ok(T.state.inp.fi === 1 && T.state.inp.a.score.sleep === 7 && T.state.inp.a.expTom.sleep === 4, 'okay = 7, bad = 4, moves to next factor');
+  T.renderVals().iv.goBack(); ok(T.state.inp.fi === 0 && T.state.inp.act === 1, 'back from next factor lands on its tomorrow');
+  T.renderVals().iv.bad();
+  T.renderVals().iv.na(); T.renderVals().iv.good(); ok(T.state.inp.a.score.exercise === 'NA', 'N/A skips');
+  for (let i = 2; i < 15; i++) { T.renderVals().iv.good(); T.renderVals().iv.okay(); }
+  ok(T.state.inp.phase === 'plan', 'after 15 cards, plan tomorrow');
+  T.save(); const e = T.state.days[d];
+  ok(e.score.sleep === 7 && e.score.exercise === null && e.score.mood === 9 && e.imp.sleep === 'H' && e.imp.hydration === 'L', 'saved with Settings importance');
+  ok(T.state.plans[L.addDays(d, 1)].exp.mood === 7, 'expected tomorrow saved');
+  // All Good with every importance = 90% (A); all Okay = 70% (C); all Bad = 40% (F).
+  const all = (v) => { const x = { date: d, score: {}, imp: {}, exp: {} }; L.FACTORS.forEach((f) => { x.score[f.id] = v; x.imp[f.id] = L.DEF_IMP[f.id]; }); return L.scoreDay(x, 'score').overall; };
+  ok(near(all(9), 90) && near(all(7), 70) && near(all(4), 40), 'all Good 90, all Okay 70, all Bad 40');
+  // Settings importance applies from today on; earlier days keep theirs.
+  T.state.days[L.addDays(d, -1)] = Object.assign({}, e, { date: L.addDays(d, -1), imp: Object.assign({}, e.imp) });
+  T.state.set = T.freshDraft(); T.renderVals().st.factors[0].opts[2].pick(); T.renderVals().st.save();
+  ok(T.state.days[d].imp.sleep === 'L' && T.state.days[L.addDays(d, -1)].imp.sleep === 'H' && L.DEF_IMP.sleep === 'L', 'importance change: today on, past kept');
+  L.DEF_IMP.sleep = 'H';
 }
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {

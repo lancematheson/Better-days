@@ -33,8 +33,8 @@ and a daily journal.
 "Money stress" is deliberately not a Financial factor (it would double-count Emotional → Stress).
 
 ## 3. Scoring
-- **Scores:** 0.0–10.0, always typed with one decimal (4.0, 6.5, 10.0). N/A is allowed and is left out of the math.
-- **Importance weights:** High = 3, Medium = 2, Low = 1.
+- **Scores:** 0.0–10.0. New check-ins are swiped: **Good = 9, Okay = 7, Bad = 4** (no typing; days saved before the swipe check-in keep their exact one-decimal numbers). N/A is allowed and is left out of the math. All Good = 90% (A), all Okay = 70% (C), all Bad = 40% (F); tips (below 7.0) show only for Bad.
+- **Importance weights:** High = 3, Medium = 2, Low = 1. Set per factor in **Settings only** (not asked during check-in). A change applies from today on (today's saved check-in picks it up); earlier days keep the importance they were saved with.
 - **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), **exactly one from each pillar**, picked in Settings or setup (factors are grouped by pillar; tapping another factor in a pillar swaps that pillar's pick; Save / Continue wait until all three pillars have one). Default for new users: Sleep, Mood, Saving. Past weeks keep whatever Focus they had. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
 - **Pillar %** = Σ(score × weight) ÷ Σ(weight) × 10.
 - **Pillar weights:** percentages that total 100, set at setup (default 40/35/25), editable later with dated history; past days keep the weights in effect at the time. Same for Focus and factor edits.
@@ -69,11 +69,13 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    - Opens on a big **Start Today's Check-in** button (or "Edit…" if already saved), with **today's to-dos below**, grouped
      by pillar (Physical, Emotional, Financial, then Other for old untagged ones), each with ✓ / ✗. They can be checked
      off anytime during the day; this is the review step.
-   - Rate: 15 pages, one per factor. A one-line box at the top lists that pillar's to-dos for the day (with ✓/✗ status) as
-     a reminder only; to-dos never change scores. Questions in order: Today's score → Today's importance → Expected
-     tomorrow (the prediction) → Tomorrow's importance. Importances are pre-filled (today = what you planned last night; tomorrow = most common
-     choice in the last 7 days). Phone-style keypad; typing today's score jumps to Expected tomorrow; typing that
-     auto-advances to the next factor. Tab bar hidden during these 15 pages.
+   - Rate: **swipe cards**, one per factor (15). Each card takes two swipes: first **today**, then **Expected
+     tomorrow** (the card shows "Today: Good" while asking about tomorrow). **Swipe up = Good, right = Okay, down = Bad,
+     left = back** (previous answer). The card follows the finger and flies off; short drags snap back. Bad / Okay / Good
+     buttons under the card do the same, and an "N/A today / N/A tomorrow" button skips. The card shows the factor, pillar,
+     Focus badge, what Good and Bad mean, and its importance ("change it in Settings"). A one-line box above lists that
+     pillar's to-dos (reminder only; to-dos never change scores). Tab bar hidden during the cards; they fit an iPhone 13
+     screen without scrolling.
    - Plan Tomorrow: add to-dos for tomorrow (pillar required).
    - Optional free-text note, then Save Day → results (rings, expected vs. actual, Needs Attention, safety message).
 3. **Planner** — a big **Personal | Work** switch at the top. Tapping the date opens a **pop-up month calendar** (dots on
@@ -124,8 +126,8 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 - **Safety net (always offline):** if the Emotional pillar or any emotional factor is below 50%, show a gentle message to reach out to someone and the 988 crisis line.
 
 ## 7. Settings & setup
-- First launch runs a 5-step setup: Welcome → Pillar weights → Default importance → This week's Focus → Done. "Run Setup Again" in Settings.
-- Settings: pillar weights (must total 100), Focus (one per pillar), factor names + default importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
+- First launch runs a 5-step setup: Welcome → Pillar weights → Importance → This week's Focus → Done. "Run Setup Again" in Settings.
+- Settings: pillar weights (must total 100), Focus (one per pillar), factor names + importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
 - No reminders or alarms anywhere in the app (removed by decision; see §9).
 
 ## 8. Data & platform

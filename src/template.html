@@ -286,22 +286,10 @@
       <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px">
         <button onClick="{{back}}" style="justify-self: start; background: transparent; border: none; color: #409CFF; font-size: 17px; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>{{iv.backLabel}}</button>
         <span style="font-size: 15px; font-weight: 700">{{iv.fnum}} of 15</span>
-        <sc-if value="{{iv.canNext}}" hint-placeholder-val="{{false}}">
-          <button onClick="{{next}}" style="justify-self: end; background: transparent; border: none; color: #409CFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0">Next<svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
-        </sc-if>
+        <span></span>
       </div>
       <div style="height: 4px; background: #2C2C2E; border-radius: 2px; overflow: hidden">
         <div style="height: 4px; background: #409CFF; border-radius: 2px; width: {{iv.prog}}%"></div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 4px 2px">
-        <div style="display: flex; align-items: center; gap: 8px">
-          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #98989F">{{iv.pillar}} · {{iv.dateLabel}}</span>
-          <sc-if value="{{iv.focus}}" hint-placeholder-val="{{false}}">
-            <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">FOCUS</span>
-          </sc-if>
-        </div>
-        <span style="font-size: 30px; font-weight: 800; letter-spacing: -0.01em">{{iv.name}}</span>
       </div>
 
       <sc-if value="{{iv.pt.has}}" hint-placeholder-val="{{false}}">
@@ -311,55 +299,44 @@
         </div>
       </sc-if>
 
-      <span style="font-size: 13px; color: #98989F; line-height: 1.35; padding: 0 4px">0 = {{iv.lo}}<br>10 = {{iv.hi}}</span>
-
-      <div style="background: #1C1C1E; border-radius: 16px; overflow: hidden">
-        <button onClick="{{iv.r1.pick}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; text-align: left; padding: 10px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; {{iv.r1.ring}}">
-          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">1</span>
-          <span style="flex: 1; font-size: 15px; font-weight: 600">Today's score</span>
-          <span style="min-width: 72px; text-align: center; font-size: 22px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: #2C2C2E; color: {{iv.r1.col}}">{{iv.r1.disp}}</span>
-        </button>
-        <div style="height: 1px; background: #38383A; margin-left: 48px"></div>
-        <div style="padding: 8px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; box-sizing: border-box">
-          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">2</span>
-          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-            <span style="font-size: 13px; font-weight: 600; line-height: 1.25; white-space: nowrap">Today's importance</span>
-            <span style="font-size: 12px; color: #98989F">{{iv.r2.tag}}</span>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+        <span style="font-size: 13px; font-weight: 700; color: #30D158">↑ Good</span>
+        <div style="display: flex; align-items: center; gap: 6px; width: 100%">
+          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #8E8E93"><span style="font-size: 15px">←</span><span style="writing-mode: vertical-rl; transform: rotate(180deg)">Back</span></span>
+          <div onPointerDown="{{iv.swDown}}" onPointerMove="{{iv.swMove}}" onPointerUp="{{iv.swUp}}" onPointerCancel="{{iv.swUp}}" role="group" aria-label="Swipe card: up good, right okay, down bad, left back" style="flex: 1; min-width: 0; touch-action: none; user-select: none; -webkit-user-select: none; background: #1C1C1E; border-radius: 24px; padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 10px; min-height: 300px; box-sizing: border-box; cursor: grab">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #98989F">{{iv.pillar}} · {{iv.dateLabel}}</span>
+              <sc-if value="{{iv.focus}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">FOCUS</span>
+              </sc-if>
+            </div>
+            <span style="font-size: 34px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1">{{iv.name}}</span>
+            <sc-if value="{{iv.isToday}}" hint-placeholder-val="{{true}}">
+              <span style="align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: #2C2C2E; color: #FFFFFF">{{iv.askLabel}}</span>
+            </sc-if>
+            <sc-if value="{{iv.isTom}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">{{iv.askLabel}}</span>
+                <span style="font-size: 13px; color: #98989F">Today: <strong style="color: {{iv.todayCol}}">{{iv.todayAns}}</strong></span>
+              </div>
+            </sc-if>
+            <div style="flex: 1"></div>
+            <span style="font-size: 14px; color: #C7C7CC; line-height: 1.35"><strong style="color: #30D158">Good</strong> = {{iv.hi}}</span>
+            <span style="font-size: 14px; color: #C7C7CC; line-height: 1.35"><strong style="color: #E0201B">Bad</strong> = {{iv.lo}}</span>
+            <span style="font-size: 12px; color: #8E8E93">Importance: {{iv.impName}} · change it in Settings<sc-if value="{{iv.hasPrev}}" hint-placeholder-val="{{false}}"> · was {{iv.prevAns}}</sc-if></span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 138px; flex: none" role="group" aria-label="Today's importance">
-            <sc-for list="{{iv.r2.opts}}" as="o" hint-placeholder-count="3">
-              <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 0; {{o.style}}">{{o.short}}</button>
-            </sc-for>
-          </div>
+          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #FFD60A"><span style="font-size: 15px">→</span><span style="writing-mode: vertical-rl">Okay</span></span>
         </div>
-        <div style="height: 1px; background: #38383A; margin-left: 48px"></div>
-        <button onClick="{{iv.r4.pick}}" style="width: 100%; background: transparent; border: none; color: #FFFFFF; text-align: left; padding: 10px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; {{iv.r4.ring}}">
-          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">3</span>
-          <span style="flex: 1; font-size: 15px; font-weight: 600">Expected tomorrow</span>
-          <span style="min-width: 72px; text-align: center; font-size: 22px; font-weight: 800; padding: 4px 10px; border-radius: 10px; background: #2C2C2E; color: {{iv.r4.col}}">{{iv.r4.disp}}</span>
-        </button>
-        <div style="height: 1px; background: #38383A; margin-left: 48px"></div>
-        <div style="padding: 8px 14px; display: flex; align-items: center; gap: 12px; min-height: 54px; box-sizing: border-box">
-          <span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #C7C7CC">4</span>
-          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-            <span style="font-size: 13px; font-weight: 600; line-height: 1.25; white-space: nowrap">Tomorrow's importance</span>
-            <span style="font-size: 12px; color: #98989F">{{iv.r3.tag}}</span>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 10px; padding: 2px; width: 138px; flex: none" role="group" aria-label="Tomorrow's importance">
-            <sc-for list="{{iv.r3.opts}}" as="o" hint-placeholder-count="3">
-              <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 36px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 0; {{o.style}}">{{o.short}}</button>
-            </sc-for>
-          </div>
-        </div>
+        <span style="font-size: 13px; font-weight: 700; color: #FF6961">↓ Bad</span>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px">
-        <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
-          <button onClick="{{k.pick}}" aria-label="{{k.aria}}" style="height: 44px; border-radius: 12px; border: none; background: #333336; color: #FFFFFF; font-size: 24px; font-weight: 500">{{k.label}}</button>
-        </sc-for>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <button onClick="{{iv.bad}}" style="min-height: 48px; border-radius: 14px; border: none; background: #2C2C2E; color: #FF6961; font-size: 16px; font-weight: 800">Bad</button>
+        <button onClick="{{iv.okay}}" style="min-height: 48px; border-radius: 14px; border: none; background: #2C2C2E; color: #FFD60A; font-size: 16px; font-weight: 800">Okay</button>
+        <button onClick="{{iv.good}}" style="min-height: 48px; border-radius: 14px; border: none; background: #2C2C2E; color: #30D158; font-size: 16px; font-weight: 800">Good</button>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center">
-        <button onClick="{{markNA}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: none; background: #2C2C2E; color: #FFFFFF; font-size: 14px; font-weight: 700">N/A for {{iv.activeName}}</button>
+      <div style="display: flex; justify-content: center">
+        <button onClick="{{iv.na}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #1C1C1E; color: #C7C7CC; font-size: 14px; font-weight: 700">{{iv.naLabel}}</button>
       </div>
     </div>
   </sc-if>
@@ -648,13 +625,13 @@
   </div>
   <span style="font-size: 13px; padding: 0 16px; color: {{st.focusNoteCol}}">{{st.focusNote}}</span>
 
-  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Factors · name and default importance</span>
+  <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F; padding: 12px 16px 0">Factors · name and importance</span>
   <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
     <sc-for list="{{st.factors}}" as="f" hint-placeholder-count="15">
       <div style="display: flex; align-items: center; gap: 8px; min-height: 52px; {{f.sep}}">
         <label for="{{f.inputId}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{f.label}}</label>
         <input id="{{f.inputId}}" type="text" value="{{f.name}}" onChange="{{f.onName}}" style="flex: 1; min-width: 0; min-height: 36px; border: none; border-radius: 8px; background: #2C2C2E; color: #FFFFFF; padding: 0 10px; font-size: 15px">
-        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 120px" role="group" aria-label="{{f.label}} default importance">
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 120px" role="group" aria-label="{{f.label}} importance">
           <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
             <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 32px; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; {{o.style}}">{{o.short}}</button>
           </sc-for>
@@ -961,7 +938,7 @@
           <sc-for list="{{st.factors}}" as="f" hint-placeholder-count="15">
             <div style="display: flex; align-items: center; gap: 8px; min-height: 50px; {{f.sep}}">
               <span style="flex: 1; font-size: 15px; font-weight: 600">{{f.name}}</span>
-              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 150px" role="group" aria-label="{{f.label}} default importance">
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 150px" role="group" aria-label="{{f.label}} importance">
                 <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
                   <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 32px; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; {{o.style}}">{{o.label}}</button>
                 </sc-for>

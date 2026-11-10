@@ -30,9 +30,14 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.screenshot({ path: SHOTS + '/03-review.png' });
   await p.getByRole('button', { name: /Start Today.s Check-in/ }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
-  const type = async (s) => { for (const ch of s) { await p.getByRole('button', { name: ch === '.' ? 'Decimal point' : ch, exact: true }).click(); } await p.waitForTimeout(700); };
-  const today = ['7.5','8.0','6.5','5.0','7.0','8.0','4.5','7.5','8.5','6.0','6.5','7.0','8.0','9.0','6.0'];
-  for (let i = 0; i < 15; i++) { await type(today[i]); await type('8.0'); }
+  log('card fits screen:', await p.evaluate(() => { const s = document.querySelector('.scroller'); return s.scrollHeight <= s.clientHeight + 1; }));
+  // real swipes on the first card: up (good) for today, right (okay) for tomorrow
+  const swipe = async (dx, dy) => { const c = await p.getByRole('group', { name: /Swipe card/ }).boundingBox(); const x = c.x + c.width / 2, y = c.y + c.height / 2; await p.mouse.move(x, y); await p.mouse.down(); for (let i = 1; i <= 6; i++) await p.mouse.move(x + dx * i / 6, y + dy * i / 6); await p.mouse.up(); await p.waitForTimeout(300); };
+  await swipe(0, -160); await p.screenshot({ path: SHOTS + '/04b-factor-tomorrow.png' }); await swipe(170, 0);
+  log('swiped to card:', await p.getByText(/^2 of 15$/).isVisible());
+  const tap = async (n) => { await p.getByRole('button', { name: n, exact: true }).click(); await p.waitForTimeout(60); };
+  const plan = [['Good','Okay'],['Okay','Good'],['Bad','Okay'],['Good','Good'],['Good','Okay'],['Bad','Okay'],['Okay','Good'],['Good','Good'],['Okay','Okay'],['Okay','Good'],['Good','Okay'],['Good','Good'],['Good','Good'],['Okay','Good']];
+  for (const [a, b2] of plan) { await tap(a); await tap(b2); }
   await p.waitForTimeout(300);
   log('plan screen:', await p.getByText('Plan Tomorrow').isVisible());
   await p.getByLabel('New task for tomorrow').fill('Gym at 6 AM'); await p.getByRole('button', { name: 'Physical', exact: true }).click();

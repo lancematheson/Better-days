@@ -462,6 +462,14 @@ function readPhoto(file, onProgress) {
     .catch(function (e) { if (worker) worker.terminate(); throw e; });
 }
 
+// Swipe check-in scores: up = Good, right = Okay, down = Bad.
+const SWIPE_SCORE = { good: 9, okay: 7, bad: 4 };
+function swipeDir(dx, dy, min) {
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < min) return null;
+  if (Math.abs(dy) > Math.abs(dx)) return dy < 0 ? 'good' : 'bad';
+  return dx > 0 ? 'okay' : 'back';
+}
+function answerLabel(v) { if (v === undefined) return ''; if (v === 'NA') return 'N/A'; return v === 9 ? 'Good' : v === 7 ? 'Okay' : v === 4 ? 'Bad' : f1(v); }
 // Focus ("Big Three") is one factor from each pillar.
 function focusMissing(list) { return PILLARS.filter(function (p) { return !list.some(function (id) { return pillarOfFactor(id) === p.id; }); }); }
 function focusOk(list) { return list.length === 3 && focusMissing(list).length === 0; }
@@ -615,14 +623,17 @@ class Component extends DCLogic {
       FHIST = FHIST.filter(function (h) { return h.from !== wk; }).concat([{ from: wk, list: d.focus.slice() }]);
       out.push('Focus for week of ' + fmtShort(wk) + ': ' + d.focus.map(factorName).join(', '));
     }
+    // Importance applies from today on: today's saved check-in (if any) picks up the change; earlier days keep theirs.
+    let days = s.days; const td = s.days[TODAY] ? Object.assign({}, s.days[TODAY], { imp: Object.assign({}, s.days[TODAY].imp) }) : null;
     FACTORS.forEach(function (f) {
       const nn = (d.names[f.id] || '').trim();
       if (nn && nn !== f.name) { out.push('Renamed ' + f.name + ' → ' + nn); f.name = nn; }
-      if (d.imp[f.id] !== DEF_IMP[f.id]) { out.push(f.name + ' default importance ' + INAME[DEF_IMP[f.id]] + ' → ' + INAME[d.imp[f.id]]); DEF_IMP[f.id] = d.imp[f.id]; }
+      if (d.imp[f.id] !== DEF_IMP[f.id]) { out.push(f.name + ' importance ' + INAME[DEF_IMP[f.id]] + ' → ' + INAME[d.imp[f.id]] + ' (from today on)'); DEF_IMP[f.id] = d.imp[f.id]; if (td) td.imp[f.id] = d.imp[f.id]; }
     });
+    if (td) { days = Object.assign({}, s.days); days[TODAY] = td; }
     if (origin === 'setup') out.push('Setup completed');
     const hist = out.map(function (t) { return { date: fmtShort(TODAY), txt: t }; }).reverse().concat(s.hist);
-    this.setState({ hist: hist, msg: origin === 'setup' ? '' : (out.length ? 'Saved ' + out.length + (out.length === 1 ? ' change.' : ' changes.') : 'No changes to save.'), setup: null, set: this.freshDraft() });
+    this.setState({ days: days, hist: hist, msg: origin === 'setup' ? '' : (out.length ? 'Saved ' + out.length + (out.length === 1 ? ' change.' : ' changes.') : 'No changes to save.'), setup: null, set: this.freshDraft() });
     return true;
   }
   buildCsv() {
@@ -755,88 +766,70 @@ class Component extends DCLogic {
     return byTime(this.state.tasks.filter(function (t) { return t.date === k || (includeWeek && t.week === wk); }).concat(this.occurrences('personal', k)));
   }
 
-  impPrefill(date, f) {
-    const s = this.state;
-    if (s.days[date]) return s.days[date].imp[f];
-    if (s.plans[date]) return s.plans[date].imp[f];
-    return DEF_IMP[f];
-  }
-  recImp(date, f) {
-    const s = this.state; const cnt = { H: 0, M: 0, L: 0 }; let last = DEF_IMP[f];
-    for (let i = 6; i >= 1; i--) { const e = s.days[addDays(date, -i)]; if (e) { cnt[e.imp[f]]++; last = e.imp[f]; } }
-    const today = (s.inp && s.inp.a.impToday[f]) || this.impPrefill(date, f);
-    cnt[today]++;
-    let best = DEF_IMP[f], bn = -1;
-    ['H', 'M', 'L'].forEach(function (k) { if (cnt[k] > bn) { best = k; bn = cnt[k]; } });
-    return best;
-  }
+  // Importance is set in Settings. A saved day keeps the importance it was saved with; anything new uses Settings.
+  impPrefill(date, f) { const d = this.state.days[date]; return d ? d.imp[f] : DEF_IMP[f]; }
   startInput(date) {
     const e = this.state.days[date];
-    const a = { score: {}, impToday: {}, impTom: {}, expTom: {} };
-    if (e) FACTORS.forEach(function (f) { a.score[f.id] = e.score[f.id] == null ? 'NA' : e.score[f.id]; a.impToday[f.id] = e.imp[f.id]; });
-    this.setState({ tab: 'input', sel: null, inp: { date: date, fi: 0, act: 0, buf: '', a: a, phase: 'review', note: e ? e.note : '' } });
+    const a = { score: {}, expTom: {} };
+    if (e) FACTORS.forEach(function (f) { a.score[f.id] = e.score[f.id] == null ? 'NA' : e.score[f.id]; });
+    this.setState({ tab: 'input', sel: null, inp: { date: date, fi: 0, act: 0, a: a, phase: 'review', note: e ? e.note : '' } });
   }
   patchInp(p) { this.setState({ inp: Object.assign({}, this.state.inp, p) }); }
   setAnswer(key, f, v) {
     const inp = this.state.inp; const a = Object.assign({}, inp.a); a[key] = Object.assign({}, a[key]); a[key][f] = v; return a;
   }
-  advanceFactor(inp) {
-    if (inp.fi >= 14) return Object.assign({}, inp, { phase: 'plan', buf: '', act: 0 });
-    return Object.assign({}, inp, { fi: inp.fi + 1, act: 0, buf: '' });
-  }
-  commitScore(v) {
-    const inp = this.state.inp; const f = FACTORS[inp.fi].id;
-    const key = inp.act === 0 ? 'score' : 'expTom';
-    const a = this.setAnswer(key, f, v);
-    let ni = Object.assign({}, inp, { a: a, buf: '' });
-    if (inp.act === 0) { ni.act = 3; this.setState({ inp: ni }); return; }
-    if (ni.a.score[f] === undefined) { ni.act = 0; this.setState({ inp: ni }); return; }
-    this.setState({ inp: ni });
-    this.busy = true;
-    setTimeout(() => { this.busy = false; this.setState({ inp: this.advanceFactor(this.state.inp) }); }, 350);
-  }
-  press(k) {
-    if (this.busy) return;
-    let b = this.state.inp.buf;
-    if (k === 'del') b = b.slice(0, -1);
-    else if (k === '.') { if (b && b.indexOf('.') < 0) b += '.'; }
-    else if (b === '') b = k;
-    else if (b.indexOf('.') < 0) { if (b === '1' && k === '0') b = '10'; }
-    else { const parts = b.split('.'); if (parts[1] === '' && !(parts[0] === '10' && k !== '0')) b += k; }
-    this.patchInp({ buf: b });
-    if (/^\d+\.\d$/.test(b)) {
-      this.busy = true; const v = parseFloat(b);
-      setTimeout(() => { this.busy = false; this.commitScore(v); }, 200);
-    }
+  // Swipe check-in: each factor card takes two answers, today (act 0) then expected tomorrow (act 1).
+  answer(v) {
+    const inp = this.state.inp; if (!inp || inp.phase !== 'q') return;
+    const f = FACTORS[inp.fi].id; const a = this.setAnswer(inp.act === 0 ? 'score' : 'expTom', f, v);
+    if (inp.act === 0) { this.setState({ inp: Object.assign({}, inp, { a: a, act: 1 }) }); return; }
+    if (inp.fi >= 14) { this.setState({ inp: Object.assign({}, inp, { a: a, act: 0, phase: 'plan' }) }); return; }
+    this.setState({ inp: Object.assign({}, inp, { a: a, fi: inp.fi + 1, act: 0 }) });
   }
   back() {
     const inp = this.state.inp;
     if (inp.phase === 'note') { this.patchInp({ phase: 'plan' }); return; }
-    if (inp.phase === 'plan') { this.patchInp({ phase: 'q', fi: 14, act: 0, buf: '' }); return; }
-    if (inp.fi > 0) this.patchInp({ fi: inp.fi - 1, act: 0, buf: '' });
-    else this.patchInp({ phase: 'review', buf: '' });
+    if (inp.phase === 'plan') { this.patchInp({ phase: 'q', fi: 14, act: 1 }); return; }
+    if (inp.act === 1) { this.patchInp({ act: 0 }); return; }
+    if (inp.fi > 0) this.patchInp({ fi: inp.fi - 1, act: 1 });
+    else this.patchInp({ phase: 'review' });
   }
-  next() { this.setState({ inp: this.advanceFactor(this.state.inp) }); }
-  autoFill() {
-    const inp = this.state.inp; const a = { score: Object.assign({}, inp.a.score), impToday: Object.assign({}, inp.a.impToday), impTom: Object.assign({}, inp.a.impTom), expTom: Object.assign({}, inp.a.expTom) };
-    const R = rng(Date.now() % 100000);
-    FACTORS.forEach(function (f) {
-      if (a.score[f.id] === undefined) a.score[f.id] = r1(BASE[f.id] + 1.2 + (R() - 0.5) * 3.6);
-      if (a.expTom[f.id] === undefined) a.expTom[f.id] = r1(BASE[f.id] + 1.5 + (R() - 0.5) * 2);
-    });
-    this.setState({ inp: Object.assign({}, inp, { a: a, phase: 'plan', buf: '', act: 0 }) });
+  // Card drag: move the card directly while the finger is down (no re-render), decide on release.
+  // Up = Good, right = Okay, down = Bad, left = back. Short drags snap back.
+  swipeStart(ev) {
+    if (this.busy) return; const el = ev.currentTarget;
+    this.drag = { x: ev.clientX, y: ev.clientY, el: el, id: ev.pointerId };
+    try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+    el.style.transition = 'none';
   }
+  swipeMove(ev) {
+    const d = this.drag; if (!d || ev.pointerId !== d.id) return;
+    const dx = ev.clientX - d.x, dy = ev.clientY - d.y; d.dx = dx; d.dy = dy;
+    d.el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (dx / 22) + 'deg)';
+    const dir = swipeDir(dx, dy, 24);
+    d.el.style.boxShadow = dir === 'good' ? '0 0 0 3px #1FA34A' : dir === 'okay' ? '0 0 0 3px #FFD60A' : dir === 'bad' ? '0 0 0 3px #E0201B' : dir === 'back' ? '0 0 0 3px #636366' : '';
+  }
+  swipeEnd(ev) {
+    const d = this.drag; if (!d || (ev && ev.pointerId !== d.id)) return; this.drag = null;
+    const dir = swipeDir(d.dx || 0, d.dy || 0, 70);
+    d.el.style.transition = 'transform 0.18s ease-out'; d.el.style.boxShadow = '';
+    if (!dir) { d.el.style.transform = ''; return; }
+    const off = { good: 'translate(0,-140%)', okay: 'translate(140%,0) rotate(12deg)', bad: 'translate(0,140%)', back: 'translate(-140%,0) rotate(-12deg)' }[dir];
+    d.el.style.transform = off; this.busy = true;
+    setTimeout(() => { this.busy = false; d.el.style.transition = 'none'; d.el.style.transform = ''; this.choose(dir); }, 170);
+  }
+  choose(dir) { if (dir === 'back') this.back(); else this.answer(SWIPE_SCORE[dir]); }
   save() {
     const s = this.state; const inp = s.inp; const date = inp.date; const old = s.days[date]; const plan = s.plans[date];
     const e = { date: date, score: {}, imp: {}, exp: {}, note: inp.note || '', edited: old ? fmtShort(TODAY) : '' };
     FACTORS.forEach((f) => {
       const v = inp.a.score[f.id]; e.score[f.id] = (v === 'NA' || v == null) ? null : v;
-      e.imp[f.id] = inp.a.impToday[f.id] || this.impPrefill(date, f.id);
+      e.imp[f.id] = this.impPrefill(date, f.id);
       e.exp[f.id] = plan ? plan.exp[f.id] : (old ? old.exp[f.id] : null);
       if (e.score[f.id] == null) e.exp[f.id] = null;
     });
     const tom = addDays(date, 1); const np = { imp: {}, exp: {} };
-    FACTORS.forEach((f) => { np.imp[f.id] = inp.a.impTom[f.id] || this.recImp(date, f.id); const x = inp.a.expTom[f.id]; np.exp[f.id] = (x === 'NA' || x == null) ? null : x; });
+    FACTORS.forEach((f) => { np.imp[f.id] = DEF_IMP[f.id]; const x = inp.a.expTom[f.id]; np.exp[f.id] = (x === 'NA' || x == null) ? null : x; });
     const days = Object.assign({}, s.days); days[date] = e;
     const plans = Object.assign({}, s.plans); plans[tom] = np;
     this.setState({ days: days, plans: plans, inp: Object.assign({}, inp, { phase: 'done' }) });
@@ -1008,21 +1001,6 @@ class Component extends DCLogic {
     let res = { date: '', b: badge(null), expLine: '', ed: { txt: '', col: NEU }, pillars: [], rings: [], recs: { has: false, items: [], pillars: [] }, safety: false };
     if (inp) {
       const f = FACTORS[inp.fi];
-      const planned = this.impPrefill(inp.date, f.id); const rec = this.recImp(inp.date, f.id);
-      const selT = inp.a.impToday[f.id] || planned; const selN = inp.a.impTom[f.id] || rec;
-      const scoreRow = (act, key) => {
-        const v = inp.a[key][f.id]; const isAct = inp.act === act;
-        let disp, col;
-        if (isAct && inp.buf) { disp = inp.buf; col = '#FFFFFF'; }
-        else if (v !== undefined) { disp = v === 'NA' ? 'N/A' : f1(v); col = v === 'NA' ? '#98989F' : gcol(v * 10); }
-        else { disp = isAct ? '_._' : '–'; col = isAct ? '#409CFF' : '#8E8E93'; }
-        return { disp: disp, col: col, ring: isAct ? 'box-shadow: inset 0 0 0 2px #0A84FF; border-radius: 16px' : '', pick: () => this.patchInp({ act: act, buf: '' }) };
-      };
-      const seg = (sel, key) => ['H', 'M', 'L'].map((k) => ({
-        label: INAME[k], short: k === 'M' ? 'Med' : INAME[k], sel: k === sel ? 'true' : 'false',
-        style: k === sel ? 'background: #636366; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
-        pick: () => this.patchInp({ a: this.setAnswer(key, f.id, k) })
-      }));
       iv = {
         isQ: inp.phase === 'q', isNote: inp.phase === 'note', isDone: inp.phase === 'done', isReview: inp.phase === 'review', isPlan: inp.phase === 'plan',
         pt: (() => {
@@ -1031,15 +1009,18 @@ class Component extends DCLogic {
             names: ts.map(function (t) { return (t.mark === 'done' ? '✓ ' : t.mark === 'not' ? '✗ ' : '') + t.text; }).join('  ·  ') };
         })(),
         dateLabel: inp.date === TODAY ? 'Today' : fmtShort(inp.date), dateShort: inp.date === TODAY ? 'today' : fmtShort(inp.date),
-        backLabel: inp.fi > 0 ? FACTORS[inp.fi - 1].name : 'Check-in',
+        backLabel: inp.act === 1 ? 'Today' : inp.fi > 0 ? FACTORS[inp.fi - 1].name : 'Check-in',
         pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, fnum: inp.fi + 1,
-        prog: Math.round((inp.phase === 'q' ? inp.fi : 15) / 15 * 100),
+        prog: Math.round((inp.phase === 'q' ? inp.fi * 2 + inp.act : 30) / 30 * 100),
         name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
-        canNext: inp.a.score[f.id] !== undefined && inp.a.expTom[f.id] !== undefined,
-        activeName: inp.act === 0 ? 'today' : 'tomorrow',
-        r1: scoreRow(0, 'score'), r4: scoreRow(3, 'expTom'),
-        r2: { tag: (s.days[inp.date] ? 'Saved' : s.plans[inp.date] ? 'Planned last night' : 'Usual'), opts: seg(selT, 'impToday') },
-        r3: { tag: 'Recommended: ' + INAME[rec], opts: seg(selN, 'impTom') },
+        isTom: inp.act === 1, isToday: inp.act === 0,
+        askLabel: inp.act === 0 ? (inp.date === TODAY ? 'How was it today?' : 'How was it on ' + fmtShort(inp.date) + '?') : 'Expected tomorrow',
+        hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v * 10); })(inp.a.score[f.id]),
+        prevAns: answerLabel(inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]), hasPrev: (inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]) !== undefined,
+        impName: INAME[this.impPrefill(inp.date, f.id)],
+        swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
+        good: () => this.choose('good'), okay: () => this.choose('okay'), bad: () => this.choose('bad'), na: () => this.answer('NA'), goBack: () => this.back(),
+        naLabel: 'N/A ' + (inp.act === 0 ? 'today' : 'tomorrow'),
         note: inp.note
       };
       const dayT = this.tasksForDay(inp.date, true);
@@ -1049,7 +1030,7 @@ class Component extends DCLogic {
       }).filter(function (g) { return g.n > 0; });
       const isToday = inp.date === TODAY;
       rv = { title: isToday ? 'Today' : fmt(inp.date), btn: (days[inp.date] ? 'Edit ' : 'Start ') + (isToday ? 'Today’s Check-in' : 'Check-in for ' + fmtShort(inp.date)),
-        start: () => this.patchInp({ phase: 'q', fi: 0, act: 0, buf: '' }),
+        start: () => this.patchInp({ phase: 'q', fi: 0, act: 0 }),
         head: (isToday ? 'Due Today' : 'Due ' + fmtShort(inp.date)) + ' · ' + dayT.filter(function (t) { return t.done; }).length + ' of ' + dayT.length + ' done', empty: dayT.length === 0, groups: grp };
       const tom = addDays(inp.date, 1); const tomT = this.tasksForDay(tom, false); const dc = s.draftC;
       pn = {
@@ -1073,7 +1054,6 @@ class Component extends DCLogic {
         res.tipsOffShow = res.recs.items.length > 0 && !s.online;
       }
     }
-    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del'].map((k) => ({ label: k === 'del' ? '⌫' : k, aria: k === 'del' ? 'Delete' : k === '.' ? 'Decimal point' : k, pick: () => this.press(k) }));
 
     // calendar
     const y = s.month.y, m = s.month.m;
@@ -1192,7 +1172,7 @@ class Component extends DCLogic {
     const SU = [
       { title: 'Welcome', body: 'Rate each day across three pillars (Physical, Emotional and Financial), with five factors each. Every night you score today, plan tomorrow and review your to-dos. Setup takes about two minutes.' },
       { title: 'Pillar Weights', body: 'How much should each pillar count toward your overall day? They must add up to 100%. You can change this anytime in Settings.', isWeights: true },
-      { title: 'Default Importance', body: 'How important is each factor on a normal day? These pre-fill your first week; after that, the app recommends from your last 7 days.', isImp: true },
+      { title: 'Importance', body: 'How much does each factor matter to you? High counts 3×, Medium 2×, Low 1×. This applies every day; change it anytime in Settings (past days keep theirs).', isImp: true },
       { title: 'This Week’s Focus', body: 'Pick your Big Three: one factor from each pillar. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
       { title: 'You\u2019re Set', body: 'Do your first check-in tonight from the Check-in tab. Since there was no night before, today has no expectations yet; they start tomorrow. Everything is saved on this phone.' }
     ];
@@ -1335,10 +1315,9 @@ class Component extends DCLogic {
       toNote: () => this.patchInp({ phase: 'note' }),
       todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,
       latRecs: latRecs, latSafety: latSafety, openLatest: () => this.setState({ sel: lk }),
-      iv: iv, res: res, keys: keys, cal: cal, sheet: sheet,
+      iv: iv, res: res, cal: cal, sheet: sheet,
       goSummary: () => this.go('summary'), goInput: () => this.go('input'), goJournal: () => this.go('journal'), goHistory: () => this.go('history'),
-      back: () => this.back(), next: () => this.next(), autoFill: () => this.autoFill(), save: () => this.save(),
-      markNA: () => { if (!this.busy) this.commitScore('NA'); },
+      back: () => this.back(), save: () => this.save(),
       onNote: (ev) => this.patchInp({ note: ev.target.value }),
       prevMonth: () => this.shiftMonth(-1), nextMonth: () => this.shiftMonth(1), closeSheet: () => this.setState({ sel: null })
     };
