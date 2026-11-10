@@ -230,9 +230,16 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.save(); const e = T.state.days[d];
   ok(e.score.sleep === 7 && e.score.exercise === null && e.score.mood === 9 && e.imp.sleep === 'H' && e.imp.hydration === 'L', 'saved with Settings importance');
   ok(T.state.plans[L.addDays(d, 1)].exp.mood === 7, 'expected tomorrow saved');
-  // All Good with every importance = 90% (A); all Okay = 70% (C); all Bad = 40% (F).
-  const all = (v) => { const x = { date: d, score: {}, imp: {}, exp: {} }; L.FACTORS.forEach((f) => { x.score[f.id] = v; x.imp[f.id] = L.DEF_IMP[f.id]; }); return L.scoreDay(x, 'score').overall; };
-  ok(near(all(9), 90) && near(all(7), 70) && near(all(4), 40), 'all Good 90, all Okay 70, all Bad 40');
+  ok(e.scale === 9, 'swipe days are scored out of Good (9)');
+  // Points earned ÷ points possible, weights kept: all Good = 100%, all Okay = 7/9, all Bad = 4/9.
+  const all = (v, sc) => { const x = { date: d, score: {}, imp: {}, exp: {}, scale: sc }; L.FACTORS.forEach((f) => { x.score[f.id] = v; x.imp[f.id] = L.DEF_IMP[f.id]; }); return L.scoreDay(x, 'score').overall; };
+  ok(near(all(9, 9), 100) && near(all(7, 9), 700 / 9) && near(all(4, 9), 400 / 9), 'all Good 100, all Okay 77.8, all Bad 44.4');
+  ok(near(all(9), 90), 'older typed days keep their out-of-10 scale');
+  // Hand-worked: Sleep Good (High, Focus: 3.6), every other factor Okay.
+  // Physical = (9×3.6 + 7×3 + 7×2 + 7×1 + 7×2) / ((3.6+3+2+1+2) × 9) = 88.4 / 104.4 = 84.67%; Emotional and Financial 77.78%.
+  // Overall = 84.67×0.40 + 77.78×0.35 + 77.78×0.25 = 80.54%.
+  const mx = { date: d, score: {}, imp: {}, exp: {}, scale: 9 }; L.FACTORS.forEach((f) => { mx.score[f.id] = 7; mx.imp[f.id] = L.DEF_IMP[f.id]; }); mx.score.sleep = 9;
+  const ms = L.scoreDay(mx, 'score'); ok(near(ms.pillars.physical, 8840 / 104.4) && near(ms.pillars.emotional, 700 / 9) && near(ms.overall, (8840 / 104.4) * 0.4 + (700 / 9) * 0.6), 'mixed day: points over possible with weights');
   // Settings importance applies from today on; earlier days keep theirs.
   T.state.days[L.addDays(d, -1)] = Object.assign({}, e, { date: L.addDays(d, -1), imp: Object.assign({}, e.imp) });
   T.state.set = T.freshDraft(); T.renderVals().st.factors[0].opts[2].pick(); T.renderVals().st.save();

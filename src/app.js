@@ -237,6 +237,10 @@ function blankEntry(k) { const e = { date: k, score: {}, imp: {}, exp: {}, note:
 function histFor(h, key) { let best = h[0]; h.forEach(function (x) { if (x.from <= key && x.from >= best.from) best = x; }); return best; }
 function wFor(date) { return histFor(WHIST, date || '9999-12-31').w; }
 function focusFor(date) { return histFor(FHIST, date ? weekKey(date) : '9999-12-31').list; }
+// Points possible per factor: swipe check-ins (scale 9) top out at Good = 9; older typed days top out at 10.
+function maxPts(e) { return (e && e.scale) || 10; }
+// A factor's score in words for swipe days (Good / Okay / Bad), as a number for older typed days.
+function scoreTxt(e, v) { return maxPts(e) === 9 && v != null ? answerLabel(v) : f1(v); }
 function wt(e, f) { return IW[(e.imp && e.imp[f]) || 'M'] * (focusFor(e.date).indexOf(f) >= 0 ? 1.2 : 1); }
 function scoreDay(e, which) {
   const res = { pillars: {}, overall: null };
@@ -249,7 +253,7 @@ function scoreDay(e, which) {
       if (v == null) return;
       const x = wt(e, f.id); s += v * x; w += x;
     });
-    const pct = w ? s / w * 10 : null;
+    const pct = w ? s / (w * maxPts(e)) * 100 : null; // points earned ÷ points possible (all weights kept)
     res.pillars[p.id] = pct;
     if (pct != null) { tot += pct * PW[p.id]; tw += PW[p.id]; }
   });
@@ -821,7 +825,7 @@ class Component extends DCLogic {
   choose(dir) { if (dir === 'back') this.back(); else this.answer(SWIPE_SCORE[dir]); }
   save() {
     const s = this.state; const inp = s.inp; const date = inp.date; const old = s.days[date]; const plan = s.plans[date];
-    const e = { date: date, score: {}, imp: {}, exp: {}, note: inp.note || '', edited: old ? fmtShort(TODAY) : '' };
+    const e = { date: date, score: {}, imp: {}, exp: {}, scale: 9, note: inp.note || '', edited: old ? fmtShort(TODAY) : '' };
     FACTORS.forEach((f) => {
       const v = inp.a.score[f.id]; e.score[f.id] = (v === 'NA' || v == null) ? null : v;
       e.imp[f.id] = this.impPrefill(date, f.id);
@@ -886,7 +890,7 @@ class Component extends DCLogic {
   recsFor(e) {
     const sd = scoreDay(e, 'score');
     const items = FACTORS.filter(function (f) { return e.score[f.id] != null && e.score[f.id] < 7.0; })
-      .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: f1(v), hasTip: !!t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v * 10), gap: (10 - v) * wt(e, f.id) }; })
+      .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: scoreTxt(e, v), hasTip: !!t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v / maxPts(e) * 100), gap: (maxPts(e) - v) * wt(e, f.id) }; })
       .sort(function (a, b) { return b.gap - a.gap; });
     const pillars = PILLARS.filter(function (p) { return sd.pillars[p.id] != null && Math.round(sd.pillars[p.id]) < 70; })
       .map(function (p) { const v = sd.pillars[p.id]; return p.name + ' is at ' + Math.round(v) + '% (' + letter(v) + ')'; });
@@ -929,8 +933,8 @@ class Component extends DCLogic {
       vdb.rows = [row('Overall', 800, lsd.overall, lex.overall)].concat(PILLARS.map(function (p) { return row(p.name, 600, lsd.pillars[p.id], lex.pillars[p.id]); }));
       const fm = FACTORS.map(function (f) { const x = le.exp[f.id], a = le.score[f.id]; return { f: f, x: x, a: a, d: x != null && a != null ? dR(x, a, true) : null }; }).filter(function (m) { return m.d != null; });
       fm.sort(function (x, y) { return y.d - x.d; });
-      if (fm.length && fm[0].d > 0) vdb.lines.push({ txt: fm[0].f.name + ' beat by ' + fm[0].d.toFixed(1) + ' (expected ' + f1(fm[0].x) + ', got ' + f1(fm[0].a) + ')', col: UP });
-      const lo = fm[fm.length - 1]; if (lo && lo.d < 0) vdb.lines.push({ txt: lo.f.name + ' short by ' + Math.abs(lo.d).toFixed(1) + ' (expected ' + f1(lo.x) + ', got ' + f1(lo.a) + ')', col: DOWN });
+      if (fm.length && fm[0].d > 0) vdb.lines.push({ txt: fm[0].f.name + ' beat by ' + fm[0].d.toFixed(1) + ' (expected ' + scoreTxt(le, fm[0].x) + ', got ' + scoreTxt(le, fm[0].a) + ')', col: UP });
+      const lo = fm[fm.length - 1]; if (lo && lo.d < 0) vdb.lines.push({ txt: lo.f.name + ' short by ' + Math.abs(lo.d).toFixed(1) + ' (expected ' + scoreTxt(le, lo.x) + ', got ' + scoreTxt(le, lo.a) + ')', col: DOWN });
       if (!vdb.lines.length) vdb.lines.push({ txt: 'Every factor landed right on expectations', col: NEU });
     }
 
@@ -1015,7 +1019,7 @@ class Component extends DCLogic {
         name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
         isTom: inp.act === 1, isToday: inp.act === 0,
         askLabel: inp.act === 0 ? (inp.date === TODAY ? 'How was it today?' : 'How was it on ' + fmtShort(inp.date) + '?') : 'Expected tomorrow',
-        hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v * 10); })(inp.a.score[f.id]),
+        hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
         prevAns: answerLabel(inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]), hasPrev: (inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]) !== undefined,
         impName: INAME[this.impPrefill(inp.date, f.id)],
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
@@ -1094,7 +1098,7 @@ class Component extends DCLogic {
         const sec = (id) => { const o = isOpen(so, id); return { open: o, openStr: o ? 'true' : 'false', rot: o ? 90 : 0, toggle: () => tg(id) }; };
         sheet.groups = PILLARS.map(function (p) {
           return Object.assign(sec(p.id), { name: p.name, b: badge(sd.pillars[p.id]), rows: FACTORS.filter(function (f) { return f.p === p.id; }).map(function (f) {
-            return { name: f.name + (focusFor(k).indexOf(f.id) >= 0 ? ' ★' : ''), imp: INAME[e.imp[f.id]], score: f1(e.score[f.id]), exp: f1(e.exp[f.id]) };
+            return { name: f.name + (focusFor(k).indexOf(f.id) >= 0 ? ' ★' : ''), imp: INAME[e.imp[f.id]], score: scoreTxt(e, e.score[f.id]), exp: scoreTxt(e, e.exp[f.id]) };
           }) });
         });
         sheet.note = e.note || 'No note'; sheet.noteSec = sec('note'); sheet.taskSec = sec('tasks');

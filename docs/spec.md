@@ -33,10 +33,10 @@ and a daily journal.
 "Money stress" is deliberately not a Financial factor (it would double-count Emotional → Stress).
 
 ## 3. Scoring
-- **Scores:** 0.0–10.0. New check-ins are swiped: **Good = 9, Okay = 7, Bad = 4** (no typing; days saved before the swipe check-in keep their exact one-decimal numbers). N/A is allowed and is left out of the math. All Good = 90% (A), all Okay = 70% (C), all Bad = 40% (F); tips (below 7.0) show only for Bad.
+- **Scores:** 0.0–10.0. New check-ins are swiped: **Good = 9, Okay = 7, Bad = 4** (no typing; days saved before the swipe check-in keep their exact one-decimal numbers). N/A is allowed and is left out of the math. Tips (below 7.0) show only for Bad.
 - **Importance weights:** High = 3, Medium = 2, Low = 1. Set per factor in **Settings only** (not asked during check-in). A change applies from today on (today's saved check-in picks it up); earlier days keep the importance they were saved with.
 - **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), **exactly one from each pillar**, picked in Settings or setup (factors are grouped by pillar; tapping another factor in a pillar swaps that pillar's pick; Save / Continue wait until all three pillars have one). Default for new users: Sleep, Mood, Saving. Past weeks keep whatever Focus they had. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
-- **Pillar %** = Σ(score × weight) ÷ Σ(weight) × 10.
+- **Pillar %** = points earned ÷ points possible = Σ(score × weight) ÷ Σ(max × weight) × 100, where max is the top answer: **Good (9) for swipe check-ins**, so all Good = 100%, all Okay = 77.8%, all Bad = 44.4%. Days saved before the swipe check-in keep max = 10 (their percentages don't change). Each day stores its scale (`scale: 9`). Swipe days show scores as Good / Okay / Bad in History, Needs Attention and the vs. Expected lines.
 - **Pillar weights:** percentages that total 100, set at setup (default 40/35/25), editable later with dated history; past days keep the weights in effect at the time. Same for Focus and factor edits.
 - **Overall %** = weighted average of the pillars (pillars with all N/A are skipped and the rest re-normalize).
 - **Display:** whole-number % plus "X% left on the table". The letter grade comes from the **displayed (rounded) %**, so "90%" is always an A.
