@@ -18,24 +18,27 @@ and a daily journal.
 | Physical | Exercise | sedentary all day | did the planned workout or very active | High |
 | Physical | Nutrition | mostly junk or skipped meals | balanced, on-plan eating | Medium |
 | Physical | Hydration | barely drank water | hit your water goal | Low |
-| Physical | Body / Energy | sick, in pain or exhausted | felt strong and energized | Medium |
+| Physical | Health | sick, in pain or exhausted | felt strong and energized | Medium |
 | Emotional | Mood | low or down all day | upbeat and positive | High |
 | Emotional | Stress | overwhelmed | calm and in control | High |
 | Emotional | Connection | isolated, or conflict with people | meaningful time with others | Medium |
 | Emotional | Purpose | felt wasted or aimless | did what mattered to you | Medium |
 | Emotional | Mental Rest | no downtime at all | recharged (hobby, quiet time, reflection) | Low |
 | Financial | Spending | impulsive or well over plan | stayed within plan | High |
-| Financial | Saving | pulled from savings | moved money toward goals | Medium |
-| Financial | Earning / Work | unproductive or lost income | strong work day or income progress | High |
+| Financial | Money Goals | pulled from savings | moved money toward goals | Medium |
+| Financial | Career | unproductive or lost income | strong work day or income progress | High |
 | Financial | Obligations | missed a bill or added debt | everything on track or paid down | Medium |
 | Financial | Awareness | no idea where money stands | checked accounts, tracked or planned | Low |
+
+Renamed Nov 2026: Body / Energy → Health, Saving → Money Goals, Earning / Work → Career (anyone still using the old default
+name gets the new one; custom names are kept). Each factor also has an Okay meaning shown on its swipe card.
 
 "Money stress" is deliberately not a Financial factor (it would double-count Emotional → Stress).
 
 ## 3. Scoring
 - **Scores:** 0.0–10.0. New check-ins are swiped: **Good = 9, Okay = 7, Bad = 4** (no typing; days saved before the swipe check-in keep their exact one-decimal numbers). N/A is allowed and is left out of the math. Tips show only for factors rated Bad (see §6).
 - **Importance weights:** High = 3, Medium = 2, Low = 1. Set per factor in **Settings only** (not asked during check-in). A change applies from today on (today's saved check-in picks it up); earlier days keep the importance they were saved with.
-- **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), **exactly one from each pillar**, picked in Settings or setup (factors are grouped by pillar; tapping another factor in a pillar swaps that pillar's pick; Save / Continue wait until all three pillars have one). Default for new users: Sleep, Mood, Saving. Past weeks keep whatever Focus they had. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
+- **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), **exactly one from each pillar**, picked in Settings or setup (factors are grouped by pillar; tapping another factor in a pillar swaps that pillar's pick; Save / Continue wait until all three pillars have one). Default for new users: Sleep, Mood, Money Goals. Past weeks keep whatever Focus they had. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
 - **Pillar %** = points earned ÷ points possible = Σ(score × weight) ÷ Σ(max × weight) × 100, where max is the top answer: **Good (9) for swipe check-ins**, so all Good = 100%, all Okay = 77.8%, all Bad = 44.4%. Days saved before the swipe check-in keep max = 10 (their percentages don't change). Each day stores its scale (`scale: 9`). Swipe days show scores as Good / Okay / Bad in History, Needs Attention and the vs. Expected lines.
 - **Pillar weights:** percentages that total 100, set at setup (default 40/35/25), editable later with dated history; past days keep the weights in effect at the time. Same for Focus and factor edits.
 - **Overall %** = weighted average of the pillars (pillars with all N/A are skipped and the rest re-normalize).

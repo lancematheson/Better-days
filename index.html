@@ -1296,15 +1296,15 @@ const FACTORS = [
   { id: 'exercise', name: 'Exercise', p: 'physical', lo: 'sedentary all day', hi: 'did the planned workout or very active', mid: 'some movement or a light workout' },
   { id: 'nutrition', name: 'Nutrition', p: 'physical', lo: 'mostly junk or skipped meals', hi: 'balanced, on-plan eating', mid: 'a mix of good and not-so-good' },
   { id: 'hydration', name: 'Hydration', p: 'physical', lo: 'barely drank water', hi: 'hit your water goal', mid: 'some water, short of your goal' },
-  { id: 'energy', name: 'Body / Energy', p: 'physical', lo: 'sick, in pain or exhausted', hi: 'felt strong and energized', mid: 'fine, a bit tired' },
+  { id: 'energy', name: 'Health', p: 'physical', lo: 'sick, in pain or exhausted', hi: 'felt strong and energized', mid: 'fine, a bit tired' },
   { id: 'mood', name: 'Mood', p: 'emotional', lo: 'low or down all day', hi: 'upbeat and positive', mid: 'neutral, some ups and downs' },
   { id: 'stress', name: 'Stress', p: 'emotional', lo: 'overwhelmed', hi: 'calm and in control', mid: 'some stress, but manageable' },
   { id: 'connection', name: 'Connection', p: 'emotional', lo: 'isolated, or conflict with people', hi: 'meaningful time with others', mid: 'some contact, nothing deep' },
   { id: 'purpose', name: 'Purpose', p: 'emotional', lo: 'felt wasted or aimless', hi: 'did what mattered to you', mid: 'got a few meaningful things done' },
   { id: 'rest', name: 'Mental Rest', p: 'emotional', lo: 'no downtime at all', hi: 'recharged with a hobby, quiet time or reflection', mid: 'a little downtime' },
   { id: 'spending', name: 'Spending', p: 'financial', lo: 'impulsive or well over plan', hi: 'stayed within plan', mid: 'a few small extras' },
-  { id: 'saving', name: 'Saving', p: 'financial', lo: 'pulled from savings', hi: 'moved money toward goals', mid: 'held steady' },
-  { id: 'earning', name: 'Earning / Work', p: 'financial', lo: 'unproductive or lost income', hi: 'strong work day or income progress', mid: 'an average work day' },
+  { id: 'saving', name: 'Money Goals', p: 'financial', lo: 'pulled from savings', hi: 'moved money toward goals', mid: 'held steady' },
+  { id: 'earning', name: 'Career', p: 'financial', lo: 'unproductive or lost income', hi: 'strong work day or income progress', mid: 'an average work day' },
   { id: 'obligations', name: 'Obligations', p: 'financial', lo: 'missed a bill or added debt', hi: 'everything on track or paid down', mid: 'nothing missed, no progress' },
   { id: 'awareness', name: 'Awareness', p: 'financial', lo: 'no idea where money stands', hi: 'checked accounts, tracked or planned', mid: 'a quick look, no real check' }
 ];
@@ -1516,7 +1516,9 @@ function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; let t = M
 // Settings history: past days keep the weights and Focus that applied at the time.
 let WHIST = (SAVED && SAVED.whist) || [{ from: '2000-01-01', w: { physical: 40, emotional: 35, financial: 25 } }];
 let FHIST = (SAVED && SAVED.fhist) || [{ from: '2000-01-01', list: FOCUS.slice() }];
-if (SAVED && SAVED.names) FACTORS.forEach(function (f) { if (SAVED.names[f.id]) f.name = SAVED.names[f.id]; });
+// Saved names override the defaults, except old default names that were renamed in an update (Nov 2026).
+const OLD_DEFAULT_NAMES = { energy: 'Body / Energy', saving: 'Saving', earning: 'Earning / Work' };
+if (SAVED && SAVED.names) FACTORS.forEach(function (f) { const n = SAVED.names[f.id]; if (n && n !== OLD_DEFAULT_NAMES[f.id]) f.name = n; });
 if (SAVED && SAVED.defImp) Object.keys(SAVED.defImp).forEach(function (k) { DEF_IMP[k] = SAVED.defImp[k]; });
 function blankEntry(k) { const e = { date: k, score: {}, imp: {}, exp: {}, note: '', edited: '' }; FACTORS.forEach(function (f) { e.score[f.id] = null; e.exp[f.id] = null; e.imp[f.id] = DEF_IMP[f.id]; }); return e; }
 function histFor(h, key) { let best = h[0]; h.forEach(function (x) { if (x.from <= key && x.from >= best.from) best = x; }); return best; }

@@ -276,6 +276,16 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(L.mostlyWord(95) === 'Mostly Good' && L.mostlyWord(78) === 'Mostly Okay' && L.mostlyWord(44) === 'Mostly Bad', 'mostly words');
   const hv = C.renderVals(); ok(hv.highlights.every((h) => !/ is (up|down) \d/.test(h.txt)) && hv.big3.every((b) => /^Mostly|^–/.test(b.avg)), 'highlights and Big Three use words');
 }
+// Renamed factors: old default names switch to the new ones; custom names are kept.
+{
+  const c2 = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, Promise };
+  c2.window = { addEventListener() {}, removeEventListener() {} };
+  c2.localStorage = { getItem: () => JSON.stringify({ names: { energy: 'Body / Energy', saving: 'Saving', earning: 'Side Hustle', sleep: 'Sleep' } }), setItem() {} };
+  vm.createContext(c2);
+  vm.runInContext(`class DCLogic { constructor(p) { this.state = {}; } setState(o) { Object.assign(this.state, o); } }`, c2);
+  vm.runInContext(src + `\n;globalThis.__n = FACTORS.map((f) => f.name);`, c2);
+  const n = c2.__n; ok(n[4] === 'Health' && n[11] === 'Money Goals' && n[12] === 'Side Hustle' && n[0] === 'Sleep', 'old default names updated, custom names kept');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
