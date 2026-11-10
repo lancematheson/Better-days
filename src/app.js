@@ -489,12 +489,25 @@ function delta(d, dec) {
   return { txt: dec ? '0.0' : '0', col: NEU };
 }
 function p1(v) { return (Math.round(v * 10) / 10).toFixed(1) + '%'; }
+// Comparisons are shown as a general up / down, not a size (swipe answers have no fine-grained numbers).
+// Decided from the shown (rounded) percentages so they always match what's on screen.
 function expDelta(act, exp) {
   if (act == null || exp == null) return { txt: '', col: NEU };
-  const d = Math.round((Math.round(act * 10) - Math.round(exp * 10))) / 10;
-  if (d > 0) return { txt: '\u25B2 Beat expectations by ' + d.toFixed(1) + ' points', col: UP };
-  if (d < 0) return { txt: '\u25BC Fell short by ' + Math.abs(d).toFixed(1) + ' points', col: DOWN };
+  const d = Math.round(act) - Math.round(exp);
+  if (d > 0) return { txt: '\u25B2 Better than expected', col: UP };
+  if (d < 0) return { txt: '\u25BC Below expectations', col: DOWN };
   return { txt: 'Right on expectations', col: NEU };
+}
+function vsWord(act, exp) {
+  if (act == null || exp == null) return { txt: '–', col: NEU };
+  const d = Math.round(act) - Math.round(exp);
+  return d > 0 ? { txt: '\u25B2 Above', col: UP } : d < 0 ? { txt: '\u25BC Below', col: DOWN } : { txt: 'On target', col: NEU };
+}
+// A factor's average as a share of its possible points, turned into words.
+function mostlyWord(pct) { return pct == null ? '–' : pct >= 89 ? 'Mostly Good' : pct >= 61 ? 'Mostly Okay' : 'Mostly Bad'; }
+function trendWord(prev, cur) {
+  if (prev == null || cur == null) return { txt: '', col: NEU };
+  const d = cur - prev; return d >= 3 ? { txt: '\u25B2 Up', col: UP } : d <= -3 ? { txt: '\u25BC Down', col: DOWN } : { txt: 'Steady', col: NEU };
 }
 function rings(sd, big) {
   const R = big ? [62, 45, 28] : [16, 11, 6];
@@ -927,14 +940,13 @@ class Component extends DCLogic {
     const vdb = { show: hasData && lex.overall != null, title: lat.label + ' vs. Expected', rows: [], lines: [] };
     if (vdb.show) {
       const row = function (name, weight, act, exp) {
-        const d = delta(dR(exp, act, true), true);
-        return { name: name, weight: weight, b: badge(act), exp: exp == null ? 'no prediction' : 'expected ' + Math.round(exp) + '%', d: d.txt ? d : { txt: '–', col: NEU } };
+        return { name: name, weight: weight, b: badge(act), exp: exp == null ? 'no prediction' : 'expected ' + Math.round(exp) + '%', d: vsWord(act, exp) };
       };
       vdb.rows = [row('Overall', 800, lsd.overall, lex.overall)].concat(PILLARS.map(function (p) { return row(p.name, 600, lsd.pillars[p.id], lex.pillars[p.id]); }));
-      const fm = FACTORS.map(function (f) { const x = le.exp[f.id], a = le.score[f.id]; return { f: f, x: x, a: a, d: x != null && a != null ? dR(x, a, true) : null }; }).filter(function (m) { return m.d != null; });
-      fm.sort(function (x, y) { return y.d - x.d; });
-      if (fm.length && fm[0].d > 0) vdb.lines.push({ txt: fm[0].f.name + ' beat by ' + fm[0].d.toFixed(1) + ' (expected ' + scoreTxt(le, fm[0].x) + ', got ' + scoreTxt(le, fm[0].a) + ')', col: UP });
-      const lo = fm[fm.length - 1]; if (lo && lo.d < 0) vdb.lines.push({ txt: lo.f.name + ' short by ' + Math.abs(lo.d).toFixed(1) + ' (expected ' + scoreTxt(le, lo.x) + ', got ' + scoreTxt(le, lo.a) + ')', col: DOWN });
+      const better = FACTORS.filter(function (f) { const x = le.exp[f.id], a = le.score[f.id]; return x != null && a != null && a > x; }).map(function (f) { return f.name; });
+      const worse = FACTORS.filter(function (f) { const x = le.exp[f.id], a = le.score[f.id]; return x != null && a != null && a < x; }).map(function (f) { return f.name; });
+      if (better.length) vdb.lines.push({ txt: 'Better than expected: ' + better.join(', '), col: UP });
+      if (worse.length) vdb.lines.push({ txt: 'Worse than expected: ' + worse.join(', '), col: DOWN });
       if (!vdb.lines.length) vdb.lines.push({ txt: 'Every factor landed right on expectations', col: NEU });
     }
 
@@ -947,14 +959,15 @@ class Component extends DCLogic {
 
     // highlights
     let streak = 0; for (let k = lk; days[k]; k = addDays(k, -1)) streak++;
-    const fAvg = (id, from, to) => avgOf((k) => days[k] ? days[k].score[id] : null, from, to).v;
-    const moves = FACTORS.map(function (f) { const c = fAvg(f.id, addDays(lk, -6), lk), p = fAvg(f.id, addDays(lk, -13), addDays(lk, -7)); return { f: f, c: c, d: dR(p, c, true) }; }).filter(function (m) { return m.d != null; });
+    // factor averages as % of possible points (works for both swipe and older typed days)
+    const fAvg = (id, from, to) => avgOf((k) => { const e = days[k]; return e && e.score[id] != null ? e.score[id] / maxPts(e) * 100 : null; }, from, to).v;
+    const moves = FACTORS.map(function (f) { const c = fAvg(f.id, addDays(lk, -6), lk), p = fAvg(f.id, addDays(lk, -13), addDays(lk, -7)); return { f: f, c: c, d: c != null && p != null ? c - p : null }; }).filter(function (m) { return m.d != null && Math.abs(m.d) >= 3; });
     moves.sort(function (a, b) { return b.d - a.d; });
     let beat = 0, cnt = 0;
     for (let i = 0; i < 7; i++) { const e = days[addDays(lk, -i)]; if (!e) continue; const a = scoreDay(e, 'score').overall, x = scoreDay(e, 'exp').overall; if (a != null && x != null) { cnt++; if (Math.round(a * 10) >= Math.round(x * 10)) beat++; } }
     const highlights = hasData ? [{ txt: streak + '-day check-in streak', col: '#409CFF' }] : [{ txt: 'Highlights appear after your first few check-ins.', col: '#409CFF' }];
-    if (moves.length && moves[0].d > 0) highlights.push({ txt: moves[0].f.name + ' is up ' + moves[0].d.toFixed(1) + ' from last week (avg ' + moves[0].c.toFixed(1) + ')', col: UP });
-    const worst = moves[moves.length - 1]; if (worst && worst.d < 0) highlights.push({ txt: worst.f.name + ' is down ' + Math.abs(worst.d).toFixed(1) + ' from last week (avg ' + worst.c.toFixed(1) + ')', col: DOWN });
+    if (moves.length && moves[0].d > 0) highlights.push({ txt: moves[0].f.name + ' is trending up from last week', col: UP });
+    const worst = moves[moves.length - 1]; if (worst && worst.d < 0) highlights.push({ txt: worst.f.name + ' is trending down from last week', col: DOWN });
     if (cnt) highlights.push({ txt: 'Met or beat expectations on ' + beat + ' of the last ' + cnt + ' days', col: '#FFD60A' });
 
     // sections
@@ -981,7 +994,7 @@ class Component extends DCLogic {
     const big3 = focusFor(lk).map(function (id) {
       const f = FACTORS.filter(function (x) { return x.id === id; })[0];
       const cur = fAvg(id, addDays(lk, -6), lk); const prev = fAvg(id, addDays(lk, -13), addDays(lk, -7)); const m30 = fAvg(id, addDays(lk, -29), lk);
-      return { name: f.name, pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, avg: f1(cur), avg30: f1(m30), b: badge(cur == null ? null : cur * 10), d: delta(dR(prev, cur, true), true) };
+      return { name: f.name, pillar: PILLARS.filter(function (p) { return p.id === f.p; })[0].name, avg: mostlyWord(cur), avg30: mostlyWord(m30).replace('Mostly ', '').toLowerCase(), b: badge(cur), d: trendWord(prev, cur) };
     });
     const latRecs = this.recsFor(le); const latSafety = this.safetyFor(le);
     const ob = !!s.open.big, oa = !!s.open.attn;

@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, trendWord, mostlyWord, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -44,8 +44,8 @@ ok(hex(L.rgbOf(85)) === '#1FA34A' && hex(L.rgbOf(100)) === '#1FA34A', 'full gree
 // Deltas match the displayed numbers.
 ok(L.dR(75.4, 76.6) === 2, '75% -> 77% shows +2');
 ok(L.delta(5).txt === '▲ 5' && L.delta(-0.4).txt === '0', 'delta arrows');
-ok(L.expDelta(70.5, 70.4).txt === '▲ Beat expectations by 0.1 points', 'expected vs actual to one decimal');
-ok(L.expDelta(73.3, 76.08).txt === '▼ Fell short by 2.8 points', 'fell short to one decimal');
+ok(L.expDelta(71.4, 69.6).txt === '▲ Better than expected', 'expected vs actual: better');
+ok(L.expDelta(73.3, 76.08).txt === '▼ Below expectations' && L.expDelta(70.4, 69.6).txt === 'Right on expectations', 'below, and same shown % counts as on target');
 ok(L.expDelta(null, 70).txt === '', 'no expectation -> no text');
 
 // Rings and charts.
@@ -246,6 +246,12 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(T.state.days[d].imp.sleep === 'L' && T.state.days[L.addDays(d, -1)].imp.sleep === 'H' && L.DEF_IMP.sleep === 'L', 'importance change: today on, past kept');
   L.DEF_IMP.sleep = 'H';
 }
+// Trends in words.
+{
+  ok(L.trendWord(70, 80).txt === '▲ Up' && L.trendWord(80, 70).txt === '▼ Down' && L.trendWord(80, 81).txt === 'Steady', 'trend words');
+  ok(L.mostlyWord(95) === 'Mostly Good' && L.mostlyWord(78) === 'Mostly Okay' && L.mostlyWord(44) === 'Mostly Bad', 'mostly words');
+  const hv = C.renderVals(); ok(hv.highlights.every((h) => !/ is (up|down) \d/.test(h.txt)) && hv.big3.every((b) => /^Mostly|^–/.test(b.avg)), 'highlights and Big Three use words');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
@@ -286,8 +292,9 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   const vd = v.vdb; const ks = Object.keys(C.state.days).sort(); const e = C.state.days[ks[ks.length - 1]];
   const a = L.scoreDay(e, 'score'), x = L.scoreDay(e, 'exp');
   ok(vd.show && vd.rows[0].b.pct === Math.round(a.overall) + '%' && vd.rows[0].exp === 'expected ' + Math.round(x.overall) + '%', 'vs expected: overall shown');
-  const d = Math.round(a.overall * 10) / 10 - Math.round(x.overall * 10) / 10; const r = Math.round(d * 10) / 10;
-  ok(vd.rows[0].d.txt === (r > 0 ? '▲ ' + r.toFixed(1) : r < 0 ? '▼ ' + Math.abs(r).toFixed(1) : '0.0'), 'vs expected: one-decimal change');
+  const dd = Math.round(a.overall) - Math.round(x.overall);
+  ok(vd.rows[0].d.txt === (dd > 0 ? '▲ Above' : dd < 0 ? '▼ Below' : 'On target'), 'vs expected: up/down word from shown %');
+  ok(vd.lines.every((l) => !/\d/.test(l.txt)), 'vs expected: factor lines have no numbers');
   ok(vd.rows.length === 4 && vd.lines.length >= 1, 'vs expected: pillars and factor lines');
   const T = new L.Component({}); T.state.days = { [L.getToday()]: Object.assign({}, e, { date: L.getToday(), exp: {} }) };
   ok(!T.renderVals().vdb.show, 'hidden when no prediction was made');

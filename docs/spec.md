@@ -42,7 +42,8 @@ and a daily journal.
 - **Display:** whole-number % plus "X% left on the table". The letter grade comes from the **displayed (rounded) %**, so "90%" is always an A.
 - **Grades:** straight US letters, no +/−: A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, F < 60.
 - **Change arrows** are computed from the displayed numbers so they always match what's on screen.
-- **Expected vs. actual:** tomorrow's predicted scores are scored with that day's final importance and compared to the actual. Shown to **one decimal** ("Beat expectations by 0.1 points" / "Fell short by 2.8 points"), with no letter grade on that line.
+- **Expected vs. actual:** tomorrow's predicted scores are scored with that day's final importance and compared to the actual. Shown as **a general direction, not a size**: "Expected 84% → actual 78%" then "▲ Better than expected" / "▼ Below expectations" / "Right on expectations" (decided from the shown whole-number %), with no letter grade on that line.
+- **Comparisons are up/down words, not score gaps** (swipe answers have no fine-grained numbers): vs. Expected pillar chips say ▲ Above / ▼ Below / On target; factor lines list "Better than expected: …" and "Worse than expected: …"; Highlights say "X is trending up/down from last week" (factor's 7-day average share of possible points vs. the week before, at least 3 points apart); Big Three shows "Mostly Good / Okay / Bad" (≥89% / ≥61% / below of possible points) with ▲ Up / ▼ Down / Steady. Whole-day and pillar % changes (e.g. "▲ 2 vs previous day", 7-/30-day cards) still show numbers.
 
 ## 4. Colors (dark background)
 - 50% and below: full red (#E0201B)
@@ -58,9 +59,9 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 
 1. **Summary** — gear icon opens Settings. Top to bottom:
    - Latest day as three nested rings in grade colors (outer Physical, middle Emotional, inner Financial) with overall grade.
-   - **[Today/Yesterday] vs. Expected**: overall and each pillar as actual %, change from the prediction made the night
-     before (one decimal, in points) and "expected N%"; plus the factor that beat its prediction most and the one that fell
-     shortest. Hidden when that day had no prediction.
+   - **[Today/Yesterday] vs. Expected**: overall and each pillar as actual %, ▲ Above / ▼ Below / On target compared
+     with the prediction made the night before, and "expected N%"; then "Better than expected: …" and "Worse than
+     expected: …" listing factors. Hidden when that day had no prediction.
    - Previous 7 days as mini rings (tap to open a day).
    - Needs Attention (expandable; tips).
    - Highlights (streak, biggest improvement, biggest drop, expectation record).

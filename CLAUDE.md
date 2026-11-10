@@ -44,8 +44,8 @@ in the same commit.
 
 ## Gotchas
 - Dates are local calendar days (`YYYY-MM-DD` keys). Weeks run Monday-Sunday.
-- Letter grades and change arrows are computed from the displayed (rounded) numbers; expected vs. actual is shown to
-  one decimal.
+- Letter grades and change arrows are computed from the displayed (rounded) numbers. Expected vs. actual and factor
+  comparisons are shown as up/down words, not number gaps (see spec §3).
 - iPhone: inputs need 16px+ text or Safari zooms; keep tap targets 44px+; the check-in factor pages must fit an
   iPhone 13 screen without scrolling (the tab bar is hidden there).
 - The service worker (`sw.js`) caches the app for offline use; the build stamps a new cache version each time.

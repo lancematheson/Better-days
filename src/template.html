@@ -189,13 +189,13 @@
             <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #38383A">
               <div style="flex: 1; display: flex; flex-direction: column">
                 <span style="font-size: 15px; font-weight: 700">{{f.name}}</span>
-                <span style="font-size: 12px; color: #98989F">{{f.pillar}} · 30-day avg {{f.avg30}}</span>
+                <span style="font-size: 12px; color: #98989F">{{f.pillar}} · last 30 days mostly {{f.avg30}}</span>
               </div>
               <span style="font-size: 12px; font-weight: 700; color: {{f.d.col}}">{{f.d.txt}}</span>
-              <span style="font-size: 20px; font-weight: 800; color: {{f.b.bg}}">{{f.avg}}</span>
+              <span style="font-size: 16px; font-weight: 800; color: {{f.b.bg}}">{{f.avg}}</span>
             </div>
           </sc-for>
-          <span style="font-size: 12px; color: #98989F; padding-top: 4px">7-day averages. Focus factors count 20% more this week.</span>
+          <span style="font-size: 12px; color: #98989F; padding-top: 4px">Last 7 days vs. the week before. Focus factors count 20% more this week.</span>
         </div>
       </sc-if>
 
