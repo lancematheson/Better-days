@@ -1035,7 +1035,6 @@ class Component extends DCLogic {
         hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
         prevAns: answerLabel(inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]), hasPrev: (inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]) !== undefined,
         impName: INAME[this.impFor(inp, f.id)], imp: this.impFor(inp, f.id), mid: f.mid || '',
-        impNote: this.impFor(inp, f.id) !== this.impPrefill(inp.date, f.id) ? 'just this day' : '',
         onImp: (ev) => { const v = ev.target.value; if (!IW[v]) return; this.patchInp({ a: this.setAnswer('imp', f.id, v) }); },
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
         good: () => this.choose('good'), okay: () => this.choose('okay'), bad: () => this.choose('bad'), na: () => this.answer('NA'), goBack: () => this.back(),

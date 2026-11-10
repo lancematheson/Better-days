@@ -252,7 +252,7 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   const T = new L.Component({}); T.state.days = {}; T.state.plans = {}; T.state.tasks = []; T.state.series = [];
   const d = L.getToday(); T.startInput(d); T.renderVals().rv.start();
   T.renderVals().iv.onImp({ target: { value: 'L' } }); let iv = T.renderVals().iv;
-  ok(iv.impName === 'Low' && iv.impNote === 'just this day', 'picker shows the new value, marked just this day');
+  ok(iv.impName === 'Low', 'picker shows the new value');
   for (let i = 0; i < 15; i++) { T.renderVals().iv.good(); T.renderVals().iv.good(); }
   T.save(); ok(T.state.days[d].imp.sleep === 'L' && L.DEF_IMP.sleep === 'H', 'saved for that day; Settings unchanged');
   T.startInput(L.addDays(d, 1)); T.renderVals().rv.start(); ok(T.renderVals().iv.impName === 'High', 'next day back to Settings');

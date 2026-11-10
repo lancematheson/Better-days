@@ -31,7 +31,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.getByRole('button', { name: /Start Today.s Check-in/ }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
   await p.locator('#cardimp').selectOption('L'); await p.waitForTimeout(100);
-  log('card importance:', await p.getByText('just this day').isVisible());
+  log('card importance:', await p.locator('label[for="cardimp"]').innerText());
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
   log('card fits screen:', await p.evaluate(() => { const s = document.querySelector('.scroller'); return s.scrollHeight <= s.clientHeight + 1; }));
   // real swipes on the first card: up (good) for today, right (okay) for tomorrow
