@@ -25,9 +25,22 @@ boot='''
   });
   window.addEventListener('pagehide', function () { inst.persist(); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') inst.persist(); });
-  if ('serviceWorker' in navigator && location.protocol === 'https:') { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+  // Offline support. updateViaCache 'none' makes the phone always ask GitHub for the latest sw.js, and the app checks
+  // for a new version each time it comes back to the screen, so updates show up on the next open.
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); });
+    }).catch(function () {});
+    // When a new version takes over while the app is open, reload once so the screen shows it.
+    var had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', function () { if (had) { had = false; inst.persist(); location.reload(); } });
+  }
 })();
 '''
+import datetime
+ver=hashlib.sha1((style+tpl+runtime+logic+boot).encode()).hexdigest()[:7]
+stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%b %d, %Y').replace(' 0',' ')+' · '+ver
+logic=logic.replace("const APP_VERSION = 'dev';", "const APP_VERSION = '"+stamp+"';")
 html=f'''<!doctype html>
 <html lang="en">
 <head>
@@ -61,10 +74,22 @@ ver=hashlib.sha1(html.encode()).hexdigest()[:10]
 sw=f'''// Better Days offline support: keeps the app files on the phone so it opens without internet.
 const CACHE = 'dayscore-{ver}';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
-self.addEventListener('install', function (e) {{ e.waitUntil(caches.open(CACHE).then(function (c) {{ return c.addAll(FILES); }}).then(function () {{ return self.skipWaiting(); }})); }});
+// cache: 'reload' skips the phone's 10-minute web cache so a new version never saves an old copy.
+self.addEventListener('install', function (e) {{ e.waitUntil(caches.open(CACHE).then(function (c) {{ return c.addAll(FILES.map(function (f) {{ return new Request(f, {{ cache: 'reload' }}); }})); }}).then(function () {{ return self.skipWaiting(); }})); }});
 self.addEventListener('activate', function (e) {{ e.waitUntil(caches.keys().then(function (keys) {{ return Promise.all(keys.filter(function (k) {{ return k !== CACHE; }}).map(function (k) {{ return caches.delete(k); }})); }}).then(function () {{ return self.clients.claim(); }})); }});
 self.addEventListener('fetch', function (e) {{
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  // The app page itself: newest from GitHub when online (checked, not re-downloaded if unchanged); saved copy if
+  // offline or GitHub doesn't answer within 4 seconds.
+  if (e.request.mode === 'navigate') {{
+    e.respondWith(caches.match('index.html').then(function (hit) {{
+      const net = fetch(e.request, {{ cache: 'no-cache' }}).then(function (res) {{ if (res && res.ok) {{ const copy = res.clone(); caches.open(CACHE).then(function (c) {{ c.put('index.html', copy); }}); }} return res; }});
+      if (!hit) return net;
+      return Promise.race([net.catch(function () {{ return hit; }}), new Promise(function (r) {{ setTimeout(function () {{ r(hit); }}, 4000); }})]);
+    }}));
+    return;
+  }}
+  // Everything else (icons, the Scan reader): saved copy first, refreshed in the background.
   e.respondWith(caches.match(e.request, {{ ignoreSearch: true }}).then(function (hit) {{
     const net = fetch(e.request).then(function (res) {{ if (res && res.ok) {{ const copy = res.clone(); caches.open(CACHE).then(function (c) {{ c.put(e.request, copy); }}); }} return res; }}).catch(function () {{ return hit; }});
     return hit || net;

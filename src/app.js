@@ -3,6 +3,7 @@ function localToday() { const d = new Date(); return d.getFullYear() + '-' + Str
 let TODAY = localToday();
 // Saved app data lives on the phone (localStorage). Nothing is sent anywhere.
 const STORE_KEY = 'dayscore.v1';
+const APP_VERSION = 'dev'; // the build replaces this with the build date and a short code
 function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
 const SAVED = loadStore();
 let START = (SAVED && SAVED.start) || TODAY;
@@ -1344,6 +1345,7 @@ class Component extends DCLogic {
       st: st, su: su, ad: ad, dsheet: dsheet, hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
       openJPick: () => { const pp = this.state.jDate.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1, j: true } }); },
       openPick: () => { const st = this.state; const c = st.pMode === 'work' ? st.wDate : (st.pView === 'day' ? st.pDate : st.pWeek); const pp = c.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1 } }); }, vdb: vdb, attn: attn,
+      appVersion: APP_VERSION,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
       runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
       tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, journal: s.tab === 'journal' ? on : off2, history: s.tab === 'history' ? on : off2 },

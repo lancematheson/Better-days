@@ -48,4 +48,6 @@ in the same commit.
   comparisons are shown as up/down words, not number gaps (see spec §3).
 - iPhone: inputs need 16px+ text or Safari zooms; keep tap targets 44px+; the check-in factor pages must fit an
   iPhone 13 screen without scrolling (the tab bar is hidden there).
-- The service worker (`sw.js`) caches the app for offline use; the build stamps a new cache version each time.
+- The service worker (`sw.js`) caches the app for offline use; the build stamps a new cache version and an
+  `APP_VERSION` (build date + code hash, shown in Settings → About). The app page is network-first so updates show on
+  the next open; other files are cache-first.

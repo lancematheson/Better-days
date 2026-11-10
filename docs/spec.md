@@ -144,6 +144,10 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 
 ## 8. Data & platform
 - Works offline. All data saved only on the phone (browser storage). No accounts, no cloud, no passcode.
+- **Updates:** when online, opening the app loads the newest version from GitHub (only checked, not re-downloaded, if
+  unchanged; falls back to the saved copy if offline or GitHub takes over 4 seconds). The app checks for a new version
+  each time it comes back on screen and reloads itself once when one takes over. Settings → About shows "Version [build
+  date] · [code]" so you can tell which version is running.
 - Days follow the calendar (midnight to midnight). Missed days are left out of all averages and graphs.
 - CSV export: one row per day with overall/pillar %, every factor's score, importance and expected score, note, edited date, journal text. Deleting the home-screen app deletes its data, so export now and then.
 - Installed via Safari → Share → Add to Home Screen. Anyone with the link can install it; each person's data is separate.
