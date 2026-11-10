@@ -244,8 +244,14 @@ function maxPts(e) { return (e && e.scale) || 10; }
 // A factor's score in words for swipe days (Good / Okay / Bad), as a number for older typed days.
 function scoreTxt(e, v) { return maxPts(e) === 9 && v != null ? answerLabel(v) : f1(v); }
 function wt(e, f) { return IW[(e.imp && e.imp[f]) || 'M'] * (focusFor(e.date).indexOf(f) >= 0 ? 1.2 : 1); }
+// A day's score is worked out once and remembered. Days are never edited in place (saving makes a new object), so the
+// cache only has to be cleared when the dated weight / Focus history changes (bumpScores()).
+let SCORE_CACHE = new WeakMap();
+function bumpScores() { SCORE_CACHE = new WeakMap(); }
 function scoreDay(e, which) {
-  const res = { pillars: {}, overall: null };
+  let c = SCORE_CACHE.get(e); if (!c) { c = {}; SCORE_CACHE.set(e, c); }
+  if (c[which]) return c[which];
+  const res = c[which] = { pillars: {}, overall: null };
   let tot = 0, tw = 0; const PW = wFor(e.date);
   PILLARS.forEach(function (p) {
     let s = 0, w = 0;
@@ -264,7 +270,7 @@ function scoreDay(e, which) {
 }
 function letter(p) { const q = Math.round(p); return q >= 90 ? 'A' : q >= 80 ? 'B' : q >= 70 ? 'C' : q >= 60 ? 'D' : 'F'; }
 // Change between two shown values, computed from the rounded numbers so it always matches what is on screen.
-function dR(a, b, dec) { if (a == null || b == null) return null; return dec ? Math.round(b * 10) / 10 - Math.round(a * 10) / 10 : Math.round(b) - Math.round(a); }
+function dR(a, b) { if (a == null || b == null) return null; return Math.round(b) - Math.round(a); }
 function h2r(h) { return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); }); }
 function mix(a, b, t) { const A = h2r(a), B = h2r(b); return A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }); }
 // Grade colors: 50 and below full red, red to yellow 50-70, yellow 70-75, green appears from 75, full green 85+.
@@ -485,13 +491,13 @@ function focusOk(list) { return list.length === 3 && focusMissing(list).length =
 function factorName(id) { const f = FACTORS.filter(function (x) { return x.id === id; })[0]; return f ? f.name : ''; }
 function gcol(p) { if (p == null) return '#636366'; return 'rgb(' + rgbOf(p).join(',') + ')'; }
 function badge(p) { return { pct: p == null ? '–' : Math.round(p) + '%', letter: p == null ? '–' : letter(p), bg: gcol(p), missed: p == null ? '–' : (100 - Math.round(p)) + '%' }; }
-function delta(d, dec) {
+// Whole-number change arrow for percentages (e.g. "▲ 2").
+function delta(d) {
   if (d == null || isNaN(d)) return { txt: '', col: NEU };
-  const r = dec ? Math.round(d * 10) / 10 : Math.round(d);
-  const s = dec ? Math.abs(r).toFixed(1) : String(Math.abs(r));
-  if (r > 0) return { txt: '▲ ' + s, col: UP };
-  if (r < 0) return { txt: '▼ ' + s, col: DOWN };
-  return { txt: dec ? '0.0' : '0', col: NEU };
+  const r = Math.round(d);
+  if (r > 0) return { txt: '▲ ' + Math.abs(r), col: UP };
+  if (r < 0) return { txt: '▼ ' + Math.abs(r), col: DOWN };
+  return { txt: '0', col: NEU };
 }
 function p1(v) { return (Math.round(v * 10) / 10).toFixed(1) + '%'; }
 // Comparisons are shown as a general up / down, not a size (swipe answers have no fine-grained numbers).
@@ -561,7 +567,7 @@ function makeData() {
 }
 function makePlans() {
   const ex = [4.5, 7.5, 7.0, 7.0, 6.5, 7.5, 6.0, 7.0, 7.5, 5.0, 7.5, 8.0, 8.0, 9.0, 7.0];
-  const p = { imp: Object.assign({}, DEF_IMP, { sleep: 'L' }), exp: {} };
+  const p = { exp: {} };
   FACTORS.forEach(function (f, i) { p.exp[f.id] = ex[i]; });
   const out = {}; out[TODAY] = p; return out;
 }
@@ -604,7 +610,7 @@ class Component extends DCLogic {
       tasks: carryOver((S.tasks || []).map(migrateTask), TODAY), work: carryOver((S.work || []).map(function (w) { return w.date ? w : Object.assign({}, w, { date: TODAY, carried: '' }); }), TODAY),
       workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
-      online: (typeof navigator === 'undefined' || navigator.onLine !== false), simOff: false,
+      online: (typeof navigator === 'undefined' || navigator.onLine !== false),
       tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
       hist: S.hist || [],
       add: { open: false, text: '', day: TODAY, week: weekKey(TODAY), pillar: '' } };
@@ -637,12 +643,12 @@ class Component extends DCLogic {
     if (!this.draftValid()) { this.setState({ msg: !focusOk(d.focus) ? 'Pick one Focus factor from each pillar.' : 'Pillar weights must add up to 100%.' }); return false; }
     const cw = wFor(TODAY);
     if (cw.physical !== d.w.physical || cw.emotional !== d.w.emotional || cw.financial !== d.w.financial) {
-      WHIST = WHIST.filter(function (h) { return h.from !== TODAY; }).concat([{ from: TODAY, w: Object.assign({}, d.w) }]);
+      WHIST = WHIST.filter(function (h) { return h.from !== TODAY; }).concat([{ from: TODAY, w: Object.assign({}, d.w) }]); bumpScores();
       out.push('Pillar weights ' + cw.physical + '/' + cw.emotional + '/' + cw.financial + ' → ' + d.w.physical + '/' + d.w.emotional + '/' + d.w.financial + ' (past days keep old weights)');
     }
     const cf = focusFor(TODAY); const wk = weekKey(TODAY);
     if (cf.slice().sort().join() !== d.focus.slice().sort().join()) {
-      FHIST = FHIST.filter(function (h) { return h.from !== wk; }).concat([{ from: wk, list: d.focus.slice() }]);
+      FHIST = FHIST.filter(function (h) { return h.from !== wk; }).concat([{ from: wk, list: d.focus.slice() }]); bumpScores();
       out.push('Focus for week of ' + fmtShort(wk) + ': ' + d.focus.map(factorName).join(', '));
     }
     // Importance applies from today on: today's saved check-in (if any) picks up the change; earlier days keep theirs.
@@ -853,8 +859,8 @@ class Component extends DCLogic {
       e.exp[f.id] = plan ? plan.exp[f.id] : (old ? old.exp[f.id] : null);
       if (e.score[f.id] == null) e.exp[f.id] = null;
     });
-    const tom = addDays(date, 1); const np = { imp: {}, exp: {} };
-    FACTORS.forEach((f) => { np.imp[f.id] = DEF_IMP[f.id]; const x = inp.a.expTom[f.id]; np.exp[f.id] = (x === 'NA' || x == null) ? null : x; });
+    const tom = addDays(date, 1); const np = { exp: {} }; // tomorrow's predictions (importance comes from Settings)
+    FACTORS.forEach((f) => { const x = inp.a.expTom[f.id]; np.exp[f.id] = (x === 'NA' || x == null) ? null : x; });
     const days = Object.assign({}, s.days); days[date] = e;
     const plans = Object.assign({}, s.plans); plans[tom] = np;
     this.setState({ days: days, plans: plans, inp: Object.assign({}, inp, { phase: 'done' }) });
@@ -914,7 +920,7 @@ class Component extends DCLogic {
     const items = FACTORS.filter(function (f) { return isBad(e.score[f.id]); })
       .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: scoreTxt(e, v), hasTip: !!t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v / maxPts(e) * 100), gap: (maxPts(e) - v) * wt(e, f.id) }; })
       .sort(function (a, b) { return b.gap - a.gap; });
-    return { has: items.length > 0, items: items, pillars: [], count: items.length };
+    return { has: items.length > 0, items: items, count: items.length };
   }
   safetyFor(e) {
     const sd = scoreDay(e, 'score');
@@ -935,7 +941,7 @@ class Component extends DCLogic {
     const pk = logged[logged.length - 2]; const psd = pk ? sdOf(pk) : null;
     const lat = {
       label: !hasData ? 'No Check-ins Yet' : lk === TODAY ? 'Today' : lk === addDays(TODAY, -1) ? 'Yesterday' : 'Last Logged Day',
-      date: fmtShort(lk), b: badge(lsd.overall), d: delta(psd ? dR(psd.overall, lsd.overall) : null, false),
+      date: fmtShort(lk), b: badge(lsd.overall), d: delta(psd ? dR(psd.overall, lsd.overall) : null),
       pillars: this.pillarsOf(lsd), rings: rings(lsd, true)
     };
     if (!lat.d.txt) lat.d = { txt: '–', col: NEU };
@@ -984,15 +990,15 @@ class Component extends DCLogic {
       const open = !!s.open[id];
       return {
         title: title, sub: curAll.n + ' of ' + n + ' days logged', val: badge(curAll.v).pct + ' ' + badge(curAll.v).letter, valCol: gcol(curAll.v),
-        d: delta(dR(prevAll.v, curAll.v), false),
+        d: delta(dR(prevAll.v, curAll.v)),
         rot: open ? 90 : 0, openStr: open ? 'true' : 'false', toggle: () => this.toggle(id),
-        openChart: open, openBig: false, openAttn: false,
+        openChart: open, openBig: false,
         c: buildChart(keys, valf, 326, 96, trend, r),
         caption: 'Showing ' + fname + '. ' + (trend ? 'Dashed blue line is the trend. ' : 'Gaps are missed days. ') + 'Dotted line marks 70% (C).',
         pill: PILLARS.map(function (p) {
           const c = avgOf((k) => { const sd = sdOf(k); return sd ? sd.pillars[p.id] : null; }, from, lk).v;
           const pv = avgOf((k) => { const sd = sdOf(k); return sd ? sd.pillars[p.id] : null; }, addDays(from, -n), addDays(from, -1)).v;
-          return { name: p.name, b: badge(c), d: delta(dR(pv, c), false) };
+          return { name: p.name, b: badge(c), d: delta(dR(pv, c)) };
         })
       };
     };
@@ -1017,10 +1023,10 @@ class Component extends DCLogic {
     }));
 
     // check-in
-    const inp = s.inp; let iv = { isQ: false, isNote: false, isDone: false, isReview: false, isPlan: false, linked: [] };
+    const inp = s.inp; let iv = { isQ: false, isNote: false, isDone: false, isReview: false, isPlan: false };
     let rv = { title: '', btn: '', start: () => {}, head: '', empty: true, groups: [] };
     let pn = { dateLabel: '', head: '', empty: true, tasks: [], draft: {} };
-    let res = { date: '', b: badge(null), expLine: '', ed: { txt: '', col: NEU }, pillars: [], rings: [], recs: { has: false, items: [], pillars: [] }, safety: false };
+    let res = { date: '', b: badge(null), expLine: '', ed: { txt: '', col: NEU }, pillars: [], rings: [], recs: { has: false, items: [] }, safety: false };
     if (inp) {
       const f = FACTORS[inp.fi];
       iv = {
@@ -1037,7 +1043,7 @@ class Component extends DCLogic {
         name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
         isTom: inp.act === 1, isToday: inp.act === 0,
         askLabel: inp.act === 0 ? (inp.date === TODAY ? 'How was it today?' : 'How was it on ' + fmtShort(inp.date) + '?') : 'Expected tomorrow',
-        hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
+        todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
         // On the today swipe, show what was predicted for this day the night before.
         expToday: (function (pl) { const v = pl && pl.exp ? pl.exp[f.id] : null; return v == null ? '' : answerLabel(v); })(s.plans[inp.date]),
         impName: INAME[this.impFor(inp, f.id)], imp: this.impFor(inp, f.id), mid: f.mid || '',
@@ -1254,7 +1260,6 @@ class Component extends DCLogic {
       isOff: s.wDate !== TODAY, toToday: () => this.setState({ wDate: TODAY }),
       text: s.workText, ph: 'Add for ' + (s.wDate === TODAY ? 'today' : fmtShort(s.wDate)), onText: (ev) => this.setState({ workText: ev.target.value }), onKey: (ev) => { if (ev.key === 'Enter') this.addWork(); }, add: () => this.addWork(),
       addStyle: (s.workText || '').trim() ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
-      openAdd: () => this.openAdd('work'),
       empty: wItems.length === 0,
       items: wOpen.concat(wDone).map((w, i) => Object.assign(this.taskRow(w, false), { toggle: () => this.toggleWork(w), del: () => this.delWork(w), sep: i ? 'border-top: 1px solid #38383A' : '' }))
     };
@@ -1325,7 +1330,7 @@ class Component extends DCLogic {
     return {
       show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', journal: s.tab === 'journal', history: s.tab === 'history', settings: s.tab === 'settings' },
       showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), qFill: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'height: 100%; box-sizing: border-box;' : '', scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
-      st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
+      st: st, su: su, ad: ad, dsheet: dsheet, hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
       openJPick: () => { const pp = this.state.jDate.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1, j: true } }); },
       openPick: () => { const st = this.state; const c = st.pMode === 'work' ? st.wDate : (st.pView === 'day' ? st.pDate : st.pWeek); const pp = c.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1 } }); }, vdb: vdb, attn: attn,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
@@ -1333,8 +1338,6 @@ class Component extends DCLogic {
       tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, journal: s.tab === 'journal' ? on : off2, history: s.tab === 'history' ? on : off2 },
       pl: pl, rv: rv, pn: pn,
       tipsOn: s.online, tipsOff: !s.online && latRecs.items.length > 0,
-      offlineLabel: s.simOff ? 'Demo: turn internet back on' : 'Demo: see it without internet',
-      toggleOffline: () => this.setState({ simOff: !this.state.simOff }),
       goPlanner: () => this.go('planner'),
       toNote: () => this.patchInp({ phase: 'note' }),
       todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,

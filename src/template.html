@@ -102,9 +102,6 @@
     </button>
     <sc-if value="{{attn.open}}" hint-placeholder-val="{{false}}">
       <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px">
-        <sc-for list="{{latRecs.pillars}}" as="p" hint-placeholder-count="1">
-          <div style="font-size: 14px; font-weight: 700; color: #FF6961">{{p}}</div>
-        </sc-for>
         <sc-for list="{{latRecs.items}}" as="r" hint-placeholder-count="3">
           <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 10px; border-top: 1px solid #38383A">
             <span style="font-size: 15px; font-weight: 800; min-width: 34px; color: {{r.bg}}">{{r.score}}</span>
@@ -396,9 +393,6 @@
       <sc-if value="{{res.recs.has}}" hint-placeholder-val="{{true}}">
         <div style="background: #1C1C1E; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
           <span style="font-size: 15px; font-weight: 700">Needs Attention</span>
-          <sc-for list="{{res.recs.pillars}}" as="p" hint-placeholder-count="1">
-            <div style="font-size: 14px; font-weight: 700; color: #FF6961">{{p}}</div>
-          </sc-for>
           <sc-for list="{{res.recs.items}}" as="r" hint-placeholder-count="3">
             <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 10px; border-top: 1px solid #38383A">
               <span style="font-size: 15px; font-weight: 800; min-width: 34px; color: {{r.bg}}">{{r.score}}</span>

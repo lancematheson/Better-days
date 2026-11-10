@@ -267,7 +267,7 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   const x = { date: d, score: {}, imp: {}, exp: {}, scale: 9 }; L.FACTORS.forEach((f) => { x.score[f.id] = 7; x.imp[f.id] = L.DEF_IMP[f.id]; });
   x.score.mood = 4; x.score.saving = 4; ['sleep', 'exercise', 'nutrition', 'hydration', 'energy'].forEach((k) => { x.score[k] = 4; }); x.score.sleep = 7;
   const r = T.recsFor(x); const names = r.items.map((i) => i.name);
-  ok(r.count === 6 && names.indexOf('Mood') >= 0 && names.indexOf('Sleep') < 0 && r.pillars.length === 0, 'only Bad factors; Okay and low pillar % add nothing');
+  ok(r.count === 6 && names.indexOf('Mood') >= 0 && names.indexOf('Sleep') < 0 && !('pillars' in r), 'only Bad factors; Okay and low pillar % add nothing');
   ok(r.items.every((i) => i.score === 'Bad'), 'shown as Bad');
 }
 // Trends in words.
