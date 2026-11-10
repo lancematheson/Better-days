@@ -32,9 +32,14 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
   log('card fits screen:', await p.evaluate(() => { const s = document.querySelector('.scroller'); return s.scrollHeight <= s.clientHeight + 1; }));
   // real swipes on the first card: up (good) for today, right (okay) for tomorrow
+  const tap0 = async (n) => { await p.getByRole('button', { name: n, exact: true }).click(); await p.waitForTimeout(60); };
   const swipe = async (dx, dy) => { const c = await p.getByRole('group', { name: /Swipe card/ }).boundingBox(); const x = c.x + c.width / 2, y = c.y + c.height / 2; await p.mouse.move(x, y); await p.mouse.down(); for (let i = 1; i <= 6; i++) await p.mouse.move(x + dx * i / 6, y + dy * i / 6); await p.mouse.up(); await p.waitForTimeout(300); };
   await swipe(0, -160); await p.screenshot({ path: SHOTS + '/04b-factor-tomorrow.png' }); await swipe(170, 0);
   log('swiped to card:', await p.getByText(/^2 of 15$/).isVisible());
+  await swipe(-170, 0); log('left swipe does nothing:', await p.getByText(/^2 of 15$/).isVisible() && await p.getByText('How was it today?').isVisible());
+  await p.getByRole('button', { name: 'Back', exact: true }).click(); await p.waitForTimeout(100);
+  log('Back button returns to card 1 tomorrow:', await p.getByText(/^1 of 15$/).isVisible() && await p.getByText('Expected tomorrow').isVisible());
+  await tap0('Okay');
   const tap = async (n) => { await p.getByRole('button', { name: n, exact: true }).click(); await p.waitForTimeout(60); };
   const plan = [['Good','Okay'],['Okay','Good'],['Bad','Okay'],['Good','Good'],['Good','Okay'],['Bad','Okay'],['Okay','Good'],['Good','Good'],['Okay','Okay'],['Okay','Good'],['Good','Okay'],['Good','Good'],['Good','Good'],['Okay','Good']];
   for (const [a, b2] of plan) { await tap(a); await tap(b2); }

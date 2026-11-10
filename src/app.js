@@ -812,7 +812,7 @@ class Component extends DCLogic {
     else this.patchInp({ phase: 'review' });
   }
   // Card drag: move the card directly while the finger is down (no re-render), decide on release.
-  // Up = Good, right = Okay, down = Bad, left = back. Short drags snap back.
+  // Up = Good, right = Okay, down = Bad. Left and short drags snap back (Back is a button).
   swipeStart(ev) {
     if (this.busy) return; const el = ev.currentTarget;
     this.drag = { x: ev.clientX, y: ev.clientY, el: el, id: ev.pointerId };
@@ -824,11 +824,11 @@ class Component extends DCLogic {
     const dx = ev.clientX - d.x, dy = ev.clientY - d.y; d.dx = dx; d.dy = dy;
     d.el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(' + (dx / 22) + 'deg)';
     const dir = swipeDir(dx, dy, 24);
-    d.el.style.boxShadow = dir === 'good' ? '0 0 0 3px #1FA34A' : dir === 'okay' ? '0 0 0 3px #FFD60A' : dir === 'bad' ? '0 0 0 3px #E0201B' : dir === 'back' ? '0 0 0 3px #636366' : '';
+    d.el.style.boxShadow = dir === 'good' ? '0 0 0 4px #1FA34A' : dir === 'okay' ? '0 0 0 4px #FFD60A' : dir === 'bad' ? '0 0 0 4px #E0201B' : '';
   }
   swipeEnd(ev) {
     const d = this.drag; if (!d || (ev && ev.pointerId !== d.id)) return; this.drag = null;
-    const dir = swipeDir(d.dx || 0, d.dy || 0, 70);
+    let dir = swipeDir(d.dx || 0, d.dy || 0, 70); if (dir === 'back') dir = null; // left does nothing; Back is a button
     d.el.style.transition = 'transform 0.18s ease-out'; d.el.style.boxShadow = '';
     if (!dir) { d.el.style.transform = ''; return; }
     const off = { good: 'translate(0,-140%)', okay: 'translate(140%,0) rotate(12deg)', bad: 'translate(0,140%)', back: 'translate(-140%,0) rotate(-12deg)' }[dir];
@@ -1317,7 +1317,7 @@ class Component extends DCLogic {
     const on = '#409CFF', off2 = '#8E8E93';
     return {
       show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', journal: s.tab === 'journal', history: s.tab === 'history', settings: s.tab === 'settings' },
-      showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
+      showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), qFill: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'height: 100%; box-sizing: border-box;' : '', scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
       st: st, su: su, ad: ad, dsheet: dsheet, openAdd: () => this.openAdd('personal'), hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
       openJPick: () => { const pp = this.state.jDate.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1, j: true } }); },
       openPick: () => { const st = this.state; const c = st.pMode === 'work' ? st.wDate : (st.pView === 'day' ? st.pDate : st.pWeek); const pp = c.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1 } }); }, vdb: vdb, attn: attn,

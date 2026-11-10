@@ -71,9 +71,11 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      by pillar (Physical, Emotional, Financial, then Other for old untagged ones), each with ✓ / ✗. They can be checked
      off anytime during the day; this is the review step.
    - Rate: **swipe cards**, one per factor (15). Each card takes two swipes: first **today**, then **Expected
-     tomorrow** (the card shows "Today: Good" while asking about tomorrow). **Swipe up = Good, right = Okay, down = Bad,
-     left = back** (previous answer). The card follows the finger and flies off; short drags snap back. Bad / Okay / Good
-     buttons under the card do the same, and an "N/A today / N/A tomorrow" button skips. The card shows the factor, pillar,
+     tomorrow** (the card shows "Today: Good" while asking about tomorrow). The card fills most of the screen, framed by
+     big colored bars that show the directions and can be tapped: **green "↑ Good" across the top, yellow "Okay →" down
+     the right side, red "↓ Bad" across the bottom**. Swipe up = Good, right = Okay, down = Bad; the card follows the
+     finger, outlines in the matching color and flies off; short drags and left swipes snap back. A **← Back** button
+     (previous answer) and an "N/A today / N/A tomorrow" button sit under the bars. The card shows the factor, pillar,
      Focus badge, what Good and Bad mean, and its importance ("change it in Settings"). A one-line box above lists that
      pillar's to-dos (reminder only; to-dos never change scores). Tab bar hidden during the cards; they fit an iPhone 13
      screen without scrolling.
