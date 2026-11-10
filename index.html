@@ -2347,14 +2347,13 @@ class Component extends DCLogic {
         onImp: (ev) => { const v = ev.target.value; if (!IW[v]) return; this.patchInp({ a: this.setAnswer('imp', f.id, v) }); },
         // This factor over the 7 days before the day being rated: green Good, yellow Okay, red Bad, gray no answer.
         // Earnings-style chart for this factor over the 7 days before the day being rated: a hollow ring at what was
-        // expected, a filled dot at what happened (green beat, red fell short, gray matched; light gray if no prediction).
+        // expected, a filled dot at what happened, colored by the answer (green Good, yellow Okay, red Bad).
         hist: [7, 6, 5, 4, 3, 2, 1].map((i, n) => {
           const k = addDays(inp.date, -i); const e = s.days[k]; const v = e ? e.score[f.id] : null; const x = e ? e.exp[f.id] : null;
           const lvl = { Good: 9, Okay: 27, Bad: 45 }; const a = v == null ? null : scoreWord(v), xw = x == null ? null : scoreWord(x);
-          const rank = { Bad: 0, Okay: 1, Good: 2 }; const d = a && xw ? rank[a] - rank[xw] : null;
           return { wd: WD1[new Date(k + 'T12:00:00Z').getUTCDay()], cx: (34 + 16.3 + n * 32.6).toFixed(1),
             ya: a ? lvl[a] : 27, aOp: a ? 1 : 0, ye: xw ? lvl[xw] : 27, eOp: xw ? 1 : 0,
-            fill: d == null ? '#C7C7CC' : d > 0 ? '#30D158' : d < 0 ? '#FF6961' : '#8E8E93' };
+            fill: a === 'Good' ? '#30D158' : a === 'Okay' ? '#FFD60A' : '#FF6961' };
         }),
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
         good: () => this.choose('good'), okay: () => this.choose('okay'), bad: () => this.choose('bad'), na: () => this.answer('NA'), goBack: () => this.back(),

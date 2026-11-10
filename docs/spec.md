@@ -81,8 +81,8 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      (previous answer) and an "N/A today / N/A tomorrow" button sit under the bars. The card shows the factor, pillar,
      Focus badge, a **Last 7 days** chart for that factor, styled like an earnings (actual vs. estimate)
      chart: three levels (Good / Okay / Bad), one column per day before the day being rated with its weekday letter, a
-     **hollow ring** at what was expected and a **filled dot** at what happened, green if it beat the prediction, red if it
-     fell short, gray if it matched, light gray if there was no prediction (older typed numbers use 8+ / 5.5+ / below),
+     **hollow ring** at what was expected and a **filled dot** at what happened, colored by the answer (green Good, yellow
+     Okay, red Bad); beat / fell short shows as the dot sitting above / below the ring (older typed numbers use 8+ / 5.5+ / below),
      a one-line meaning for each answer (Good · …, Okay · …, Bad · …; each factor has `lo` / `mid` / `hi`
      text), and on the today swipe an **Importance [High ▾]** button: a dropdown to change that factor's importance **for
      that day only**; Settings and other days are unchanged. A one-line box above lists that

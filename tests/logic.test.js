@@ -267,9 +267,9 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   const mk = (k, v, x) => { const e = { date: k, score: {}, imp: {}, exp: {}, scale: 9 }; L.FACTORS.forEach((f) => { e.score[f.id] = 7; e.exp[f.id] = 7; e.imp[f.id] = 'M'; }); e.score.sleep = v; e.exp.sleep = x; return e; };
   T.state.days = { '2026-11-09': mk('2026-11-09', 9, 7), '2026-11-08': mk('2026-11-08', 4, 9), '2026-11-07': mk('2026-11-07', 7, 7), '2026-11-06': mk('2026-11-06', null, null), '2026-11-05': mk('2026-11-05', 8.5, null) };
   T.startInput('2026-11-10'); T.renderVals().rv.start(); const h = T.renderVals().iv.hist;
-  ok(h.length === 7 && h[6].ya === 9 && h[6].ye === 27 && h[6].fill === '#30D158', 'beat: Good vs expected Okay is green');
-  ok(h[5].ya === 45 && h[5].ye === 9 && h[5].fill === '#FF6961', 'fell short: Bad vs expected Good is red');
-  ok(h[4].fill === '#8E8E93' && h[4].ya === h[4].ye, 'matched is gray');
+  ok(h.length === 7 && h[6].ya === 9 && h[6].ye === 27 && h[6].fill === '#30D158', 'Good dot is green (above an Okay ring)');
+  ok(h[5].ya === 45 && h[5].ye === 9 && h[5].fill === '#FF6961', 'Bad dot is red (below a Good ring)');
+  ok(h[4].fill === '#FFD60A' && h[4].ya === h[4].ye, 'Okay dot is yellow, inside its ring when matched');
   ok(h[3].aOp === 0 && h[3].eOp === 0 && h[2].aOp === 1 && h[2].eOp === 0 && h[2].ya === 9 && h[0].aOp === 0, 'N/A, older 8.5 = Good with no prediction, missed days empty');
   ok(h[6].wd === 'M' && /Mon, Nov 9 Good, expected Okay/.test(T.renderVals().iv.histAria), 'weekday letters and spoken summary');
 }
