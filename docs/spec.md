@@ -33,7 +33,7 @@ and a daily journal.
 "Money stress" is deliberately not a Financial factor (it would double-count Emotional → Stress).
 
 ## 3. Scoring
-- **Scores:** 0.0–10.0. New check-ins are swiped: **Good = 9, Okay = 7, Bad = 4** (no typing; days saved before the swipe check-in keep their exact one-decimal numbers). N/A is allowed and is left out of the math. Tips (below 7.0) show only for Bad.
+- **Scores:** 0.0–10.0. New check-ins are swiped: **Good = 9, Okay = 7, Bad = 4** (no typing; days saved before the swipe check-in keep their exact one-decimal numbers). N/A is allowed and is left out of the math. Tips show only for factors rated Bad (see §6).
 - **Importance weights:** High = 3, Medium = 2, Low = 1. Set per factor in **Settings only** (not asked during check-in). A change applies from today on (today's saved check-in picks it up); earlier days keep the importance they were saved with.
 - **Focus ("Big Three"):** 3 factors for the week (Mon 12:01 AM – Sun midnight), **exactly one from each pillar**, picked in Settings or setup (factors are grouped by pillar; tapping another factor in a pillar swaps that pillar's pick; Save / Continue wait until all three pillars have one). Default for new users: Sleep, Mood, Saving. Past weeks keep whatever Focus they had. Focus factors get **×1.2** on top of that day's importance. *Planned, not built yet:* an automatic Sunday-night prompt with a weekly review of last week's Focus.
 - **Pillar %** = points earned ÷ points possible = Σ(score × weight) ÷ Σ(max × weight) × 100, where max is the top answer: **Good (9) for swipe check-ins**, so all Good = 100%, all Okay = 77.8%, all Bad = 44.4%. Days saved before the swipe check-in keep max = 10 (their percentages don't change). Each day stores its scale (`scale: 9`). Swipe days show scores as Good / Okay / Bad in History, Needs Attention and the vs. Expected lines.
@@ -118,7 +118,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    from the check-in's short note.
 
 ## 6. Advice / tips
-- Shown for anything **below 70%** (factor < 7.0, or a pillar/overall below 70%).
+- **Needs Attention lists only factors swiped Bad** (days typed before the swipe check-in: factors below 7.0). Pillar and overall percentages no longer add lines. The Summary card reads "N factors rated Bad on [date]" or "Nothing rated Bad".
 - **Only with internet.** Offline: "Connect to the internet to see tips."
 - **Never run out:** ↻ New tip always shows another tip. Each factor's tips go in order the first time through, then
   start a new shuffled round; the same tip never shows twice in a row. (Older saves pick up after the tips already seen.)

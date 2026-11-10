@@ -901,15 +901,12 @@ class Component extends DCLogic {
   toggle(id) { const o = Object.assign({}, this.state.open); o[id] = !o[id]; this.setState({ open: o }); }
 
   recsFor(e) {
-    const sd = scoreDay(e, 'score');
-    const items = FACTORS.filter(function (f) { return e.score[f.id] != null && e.score[f.id] < 7.0; })
+    // Needs Attention = factors swiped Bad (older typed days: below 7.0). Pillar/overall percentages don't add items.
+    const isBad = function (v) { return v != null && (maxPts(e) === 9 ? v === SWIPE_SCORE.bad : v < 7.0); };
+    const items = FACTORS.filter(function (f) { return isBad(e.score[f.id]); })
       .map((f) => { const v = e.score[f.id]; const t = this.tipFor(f.id); return { name: f.name, score: scoreTxt(e, v), hasTip: !!t, tip: t ? t.tip : '', author: t ? t.author : '', work: t ? t.work : '', url: t ? t.url : '#', next: () => this.newTip(f.id), bg: gcol(v / maxPts(e) * 100), gap: (maxPts(e) - v) * wt(e, f.id) }; })
       .sort(function (a, b) { return b.gap - a.gap; });
-    const pillars = PILLARS.filter(function (p) { return sd.pillars[p.id] != null && Math.round(sd.pillars[p.id]) < 70; })
-      .map(function (p) { const v = sd.pillars[p.id]; return p.name + ' is at ' + Math.round(v) + '% (' + letter(v) + ')'; });
-    const ov = sd.overall != null && Math.round(sd.overall) < 70 ? ['Overall day is at ' + Math.round(sd.overall) + '% (' + letter(sd.overall) + ')'] : [];
-    const pl = ov.concat(pillars);
-    return { has: items.length > 0 || pl.length > 0, items: items, pillars: pl, count: items.length + pl.length };
+    return { has: items.length > 0, items: items, pillars: [], count: items.length };
   }
   safetyFor(e) {
     const sd = scoreDay(e, 'score');
@@ -1004,7 +1001,7 @@ class Component extends DCLogic {
       mkPeriod('w30', 30, '30-Day Score', true, 3),
       Object.assign({}, blank, { title: 'Big Three', sub: big3.map(function (b) { return b.name; }).join(' · '), val: '', valCol: '#FFFFFF', d: { txt: '', col: NEU }, rot: ob ? 90 : 0, openStr: ob ? 'true' : 'false', toggle: () => this.toggle('big'), openChart: false, openBig: ob })
     ];
-    const attn = { title: 'Needs Attention', sub: latRecs.count ? 'Below 70% on ' + fmtShort(lk) : 'Nothing below 70%', val: String(latRecs.count), valCol: latRecs.count ? '#FF6961' : UP, rot: oa ? 90 : 0, openStr: oa ? 'true' : 'false', toggle: () => this.toggle('attn'), open: oa };
+    const attn = { title: 'Needs Attention', sub: latRecs.count ? (latRecs.count === 1 ? '1 factor' : latRecs.count + ' factors') + ' rated Bad on ' + fmtShort(lk) : 'Nothing rated Bad', val: String(latRecs.count), valCol: latRecs.count ? '#FF6961' : UP, rot: oa ? 90 : 0, openStr: oa ? 'true' : 'false', toggle: () => this.toggle('attn'), open: oa };
 
     const filters = [{ id: 'all', label: 'All' }].concat(PILLARS.map(function (p) { return { id: p.id, label: p.name }; })).map((c) => ({
       label: c.label, pick: () => this.setState({ filter: c.id }),
