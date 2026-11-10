@@ -1033,7 +1033,8 @@ class Component extends DCLogic {
         isTom: inp.act === 1, isToday: inp.act === 0,
         askLabel: inp.act === 0 ? (inp.date === TODAY ? 'How was it today?' : 'How was it on ' + fmtShort(inp.date) + '?') : 'Expected tomorrow',
         hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
-        prevAns: answerLabel(inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]), hasPrev: (inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]) !== undefined,
+        // On the today swipe, show what was predicted for this day the night before.
+        expToday: (function (pl) { const v = pl && pl.exp ? pl.exp[f.id] : null; return v == null ? '' : answerLabel(v); })(s.plans[inp.date]),
         impName: INAME[this.impFor(inp, f.id)], imp: this.impFor(inp, f.id), mid: f.mid || '',
         onImp: (ev) => { const v = ev.target.value; if (!IW[v]) return; this.patchInp({ a: this.setAnswer('imp', f.id, v) }); },
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),

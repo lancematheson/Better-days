@@ -256,6 +256,7 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   for (let i = 0; i < 15; i++) { T.renderVals().iv.good(); T.renderVals().iv.good(); }
   T.save(); ok(T.state.days[d].imp.sleep === 'L' && L.DEF_IMP.sleep === 'H', 'saved for that day; Settings unchanged');
   T.startInput(L.addDays(d, 1)); T.renderVals().rv.start(); ok(T.renderVals().iv.impName === 'High', 'next day back to Settings');
+  ok(T.renderVals().iv.expToday === 'Good', 'shows last night’s prediction: Expected today: Good');
 }
 // Needs Attention: only factors swiped Bad.
 {
