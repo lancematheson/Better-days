@@ -30,6 +30,9 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.screenshot({ path: SHOTS + '/03-review.png' });
   await p.getByRole('button', { name: /Start Today.s Check-in/ }).click(); await p.waitForTimeout(150);
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
+  await p.locator('#cardimp').selectOption('L'); await p.waitForTimeout(100);
+  log('card importance:', await p.getByText('just this day').isVisible());
+  await p.screenshot({ path: SHOTS + '/04-factor.png' });
   log('card fits screen:', await p.evaluate(() => { const s = document.querySelector('.scroller'); return s.scrollHeight <= s.clientHeight + 1; }));
   // real swipes on the first card: up (good) for today, right (okay) for tomorrow
   const tap0 = async (n) => { await p.getByRole('button', { name: n, exact: true }).click(); await p.waitForTimeout(60); };

@@ -7,21 +7,21 @@ function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY) |
 const SAVED = loadStore();
 let START = (SAVED && SAVED.start) || TODAY;
 const FACTORS = [
-  { id: 'sleep', name: 'Sleep', p: 'physical', lo: 'barely slept or very poor sleep', hi: 'full, restful night' },
-  { id: 'exercise', name: 'Exercise', p: 'physical', lo: 'sedentary all day', hi: 'did the planned workout or very active' },
-  { id: 'nutrition', name: 'Nutrition', p: 'physical', lo: 'mostly junk or skipped meals', hi: 'balanced, on-plan eating' },
-  { id: 'hydration', name: 'Hydration', p: 'physical', lo: 'barely drank water', hi: 'hit your water goal' },
-  { id: 'energy', name: 'Body / Energy', p: 'physical', lo: 'sick, in pain or exhausted', hi: 'felt strong and energized' },
-  { id: 'mood', name: 'Mood', p: 'emotional', lo: 'low or down all day', hi: 'upbeat and positive' },
-  { id: 'stress', name: 'Stress', p: 'emotional', lo: 'overwhelmed', hi: 'calm and in control' },
-  { id: 'connection', name: 'Connection', p: 'emotional', lo: 'isolated, or conflict with people', hi: 'meaningful time with others' },
-  { id: 'purpose', name: 'Purpose', p: 'emotional', lo: 'felt wasted or aimless', hi: 'did what mattered to you' },
-  { id: 'rest', name: 'Mental Rest', p: 'emotional', lo: 'no downtime at all', hi: 'recharged with a hobby, quiet time or reflection' },
-  { id: 'spending', name: 'Spending', p: 'financial', lo: 'impulsive or well over plan', hi: 'stayed within plan' },
-  { id: 'saving', name: 'Saving', p: 'financial', lo: 'pulled from savings', hi: 'moved money toward goals' },
-  { id: 'earning', name: 'Earning / Work', p: 'financial', lo: 'unproductive or lost income', hi: 'strong work day or income progress' },
-  { id: 'obligations', name: 'Obligations', p: 'financial', lo: 'missed a bill or added debt', hi: 'everything on track or paid down' },
-  { id: 'awareness', name: 'Awareness', p: 'financial', lo: 'no idea where money stands', hi: 'checked accounts, tracked or planned' }
+  { id: 'sleep', name: 'Sleep', p: 'physical', lo: 'barely slept or very poor sleep', hi: 'full, restful night', mid: 'some sleep, not fully rested' },
+  { id: 'exercise', name: 'Exercise', p: 'physical', lo: 'sedentary all day', hi: 'did the planned workout or very active', mid: 'some movement or a light workout' },
+  { id: 'nutrition', name: 'Nutrition', p: 'physical', lo: 'mostly junk or skipped meals', hi: 'balanced, on-plan eating', mid: 'a mix of good and not-so-good' },
+  { id: 'hydration', name: 'Hydration', p: 'physical', lo: 'barely drank water', hi: 'hit your water goal', mid: 'some water, short of your goal' },
+  { id: 'energy', name: 'Body / Energy', p: 'physical', lo: 'sick, in pain or exhausted', hi: 'felt strong and energized', mid: 'fine, a bit tired' },
+  { id: 'mood', name: 'Mood', p: 'emotional', lo: 'low or down all day', hi: 'upbeat and positive', mid: 'neutral, some ups and downs' },
+  { id: 'stress', name: 'Stress', p: 'emotional', lo: 'overwhelmed', hi: 'calm and in control', mid: 'some stress, but manageable' },
+  { id: 'connection', name: 'Connection', p: 'emotional', lo: 'isolated, or conflict with people', hi: 'meaningful time with others', mid: 'some contact, nothing deep' },
+  { id: 'purpose', name: 'Purpose', p: 'emotional', lo: 'felt wasted or aimless', hi: 'did what mattered to you', mid: 'got a few meaningful things done' },
+  { id: 'rest', name: 'Mental Rest', p: 'emotional', lo: 'no downtime at all', hi: 'recharged with a hobby, quiet time or reflection', mid: 'a little downtime' },
+  { id: 'spending', name: 'Spending', p: 'financial', lo: 'impulsive or well over plan', hi: 'stayed within plan', mid: 'a few small extras' },
+  { id: 'saving', name: 'Saving', p: 'financial', lo: 'pulled from savings', hi: 'moved money toward goals', mid: 'held steady' },
+  { id: 'earning', name: 'Earning / Work', p: 'financial', lo: 'unproductive or lost income', hi: 'strong work day or income progress', mid: 'an average work day' },
+  { id: 'obligations', name: 'Obligations', p: 'financial', lo: 'missed a bill or added debt', hi: 'everything on track or paid down', mid: 'nothing missed, no progress' },
+  { id: 'awareness', name: 'Awareness', p: 'financial', lo: 'no idea where money stands', hi: 'checked accounts, tracked or planned', mid: 'a quick look, no real check' }
 ];
 const PILLARS = [
   { id: 'physical', name: 'Physical', w: 40 },
@@ -785,9 +785,11 @@ class Component extends DCLogic {
 
   // Importance is set in Settings. A saved day keeps the importance it was saved with; anything new uses Settings.
   impPrefill(date, f) { const d = this.state.days[date]; return d ? d.imp[f] : DEF_IMP[f]; }
+  // Importance for the check-in being done: a change made on the card counts for that day only.
+  impFor(inp, f) { return (inp.a.imp && inp.a.imp[f]) || this.impPrefill(inp.date, f); }
   startInput(date) {
     const e = this.state.days[date];
-    const a = { score: {}, expTom: {} };
+    const a = { score: {}, expTom: {}, imp: {} };
     if (e) FACTORS.forEach(function (f) { a.score[f.id] = e.score[f.id] == null ? 'NA' : e.score[f.id]; });
     this.setState({ tab: 'input', sel: null, inp: { date: date, fi: 0, act: 0, a: a, phase: 'review', note: e ? e.note : '' } });
   }
@@ -815,6 +817,7 @@ class Component extends DCLogic {
   // Up = Good, right = Okay, down = Bad. Left and short drags snap back (Back is a button).
   swipeStart(ev) {
     if (this.busy) return; const el = ev.currentTarget;
+    if (ev.target && ev.target.closest && ev.target.closest('select, label, button')) return; // the importance picker isn't a swipe
     this.drag = { x: ev.clientX, y: ev.clientY, el: el, id: ev.pointerId };
     try { el.setPointerCapture(ev.pointerId); } catch (e) {}
     el.style.transition = 'none';
@@ -841,7 +844,7 @@ class Component extends DCLogic {
     const e = { date: date, score: {}, imp: {}, exp: {}, scale: 9, note: inp.note || '', edited: old ? fmtShort(TODAY) : '' };
     FACTORS.forEach((f) => {
       const v = inp.a.score[f.id]; e.score[f.id] = (v === 'NA' || v == null) ? null : v;
-      e.imp[f.id] = this.impPrefill(date, f.id);
+      e.imp[f.id] = this.impFor(inp, f.id);
       e.exp[f.id] = plan ? plan.exp[f.id] : (old ? old.exp[f.id] : null);
       if (e.score[f.id] == null) e.exp[f.id] = null;
     });
@@ -1031,7 +1034,9 @@ class Component extends DCLogic {
         askLabel: inp.act === 0 ? (inp.date === TODAY ? 'How was it today?' : 'How was it on ' + fmtShort(inp.date) + '?') : 'Expected tomorrow',
         hasToday: inp.act === 1, todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
         prevAns: answerLabel(inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]), hasPrev: (inp.act === 0 ? inp.a.score[f.id] : inp.a.expTom[f.id]) !== undefined,
-        impName: INAME[this.impPrefill(inp.date, f.id)],
+        impName: INAME[this.impFor(inp, f.id)], imp: this.impFor(inp, f.id), mid: f.mid || '',
+        impNote: this.impFor(inp, f.id) !== this.impPrefill(inp.date, f.id) ? 'just this day' : '',
+        onImp: (ev) => { const v = ev.target.value; if (!IW[v]) return; this.patchInp({ a: this.setAnswer('imp', f.id, v) }); },
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
         good: () => this.choose('good'), okay: () => this.choose('okay'), bad: () => this.choose('bad'), na: () => this.answer('NA'), goBack: () => this.back(),
         naLabel: 'N/A ' + (inp.act === 0 ? 'today' : 'tomorrow'),

@@ -76,7 +76,9 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      the right side, red "↓ Bad" across the bottom**. Swipe up = Good, right = Okay, down = Bad; the card follows the
      finger, outlines in the matching color and flies off; short drags and left swipes snap back. A **← Back** button
      (previous answer) and an "N/A today / N/A tomorrow" button sit under the bars. The card shows the factor, pillar,
-     Focus badge, what Good and Bad mean, and its importance ("change it in Settings"). A one-line box above lists that
+     Focus badge, a one-line meaning for each answer (Good · …, Okay · …, Bad · …; each factor has `lo` / `mid` / `hi`
+     text), and on the today swipe an **Importance [High ▾]** button: a dropdown to change that factor's importance **for
+     that day only** (marked "just this day"); Settings and other days are unchanged. A one-line box above lists that
      pillar's to-dos (reminder only; to-dos never change scores). Tab bar hidden during the cards; they fit an iPhone 13
      screen without scrolling.
    - Plan Tomorrow: add to-dos for tomorrow (pillar required).
