@@ -297,36 +297,37 @@
       <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 52px; grid-template-rows: 58px minmax(0, 1fr) 58px; gap: 8px">
         <button onClick="{{iv.good}}" aria-label="Good" style="grid-column: 1 / 3; border: none; border-radius: 18px; background: #1FA34A; color: #FFFFFF; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="22" height="22" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>Good</button>
 
-        <div onPointerDown="{{iv.swDown}}" onPointerMove="{{iv.swMove}}" onPointerUp="{{iv.swUp}}" onPointerCancel="{{iv.swUp}}" role="group" aria-label="Swipe card: up good, right okay, down bad" style="min-height: 0; touch-action: none; user-select: none; -webkit-user-select: none; background: #1C1C1E; border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; cursor: grab; overflow: hidden">
+        <div onPointerDown="{{iv.swDown}}" onPointerMove="{{iv.swMove}}" onPointerUp="{{iv.swUp}}" onPointerCancel="{{iv.swUp}}" role="group" aria-label="Swipe card: up good, right okay, down bad" style="min-height: 0; touch-action: none; user-select: none; -webkit-user-select: none; background: #1C1C1E; border-radius: 24px; padding: 20px 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; box-sizing: border-box; cursor: grab; overflow: hidden">
+          <div style="display: flex; flex-direction: column; gap: 12px">
           <div style="display: flex; align-items: center; gap: 8px">
-            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #98989F">{{iv.pillar}} · {{iv.dateLabel}}</span>
+            <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #98989F">{{iv.pillar}} · {{iv.dateLabel}}</span>
             <sc-if value="{{iv.focus}}" hint-placeholder-val="{{false}}">
               <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">FOCUS</span>
             </sc-if>
           </div>
-          <span style="font-size: 36px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1">{{iv.name}}</span>
+          <span style="font-size: 44px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05">{{iv.name}}</span>
           <sc-if value="{{iv.isToday}}" hint-placeholder-val="{{true}}">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
-              <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: #2C2C2E; color: #FFFFFF">{{iv.askLabel}}</span>
-              <sc-if value="{{iv.expToday}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #98989F">Expected today: <strong style="color: #FFFFFF">{{iv.expToday}}</strong></span></sc-if>
+              <span style="font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; background: #2C2C2E; color: #FFFFFF">{{iv.askLabel}}</span>
+              <sc-if value="{{iv.expToday}}" hint-placeholder-val="{{false}}"><span style="font-size: 16px; color: #98989F">Expected today: <strong style="color: #FFFFFF">{{iv.expToday}}</strong></span></sc-if>
             </div>
           </sc-if>
           <sc-if value="{{iv.isTom}}" hint-placeholder-val="{{false}}">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
-              <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">{{iv.askLabel}}</span>
-              <span style="font-size: 13px; color: #98989F">Today: <strong style="color: {{iv.todayCol}}">{{iv.todayAns}}</strong></span>
+              <span style="font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; background: #0A84FF; color: #FFFFFF">{{iv.askLabel}}</span>
+              <span style="font-size: 16px; color: #98989F">Today: <strong style="color: {{iv.todayCol}}">{{iv.todayAns}}</strong></span>
             </div>
           </sc-if>
-          <div style="flex: 1"></div>
-          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: #C7C7CC; line-height: 1.3">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 19px; color: #E5E5EA; line-height: 1.3">
             <span><strong style="color: #30D158">Good</strong> · {{iv.hi}}</span>
             <span><strong style="color: #FFD60A">Okay</strong> · {{iv.mid}}</span>
             <span><strong style="color: #FF6961">Bad</strong> · {{iv.lo}}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
-<sc-if value="{{iv.isToday}}" hint-placeholder-val="{{true}}">            <label for="cardimp" style="position: relative; min-height: 40px; padding: 0 12px; border-radius: 12px; background: #2C2C2E; color: #FFFFFF; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px">
+<sc-if value="{{iv.isToday}}" hint-placeholder-val="{{true}}">            <label for="cardimp" style="position: relative; min-height: 48px; padding: 0 16px; border-radius: 14px; background: #2C2C2E; color: #FFFFFF; font-size: 17px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px">
               <span style="color: #98989F; font-weight: 600">Importance</span> {{iv.impName}}
-              <svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #409CFF"><path d="M6 9l6 6 6-6"></path></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #409CFF"><path d="M6 9l6 6 6-6"></path></svg>
               <select id="cardimp" value="{{iv.imp}}" onChange="{{iv.onImp}}" aria-label="Importance for this day" style="position: absolute; inset: 0; opacity: 0; width: 100%; font-size: 16px">
                 <option value="H">High</option><option value="M">Medium</option><option value="L">Low</option>
               </select>
