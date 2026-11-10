@@ -261,6 +261,15 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(T.renderVals().iv.expToday === 'Bad', 'older typed prediction 4.5 shows as Bad');
   ok(L.scoreWord(7.5) === 'Okay' && L.scoreWord(8.5) === 'Good' && L.scoreWord(5.5) === 'Okay' && L.scoreWord(5.4) === 'Bad', 'number-to-word midpoints');
 }
+// Card shows this factor's last 7 days as colors.
+{
+  const T = new L.Component({}); T.state.tasks = []; T.state.series = []; T.state.plans = {};
+  const d = '2026-11-10'; const mk = (k, v) => { const x = { date: k, score: {}, imp: {}, exp: {}, scale: 9 }; L.FACTORS.forEach((f) => { x.score[f.id] = 7; x.imp[f.id] = 'M'; }); x.score.sleep = v; return x; };
+  T.state.days = { '2026-11-09': mk('2026-11-09', 9), '2026-11-08': mk('2026-11-08', 4), '2026-11-07': mk('2026-11-07', null), '2026-11-03': Object.assign(mk('2026-11-03', 8.5), { scale: undefined }) };
+  T.startInput(d); T.renderVals().rv.start(); const h = T.renderVals().iv.hist;
+  ok(h.length === 7 && h[6].col === '#1FA34A' && h[5].col === '#E0201B' && h[4].na && h[0].col === '#1FA34A' && h[1].col === '#2C2C2E', 'last 7 days: Good, Bad, N/A, older 8.5 = Good, missed = gray');
+  ok(h[6].wd === 'M' && /Mon, Nov 9 Good/.test(T.renderVals().iv.histAria), 'weekday letters and spoken summary');
+}
 // Needs Attention: only factors swiped Bad.
 {
   const T = new L.Component({}); const d = L.getToday();

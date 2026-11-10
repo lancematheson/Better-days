@@ -33,7 +33,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.locator('#cardimp').selectOption('L'); await p.waitForTimeout(100);
   log('card importance:', await p.locator('label[for="cardimp"]').innerText());
   await p.screenshot({ path: SHOTS + '/04-factor.png' });
-  log('card fits screen:', await p.evaluate(() => { const s = document.querySelector('.scroller'); return s.scrollHeight <= s.clientHeight + 1; }));
+  log('card fits screen:', await p.evaluate(() => { const s = document.querySelector('.scroller'); const c = document.querySelector('[aria-label^="Swipe card"]'); return s.scrollHeight <= s.clientHeight + 1 && c.scrollHeight <= c.clientHeight + 1; }));
   // real swipes on the first card: up (good) for today, right (okay) for tomorrow
   const tap0 = async (n) => { await p.getByRole('button', { name: n, exact: true }).click(); await p.waitForTimeout(60); };
   const swipe = async (dx, dy) => { const c = await p.getByRole('group', { name: /Swipe card/ }).boundingBox(); const x = c.x + c.width / 2, y = c.y + c.height / 2; await p.mouse.move(x, y); await p.mouse.down(); for (let i = 1; i <= 6; i++) await p.mouse.move(x + dx * i / 6, y + dy * i / 6); await p.mouse.up(); await p.waitForTimeout(300); };

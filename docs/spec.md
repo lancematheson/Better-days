@@ -15,7 +15,7 @@ and a daily journal.
 | Pillar | Factor | 0 means | 10 means | Default importance |
 |---|---|---|---|---|
 | Physical | Sleep | barely slept or very poor sleep | full, restful night | High |
-| Physical | Exercise | sedentary all day | did the planned workout or very active | High |
+| Physical | Exercise | sedentary all day | planned workout or very active | High |
 | Physical | Nutrition | mostly junk or skipped meals | balanced, on-plan eating | Medium |
 | Physical | Hydration | barely drank water | hit your water goal | Low |
 | Physical | Health | sick, in pain or exhausted | felt strong and energized | Medium |
@@ -79,7 +79,9 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      the right side, red "↓ Bad" across the bottom**. Swipe up = Good, right = Okay, down = Bad; the card follows the
      finger, outlines in the matching color and flies off; short drags and left swipes snap back. A **← Back** button
      (previous answer) and an "N/A today / N/A tomorrow" button sit under the bars. The card shows the factor, pillar,
-     Focus badge, a one-line meaning for each answer (Good · …, Okay · …, Bad · …; each factor has `lo` / `mid` / `hi`
+     Focus badge, a **Last 7 days** strip for that factor (7 dots for the days before the one being rated, each with its
+     weekday letter: green Good, yellow Okay, red Bad, gray no answer; older typed numbers use 8+ / 5.5+ / below),
+     a one-line meaning for each answer (Good · …, Okay · …, Bad · …; each factor has `lo` / `mid` / `hi`
      text), and on the today swipe an **Importance [High ▾]** button: a dropdown to change that factor's importance **for
      that day only**; Settings and other days are unchanged. A one-line box above lists that
      pillar's to-dos (reminder only; to-dos never change scores). Tab bar hidden during the cards; they fit an iPhone 13
