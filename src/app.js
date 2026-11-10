@@ -1195,7 +1195,7 @@ class Component extends DCLogic {
       factors: FACTORS.map((f, i) => ({
         name: d.names[f.id], label: f.name, inputId: 'fname-' + f.id, sep: i ? 'border-top: 1px solid #38383A' : '',
         onName: (ev) => { const n = Object.assign({}, this.state.set.names); n[f.id] = ev.target.value; this.setDraft({ names: n }); },
-        opts: ['H', 'M', 'L'].map((k) => ({ label: INAME[k], short: k, sel: d.imp[f.id] === k ? 'true' : 'false', style: d.imp[f.id] === k ? segOn2 : segOff2, pick: () => { const m = Object.assign({}, this.state.set.imp); m[f.id] = k; this.setDraft({ imp: m }); } }))
+        opts: ['H', 'M', 'L'].map((k) => ({ label: INAME[k], short: k, mid: k === 'M' ? 'Med' : INAME[k], sel: d.imp[f.id] === k ? 'true' : 'false', style: d.imp[f.id] === k ? segOn2 : segOff2, pick: () => { const m = Object.assign({}, this.state.set.imp); m[f.id] = k; this.setDraft({ imp: m }); } }))
       })),
       sources: FACTORS.map(function (f, i) { const a = []; (TIPLIB[f.id] || []).forEach(function (t) { if (a.indexOf(t.author) < 0) a.push(t.author); }); return { name: f.name, authors: a.join(', '), sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
       hist: s.hist.map(function (h, i) { return { date: h.date, txt: h.txt, sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
@@ -1212,17 +1212,22 @@ class Component extends DCLogic {
     };
     // setup flow
     const SU = [
-      { title: 'Welcome', body: 'Rate each day across three pillars (Physical, Emotional and Financial), with five factors each. Every night you score today, plan tomorrow and review your to-dos. Setup takes about two minutes.' },
+      { title: 'Welcome to Better Days', body: 'Rate your day in about a minute each night, see what’s helping and what’s dragging you down, and plan tomorrow. Setup takes about two minutes.', isWelcome: true },
       { title: 'Pillar Weights', body: 'How much should each pillar count toward your overall day? They must add up to 100%. You can change this anytime in Settings.', isWeights: true },
       { title: 'Importance', body: 'How much does each factor matter to you? High counts 3×, Medium 2×, Low 1×. This applies every day; change it anytime in Settings (past days keep theirs).', isImp: true },
-      { title: 'This Week’s Focus', body: 'Pick your Big Three: one factor from each pillar. They count 20% more this week, and you’ll be asked to pick again each Sunday night.', isFocus: true },
-      { title: 'You\u2019re Set', body: 'Do your first check-in tonight from the Check-in tab. Since there was no night before, today has no expectations yet; they start tomorrow. Everything is saved on this phone.' }
+      { title: 'This Week’s Focus', body: 'Pick your Big Three: one factor from each pillar to work on this week. They count 20% more in your score. Change them anytime in Settings.', isFocus: true },
+      { title: 'You\u2019re Set', body: 'Tonight, open the Check-in tab and tap Start. Each factor gets two quick swipes: how today went, then how you expect tomorrow to go.', isDone: true }
     ];
     const sstep = s.setup ? s.setup.step : 0; const sd0 = SU[sstep];
     const canNext = sstep === 1 ? wTotal === 100 : sstep === 3 ? focusOk(d.focus) : true;
     const su = {
       open: !!s.setup, num: sstep + 1, total: SU.length, prog: Math.round((sstep + 1) / SU.length * 100), title: sd0.title, body: sd0.body,
-      isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus,
+      isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus, isWelcome: !!sd0.isWelcome, isDone: !!sd0.isDone,
+      features: [['Check-in', '15 quick swipe cards across Physical, Emotional and Financial.', '#0A84FF'], ['Summary', 'Your grade, rings, trends and what needs attention.', '#30D158'],
+        ['Planner', 'Personal and work to-dos, repeats, times, and Scan a photo of a list.', '#BF5AF2'], ['History', 'Every day colored by how it went.', '#FFD60A'], ['Journal', 'A blank page for each day.', '#FF6FAE']]
+        .map(function (r, i) { return { name: r[0], txt: r[1], col: r[2], sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
+      tips: ['Swipe left does nothing; use the Back button to change an answer.', 'Your first night has no “expected” yet. Predictions start the next day.', 'Everything is saved only on this phone. Export a backup in Settings now and then.']
+        .map(function (t, i) { return { n: String(i + 1), txt: t, sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
       backLabel: sstep === 0 ? (s.setupDone ? 'Cancel' : '') : 'Back',
       back: () => { if (sstep === 0) { if (this.state.setupDone) this.setState({ setup: null, set: this.freshDraft() }); } else this.setState({ setup: { step: sstep - 1 } }); },
       nextLabel: sstep === SU.length - 1 ? 'Start Using the App' : sstep === 3 && !focusOk(d.focus) ? 'Pick ' + fMiss.map(function (p) { return p.name; }).join(', ') : sstep === 1 && wTotal !== 100 ? 'Weights must total 100%' : 'Continue',

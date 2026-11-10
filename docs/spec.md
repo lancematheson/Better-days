@@ -138,7 +138,10 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 - **Safety net (always offline):** if the Emotional pillar or any emotional factor is below 50%, show a gentle message to reach out to someone and the 988 crisis line.
 
 ## 7. Settings & setup
-- First launch runs a 5-step setup: Welcome → Pillar weights → Importance → This week's Focus → Done. "Run Setup Again" in Settings.
+- First launch runs a 5-step setup: **Welcome to Better Days** (one-line pitch + a short tour of Check-in, Summary, Planner,
+  History, Journal) → Pillar weights → Importance (High / Med / Low) → This week's Focus (one per pillar; no Sunday promise
+  until that prompt exists) → **You're Set** (how to start tonight, the green ↑ Good / yellow → Okay / red ↓ Bad swipe
+  guide, and three tips: Back button, first night has no expectations, export a backup). "Run Setup Again" in Settings.
 - Settings: pillar weights (must total 100), Focus (one per pillar), factor names + importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
 - No reminders or alarms anywhere in the app (removed by decision; see §9).
 

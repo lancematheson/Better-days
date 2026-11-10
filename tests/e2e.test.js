@@ -19,7 +19,7 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   const btn = (name) => p.getByRole('navigation', { name: 'Pages' }).getByRole('button', { name, exact: true });
   await p.goto('http://localhost:8766/'); await p.waitForTimeout(400);
   await p.screenshot({ path: SHOTS + '/01-setup.png' });
-  log('setup visible:', await p.getByText('Welcome', { exact: true }).isVisible());
+  log('setup visible:', await p.getByRole('heading', { name: 'Welcome to Better Days' }).isVisible());
   // setup
   for (let i = 0; i < 4; i++) { const c = p.getByRole('button', { name: /Continue|Start Using/ }); await c.click(); await p.waitForTimeout(120); if (i === 0) {} }
   await p.getByRole('button', { name: 'Start Using the App' }).click(); await p.waitForTimeout(200);

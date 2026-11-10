@@ -937,6 +937,39 @@
       <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.02em">{{su.title}}</h1>
       <span style="font-size: 16px; color: #C7C7CC; line-height: 1.45">{{su.body}}</span>
 
+      <sc-if value="{{su.isWelcome}}" hint-placeholder-val="{{false}}">
+        <div style="background: #1C1C1E; border-radius: 16px; padding: 4px 14px; display: flex; flex-direction: column">
+          <sc-for list="{{su.features}}" as="w" hint-placeholder-count="5">
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; {{w.sep}}">
+              <span style="width: 10px; height: 10px; border-radius: 5px; margin-top: 6px; flex: none; background: {{w.col}}"></span>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 16px; font-weight: 700">{{w.name}}</span>
+                <span style="font-size: 14px; color: #98989F; line-height: 1.35">{{w.txt}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{su.isDone}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #98989F">How the check-in works</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <div style="background: #1FA34A; border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #FFFFFF"><span style="font-size: 22px; font-weight: 800">↑</span><span style="font-size: 16px; font-weight: 800">Good</span><span style="font-size: 12px; opacity: 0.9">swipe up</span></div>
+            <div style="background: #FFD60A; border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #1C1C1E"><span style="font-size: 22px; font-weight: 800">→</span><span style="font-size: 16px; font-weight: 800">Okay</span><span style="font-size: 12px; opacity: 0.8">swipe right</span></div>
+            <div style="background: #E0201B; border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #FFFFFF"><span style="font-size: 22px; font-weight: 800">↓</span><span style="font-size: 16px; font-weight: 800">Bad</span><span style="font-size: 12px; opacity: 0.9">swipe down</span></div>
+          </div>
+          <div style="background: #1C1C1E; border-radius: 16px; padding: 4px 14px; display: flex; flex-direction: column">
+            <sc-for list="{{su.tips}}" as="w" hint-placeholder-count="3">
+              <div style="display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; {{w.sep}}">
+                <span style="min-width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E; color: #FFFFFF; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center">{{w.n}}</span>
+                <span style="font-size: 15px; line-height: 1.4; color: #E5E5EA">{{w.txt}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
       <sc-if value="{{su.isWeights}}" hint-placeholder-val="{{false}}">
         <div style="display: flex; flex-direction: column; gap: 6px">
           <div style="background: #1C1C1E; border-radius: 16px; padding: 0 14px">
@@ -958,9 +991,9 @@
           <sc-for list="{{st.factors}}" as="f" hint-placeholder-count="15">
             <div style="display: flex; align-items: center; gap: 8px; min-height: 50px; {{f.sep}}">
               <span style="flex: 1; font-size: 15px; font-weight: 600">{{f.name}}</span>
-              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 150px" role="group" aria-label="{{f.label}} importance">
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #2C2C2E; border-radius: 8px; padding: 2px; width: 168px; flex: none" role="group" aria-label="{{f.label}} importance">
                 <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
-                  <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" style="min-height: 32px; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; {{o.style}}">{{o.label}}</button>
+                  <button onClick="{{o.pick}}" aria-pressed="{{o.sel}}" aria-label="{{o.label}}" style="min-height: 36px; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; padding: 0; {{o.style}}">{{o.mid}}</button>
                 </sc-for>
               </div>
             </div>
