@@ -473,7 +473,10 @@ function swipeDir(dx, dy, min) {
   if (Math.abs(dy) > Math.abs(dx)) return dy < 0 ? 'good' : 'bad';
   return dx > 0 ? 'okay' : 'back';
 }
-function answerLabel(v) { if (v === undefined) return ''; if (v === 'NA') return 'N/A'; return v === 9 ? 'Good' : v === 7 ? 'Okay' : v === 4 ? 'Bad' : f1(v); }
+// On the swipe pages answers are words. An older typed number (e.g. a 7.5 prediction) uses the midpoints between the
+// swipe values (9 / 7 / 4): 8 and up = Good, 5.5 up to 8 = Okay, below 5.5 = Bad.
+function scoreWord(v) { return v >= 8 ? 'Good' : v >= 5.5 ? 'Okay' : 'Bad'; }
+function answerLabel(v) { if (v === undefined) return ''; if (v === 'NA' || v == null) return 'N/A'; return scoreWord(v); }
 // Focus ("Big Three") is one factor from each pillar.
 function focusMissing(list) { return PILLARS.filter(function (p) { return !list.some(function (id) { return pillarOfFactor(id) === p.id; }); }); }
 function focusOk(list) { return list.length === 3 && focusMissing(list).length === 0; }

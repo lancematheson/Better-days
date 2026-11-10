@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, trendWord, mostlyWord, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, scoreWord, trendWord, mostlyWord, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -257,6 +257,9 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.save(); ok(T.state.days[d].imp.sleep === 'L' && L.DEF_IMP.sleep === 'H', 'saved for that day; Settings unchanged');
   T.startInput(L.addDays(d, 1)); T.renderVals().rv.start(); ok(T.renderVals().iv.impName === 'High', 'next day back to Settings');
   ok(T.renderVals().iv.expToday === 'Good', 'shows last night’s prediction: Expected today: Good');
+  T.state.plans[L.addDays(d, 2)] = { imp: {}, exp: { sleep: 4.5, mood: 7.5, saving: 8.5 } }; T.startInput(L.addDays(d, 2)); T.renderVals().rv.start();
+  ok(T.renderVals().iv.expToday === 'Bad', 'older typed prediction 4.5 shows as Bad');
+  ok(L.scoreWord(7.5) === 'Okay' && L.scoreWord(8.5) === 'Good' && L.scoreWord(5.5) === 'Okay' && L.scoreWord(5.4) === 'Bad', 'number-to-word midpoints');
 }
 // Needs Attention: only factors swiped Bad.
 {

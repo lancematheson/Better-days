@@ -71,7 +71,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      by pillar (Physical, Emotional, Financial, then Other for old untagged ones), each with ✓ / ✗. They can be checked
      off anytime during the day; this is the review step.
    - Rate: **swipe cards**, one per factor (15). Each card takes two swipes: first **today**, then **Expected
-     tomorrow** (the today swipe shows "Expected today: Good" from last night's prediction, when there is one; the tomorrow swipe shows "Today: Good"). The card fills most of the screen, framed by
+     tomorrow** (the today swipe shows "Expected today: Good" from last night's prediction, when there is one; the tomorrow swipe shows "Today: Good"). On the swipe pages answers are always words; an older typed number uses midpoints between 9 / 7 / 4 (8+ Good, 5.5–7.9 Okay, below 5.5 Bad). Elsewhere, older typed days keep their numbers. The card fills most of the screen, framed by
      big colored bars that show the directions and can be tapped: **green "↑ Good" across the top, yellow "Okay →" down
      the right side, red "↓ Bad" across the bottom**. Swipe up = Good, right = Okay, down = Bad; the card follows the
      finger, outlines in the matching color and flies off; short drags and left swipes snap back. A **← Back** button
