@@ -261,14 +261,17 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(T.renderVals().iv.expToday === 'Bad', 'older typed prediction 4.5 shows as Bad');
   ok(L.scoreWord(7.5) === 'Okay' && L.scoreWord(8.5) === 'Good' && L.scoreWord(5.5) === 'Okay' && L.scoreWord(5.4) === 'Bad', 'number-to-word midpoints');
 }
-// Card shows this factor's last 7 days as colors.
+// Card chart: last 7 days, actual (filled) vs expected (ring), like an earnings chart.
 {
   const T = new L.Component({}); T.state.tasks = []; T.state.series = []; T.state.plans = {};
-  const d = '2026-11-10'; const mk = (k, v) => { const x = { date: k, score: {}, imp: {}, exp: {}, scale: 9 }; L.FACTORS.forEach((f) => { x.score[f.id] = 7; x.imp[f.id] = 'M'; }); x.score.sleep = v; return x; };
-  T.state.days = { '2026-11-09': mk('2026-11-09', 9), '2026-11-08': mk('2026-11-08', 4), '2026-11-07': mk('2026-11-07', null), '2026-11-03': Object.assign(mk('2026-11-03', 8.5), { scale: undefined }) };
-  T.startInput(d); T.renderVals().rv.start(); const h = T.renderVals().iv.hist;
-  ok(h.length === 7 && h[6].col === '#1FA34A' && h[5].col === '#E0201B' && h[4].na && h[0].col === '#1FA34A' && h[1].col === '#2C2C2E', 'last 7 days: Good, Bad, N/A, older 8.5 = Good, missed = gray');
-  ok(h[6].wd === 'M' && /Mon, Nov 9 Good/.test(T.renderVals().iv.histAria), 'weekday letters and spoken summary');
+  const mk = (k, v, x) => { const e = { date: k, score: {}, imp: {}, exp: {}, scale: 9 }; L.FACTORS.forEach((f) => { e.score[f.id] = 7; e.exp[f.id] = 7; e.imp[f.id] = 'M'; }); e.score.sleep = v; e.exp.sleep = x; return e; };
+  T.state.days = { '2026-11-09': mk('2026-11-09', 9, 7), '2026-11-08': mk('2026-11-08', 4, 9), '2026-11-07': mk('2026-11-07', 7, 7), '2026-11-06': mk('2026-11-06', null, null), '2026-11-05': mk('2026-11-05', 8.5, null) };
+  T.startInput('2026-11-10'); T.renderVals().rv.start(); const h = T.renderVals().iv.hist;
+  ok(h.length === 7 && h[6].ya === 9 && h[6].ye === 27 && h[6].fill === '#30D158', 'beat: Good vs expected Okay is green');
+  ok(h[5].ya === 45 && h[5].ye === 9 && h[5].fill === '#FF6961', 'fell short: Bad vs expected Good is red');
+  ok(h[4].fill === '#8E8E93' && h[4].ya === h[4].ye, 'matched is gray');
+  ok(h[3].aOp === 0 && h[3].eOp === 0 && h[2].aOp === 1 && h[2].eOp === 0 && h[2].ya === 9 && h[0].aOp === 0, 'N/A, older 8.5 = Good with no prediction, missed days empty');
+  ok(h[6].wd === 'M' && /Mon, Nov 9 Good, expected Okay/.test(T.renderVals().iv.histAria), 'weekday letters and spoken summary');
 }
 // Needs Attention: only factors swiped Bad.
 {

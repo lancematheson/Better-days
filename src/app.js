@@ -1043,18 +1043,22 @@ class Component extends DCLogic {
         name: f.name, focus: focusFor(inp.date).indexOf(f.id) >= 0, lo: f.lo, hi: f.hi,
         isTom: inp.act === 1, isToday: inp.act === 0,
         askLabel: inp.act === 0 ? (inp.date === TODAY ? 'How was it today?' : 'How was it on ' + fmtShort(inp.date) + '?') : 'Expected tomorrow',
-        histAria: 'Last 7 days: ' + [7, 6, 5, 4, 3, 2, 1].map((i) => { const k = addDays(inp.date, -i); const e = s.days[k]; const v = e ? e.score[f.id] : undefined; return fmt(k) + ' ' + (!e ? 'no check-in' : v == null ? 'N/A' : scoreWord(v)); }).join(', '),
+        histAria: 'Last 7 days: ' + [7, 6, 5, 4, 3, 2, 1].map((i) => { const k = addDays(inp.date, -i); const e = s.days[k]; const v = e ? e.score[f.id] : undefined; const x = e ? e.exp[f.id] : null; return fmt(k) + ' ' + (!e ? 'no check-in' : v == null ? 'N/A' : scoreWord(v) + (x == null ? '' : ', expected ' + scoreWord(x))); }).join('; '),
         todayAns: answerLabel(inp.a.score[f.id]), todayCol: (function (v) { return v === undefined || v === 'NA' ? '#98989F' : gcol(v / 9 * 100); })(inp.a.score[f.id]),
         // On the today swipe, show what was predicted for this day the night before.
         expToday: (function (pl) { const v = pl && pl.exp ? pl.exp[f.id] : null; return v == null ? '' : answerLabel(v); })(s.plans[inp.date]),
         impName: INAME[this.impFor(inp, f.id)], imp: this.impFor(inp, f.id), mid: f.mid || '',
         onImp: (ev) => { const v = ev.target.value; if (!IW[v]) return; this.patchInp({ a: this.setAnswer('imp', f.id, v) }); },
         // This factor over the 7 days before the day being rated: green Good, yellow Okay, red Bad, gray no answer.
-        hist: [7, 6, 5, 4, 3, 2, 1].map((i) => {
-          const k = addDays(inp.date, -i); const e = s.days[k]; const v = e ? e.score[f.id] : undefined; const w = v == null ? '' : scoreWord(v);
-          const dt = new Date(k + 'T12:00:00Z');
-          return { wd: WD1[dt.getUTCDay()], na: !!e && v == null,
-            col: w === 'Good' ? '#1FA34A' : w === 'Okay' ? '#FFD60A' : w === 'Bad' ? '#E0201B' : '#2C2C2E', txtCol: w === 'Okay' ? '#1C1C1E' : w ? '#FFFFFF' : '#8E8E93' };
+        // Earnings-style chart for this factor over the 7 days before the day being rated: a hollow ring at what was
+        // expected, a filled dot at what happened (green beat, red fell short, gray matched; light gray if no prediction).
+        hist: [7, 6, 5, 4, 3, 2, 1].map((i, n) => {
+          const k = addDays(inp.date, -i); const e = s.days[k]; const v = e ? e.score[f.id] : null; const x = e ? e.exp[f.id] : null;
+          const lvl = { Good: 9, Okay: 27, Bad: 45 }; const a = v == null ? null : scoreWord(v), xw = x == null ? null : scoreWord(x);
+          const rank = { Bad: 0, Okay: 1, Good: 2 }; const d = a && xw ? rank[a] - rank[xw] : null;
+          return { wd: WD1[new Date(k + 'T12:00:00Z').getUTCDay()], cx: (34 + 16.3 + n * 32.6).toFixed(1),
+            ya: a ? lvl[a] : 27, aOp: a ? 1 : 0, ye: xw ? lvl[xw] : 27, eOp: xw ? 1 : 0,
+            fill: d == null ? '#C7C7CC' : d > 0 ? '#30D158' : d < 0 ? '#FF6961' : '#8E8E93' };
         }),
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
         good: () => this.choose('good'), okay: () => this.choose('okay'), bad: () => this.choose('bad'), na: () => this.answer('NA'), goBack: () => this.back(),
