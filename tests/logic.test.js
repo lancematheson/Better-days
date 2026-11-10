@@ -272,6 +272,7 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(h[4].fill === '#FFD60A' && h[4].ya === h[4].ye, 'Okay dot is yellow, inside its ring when matched');
   ok(h[3].aOp === 0 && h[3].eOp === 0 && h[2].aOp === 1 && h[2].eOp === 0 && h[2].ya === 9 && h[0].aOp === 0, 'N/A, older 8.5 = Good with no prediction, missed days empty');
   ok(h[6].wd === 'M' && /Mon, Nov 9 Good, expected Okay/.test(T.renderVals().iv.histAria), 'weekday letters and spoken summary');
+  ok(h[6].slots[0].aOp === 1 && h[6].slots[1].eOp === 1 && h[6].slots[2].aOp + h[6].slots[2].eOp === 0, 'chart slots: dot on Good, ring on Okay');
 }
 // Needs Attention: only factors swiped Bad.
 {

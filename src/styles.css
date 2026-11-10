@@ -13,3 +13,14 @@ textarea{font-family:inherit}
 textarea::placeholder{color:#8E8E93}
 input::placeholder{color:#8E8E93}
 input,select{font-family:inherit}
+
+/* Short screens (small Android phones, iPhone SE): keep every swipe card fully visible. */
+@media (max-height: 700px) {
+  .bd-legend { display: none !important; }
+  .bd-stage { grid-template-rows: 44px minmax(0, 1fr) 44px !important; gap: 6px !important; }
+  .bd-card { padding: 10px 14px !important; gap: 5px !important; }
+}
+/* Very short screens (iPhone SE): no room for the 7-day chart, so it is left out there. */
+@media (max-height: 600px) {
+  .bd-chart { display: none !important; }
+}

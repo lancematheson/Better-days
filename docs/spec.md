@@ -77,8 +77,8 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      tomorrow** (the today swipe shows "Expected today: Good" from last night's prediction, when there is one; the tomorrow swipe shows "Today: Good"). On the swipe pages answers are always words; an older typed number uses midpoints between 9 / 7 / 4 (8+ Good, 5.5–7.9 Okay, below 5.5 Bad). Elsewhere, older typed days keep their numbers. The card fills most of the screen, framed by
      big colored bars that show the directions and can be tapped: **green "↑ Good" across the top, yellow "Okay →" down
      the right side, red "↓ Bad" across the bottom**. Swipe up = Good, right = Okay, down = Bad; the card follows the
-     finger, outlines in the matching color and flies off; short drags and left swipes snap back. A **← Back** button
-     (previous answer) and an "N/A today / N/A tomorrow" button sit under the bars. The card shows the factor, pillar,
+     finger, outlines in the matching color and flies off; short drags and left swipes snap back. A **‹ Back** button
+     (previous answer) sits at the top left next to "1 of 15"; an "N/A today / N/A tomorrow" button sits under the bars. The card shows the factor, pillar,
      Focus badge, a **Last 7 days** chart for that factor, styled like an earnings (actual vs. estimate)
      chart: three levels (Good / Okay / Bad), one column per day before the day being rated with its weekday letter, a
      **hollow ring** at what was expected and a **filled dot** at what happened, colored by the answer (green Good, yellow
@@ -86,8 +86,10 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
      a one-line meaning for each answer (Good · …, Okay · …, Bad · …; each factor has `lo` / `mid` / `hi`
      text), and on the today swipe an **Importance [High ▾]** button: a dropdown to change that factor's importance **for
      that day only**; Settings and other days are unchanged. A one-line box above lists that
-     pillar's to-dos (reminder only; to-dos never change scores). Tab bar hidden during the cards; they fit an iPhone 13
-     screen without scrolling.
+     pillar's to-dos (reminder only; to-dos never change scores). Tab bar hidden during the cards; they fit without scrolling or cut-off text on phones from 320 wide (small Androids) up,
+     including iPhone 13 and Android sizes. On short screens (under 700 tall) the chart legend is hidden and the bars are
+     slimmer; on very short screens (under 600 tall, iPhone SE) the 7-day chart is left out. The chart keeps fixed-size text
+     and is capped at 340 wide. The pillar to-do reminder above the card is one line.
    - Plan Tomorrow: add to-dos for tomorrow (pillar required).
    - Optional free-text note, then Save Day → results (rings, expected vs. actual, Needs Attention, safety message).
 3. **Planner** — a big **Personal | Work** switch at the top. Tapping the date opens a **pop-up month calendar** (dots on
@@ -153,7 +155,9 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
   date] · [code]" so you can tell which version is running.
 - Days follow the calendar (midnight to midnight). Missed days are left out of all averages and graphs.
 - CSV export: one row per day with overall/pillar %, every factor's score, importance and expected score, note, edited date, journal text. Deleting the home-screen app deletes its data, so export now and then.
-- Installed via Safari → Share → Add to Home Screen. Anyone with the link can install it; each person's data is separate.
+- Installed via Safari → Share → Add to Home Screen (iPhone) or Chrome → ⋮ → Add to Home screen / Install app (Android). Tested at
+  Android phone sizes in Chrome's engine (no real Android device yet); the phone's own back button may close the app,
+  so every screen with somewhere to go back to has an on-screen Back / Cancel / ✕. Anyone with the link can install it; each person's data is separate.
 
 ## 9. Decisions explicitly rejected
 - Per-factor goals (scores stay out of 100; color scale was adjusted instead).

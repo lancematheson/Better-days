@@ -1053,12 +1053,13 @@ class Component extends DCLogic {
         // This factor over the 7 days before the day being rated: green Good, yellow Okay, red Bad, gray no answer.
         // Earnings-style chart for this factor over the 7 days before the day being rated: a hollow ring at what was
         // expected, a filled dot at what happened, colored by the answer (green Good, yellow Okay, red Bad).
-        hist: [7, 6, 5, 4, 3, 2, 1].map((i, n) => {
+        hist: [7, 6, 5, 4, 3, 2, 1].map((i) => {
           const k = addDays(inp.date, -i); const e = s.days[k]; const v = e ? e.score[f.id] : null; const x = e ? e.exp[f.id] : null;
           const lvl = { Good: 9, Okay: 27, Bad: 45 }; const a = v == null ? null : scoreWord(v), xw = x == null ? null : scoreWord(x);
-          return { wd: WD1[new Date(k + 'T12:00:00Z').getUTCDay()], cx: (34 + 16.3 + n * 32.6).toFixed(1),
-            ya: a ? lvl[a] : 27, aOp: a ? 1 : 0, ye: xw ? lvl[xw] : 27, eOp: xw ? 1 : 0,
-            fill: a === 'Good' ? '#30D158' : a === 'Okay' ? '#FFD60A' : '#FF6961' };
+          const fill = a === 'Good' ? '#30D158' : a === 'Okay' ? '#FFD60A' : '#FF6961';
+          return { wd: WD1[new Date(k + 'T12:00:00Z').getUTCDay()], ya: a ? lvl[a] : 27, aOp: a ? 1 : 0, ye: xw ? lvl[xw] : 27, eOp: xw ? 1 : 0, fill: fill,
+            // one slot per level (Good, Okay, Bad), each may hold the expected ring and/or the actual dot
+            slots: ['Good', 'Okay', 'Bad'].map(function (L) { return { eOp: xw === L ? 1 : 0, aOp: a === L ? 1 : 0, fill: fill }; }) };
         }),
         swDown: (ev) => this.swipeStart(ev), swMove: (ev) => this.swipeMove(ev), swUp: (ev) => this.swipeEnd(ev),
         good: () => this.choose('good'), okay: () => this.choose('okay'), bad: () => this.choose('bad'), na: () => this.answer('NA'), goBack: () => this.back(),
