@@ -765,6 +765,10 @@ input,select,textarea{font-size:16px!important}
     <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{cal.count}}</span>
     <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">History</h1>
   </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #1C1C1E; border-radius: 14px; padding: 4px" role="group" aria-label="Show personal or work to-dos">
+    <button onClick="{{cal.toPersonal}}" aria-pressed="{{cal.personalStr}}" style="min-height: 44px; border: none; border-radius: 11px; font-size: 16px; font-weight: 800; {{cal.personalStyle}}">Personal</button>
+    <button onClick="{{cal.toWork}}" aria-pressed="{{cal.workStr}}" style="min-height: 44px; border: none; border-radius: 11px; font-size: 16px; font-weight: 800; {{cal.workStyle}}">Work</button>
+  </div>
   <div style="background: #1C1C1E; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <button onClick="{{prevMonth}}" aria-label="Previous month" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #2C2C2E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
@@ -781,7 +785,8 @@ input,select,textarea{font-size:16px!important}
         </sc-if>
         <sc-if value="{{c.real}}" hint-placeholder-val="{{true}}">
           <button onClick="{{c.pick}}" aria-label="{{c.aria}}" style="height: 46px; border-radius: 23px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 15px; font-weight: 700; padding: 0; {{c.style}}">
-            <span>{{c.num}}</span>
+            <span style="line-height: 1">{{c.num}}</span>
+            <sc-if value="{{c.hasCnt}}" hint-placeholder-val="{{false}}"><span style="font-size: 10px; font-weight: 700; line-height: 1; opacity: 0.85">{{c.cnt}}</span></sc-if>
           </button>
         </sc-if>
       </sc-for>
@@ -790,9 +795,10 @@ input,select,textarea{font-size:16px!important}
       <span style="display: flex; align-items: center; gap: 6px"><span style="width: 44px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #E0201B, #FFD60A 50%, #1FA34A)"></span>Day's score</span>
       <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 6px; border: 2px solid #48484A"></span>No check-in</span>
       <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 6px; border: 2px solid #409CFF"></span>Today</span>
+      <span style="display: flex; align-items: center; gap: 6px"><strong style="font-size: 11px">2/3</strong>{{cal.legendTasks}}</span>
     </div>
   </div>
-  <span style="font-size: 13px; color: #98989F; text-align: center">Tap any day to see what you entered.</span>
+  <span style="font-size: 13px; color: #98989F; text-align: center">Tap any day, past or future, to see its check-in and to-dos.</span>
 </div>
 </sc-if>
 
@@ -1134,7 +1140,7 @@ input,select,textarea{font-size:16px!important}
           </sc-for>
           <div style="background: #2C2C2E; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
             <button onClick="{{sheet.taskSec.toggle}}" aria-expanded="{{sheet.taskSec.openStr}}" style="width: 100%%; background: transparent; border: none; color: #FFFFFF; padding: 0; min-height: 40px; display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left">
-              <span style="flex: 1; font-size: 15px; font-weight: 700">To-dos</span>
+              <span style="flex: 1; font-size: 15px; font-weight: 700">{{sheet.taskTitle}}</span>
               <span style="font-size: 13px; color: #98989F">{{sheet.taskCount}}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{sheet.taskSec.rot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>
             </button>
@@ -1173,8 +1179,28 @@ input,select,textarea{font-size:16px!important}
 
       <sc-if value="{{sheet.missed}}" hint-placeholder-val="{{false}}">
         <div style="display: flex; flex-direction: column; gap: 12px">
-          <span style="font-size: 15px; color: #C7C7CC">No check-in for this day. Missed days are left out of your averages and graphs.</span>
-          <button onClick="{{sheet.edit}}" style="min-height: 50px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Fill In This Day</button>
+          <sc-if value="{{sheet.isFuture}}" hint-placeholder-val="{{false}}"><span style="font-size: 15px; color: #C7C7CC">Check-in opens that night. Here's what's planned so far.</span></sc-if>
+          <sc-if value="{{sheet.canFill}}" hint-placeholder-val="{{false}}"><span style="font-size: 15px; color: #C7C7CC">No check-in for this day. Missed days are left out of your averages and graphs.</span></sc-if>
+          <div style="background: #2C2C2E; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; justify-content: space-between; align-items: center; min-height: 32px">
+              <span style="font-size: 15px; font-weight: 700">{{sheet.taskTitle}}</span>
+              <span style="font-size: 13px; color: #98989F">{{sheet.taskCount}}</span>
+            </div>
+            <sc-for list="{{sheet.tasks}}" as="t" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 0; border-top: 1px solid #3A3A3C">
+                <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 18px; height: 18px; border-radius: 9px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF; flex: none"><svg width="10" height="10" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 4"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+                <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 15px; height: 15px; border-radius: 9px; border: 2px solid #636366; flex: none"></span></sc-if>
+                <div style="display: flex; flex-direction: column; min-width: 0">
+                  <span style="{{t.textStyle}}">{{t.text}}</span>
+                  <sc-if value="{{t.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #98989F">{{t.sub}}</span></sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{sheet.addHere}}" style="min-height: 50px; border-radius: 14px; border: none; background: #2C2C2E; color: #409CFF; font-size: 17px; font-weight: 600">{{sheet.addLabel}}</button>
+          <sc-if value="{{sheet.canFill}}" hint-placeholder-val="{{false}}">
+            <button onClick="{{sheet.edit}}" style="min-height: 50px; border-radius: 14px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 17px; font-weight: 700">Fill In This Day</button>
+          </sc-if>
         </div>
       </sc-if>
     </div>
@@ -1352,7 +1378,7 @@ function localToday() { const d = new Date(); return d.getFullYear() + '-' + Str
 let TODAY = localToday();
 // Saved app data lives on the phone (localStorage). Nothing is sent anywhere.
 const STORE_KEY = 'dayscore.v1';
-const APP_VERSION = 'Nov 10, 2026 · f4b9f6e'; // the build replaces this with the build date and a short code
+const APP_VERSION = 'Nov 11, 2026 · 68e5055'; // the build replaces this with the build date and a short code
 function loadStore() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
 const SAVED = loadStore();
 let START = (SAVED && SAVED.start) || TODAY;
@@ -1958,7 +1984,7 @@ class Component extends DCLogic {
     const tParts = TODAY.split('-');
     this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
       tasks: carryOver((S.tasks || []).map(migrateTask), TODAY), work: carryOver((S.work || []).map(function (w) { return w.date ? w : Object.assign({}, w, { date: TODAY, carried: '' }); }), TODAY),
-      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', hMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false),
       tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
@@ -2222,7 +2248,7 @@ class Component extends DCLogic {
   shiftMonth(n) {
     let y = this.state.month.y, m = this.state.month.m + n;
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
-    const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 1) return;
+    const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 12) return; // up to a year ahead, to see planned to-dos
     this.setState({ month: { y: y, m: m } });
   }
   // Scan: photo -> on-phone text reading -> review sheet -> to-dos on the right days.
@@ -2450,7 +2476,7 @@ class Component extends DCLogic {
     // calendar
     const y = s.month.y, m = s.month.m;
     const first = new Date(Date.UTC(y, m, 1)); const off = (first.getUTCDay() + 6) % 7; const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-    const cells = []; let lc = 0, el = 0;
+    const cells = []; let lc = 0, el = 0; const hWork = s.hMode === 'work';
     for (let i = 0; i < off; i++) cells.push({ blank: true, real: false });
     for (let d = 1; d <= dim; d++) {
       const k = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
@@ -2462,10 +2488,19 @@ class Component extends DCLogic {
       let style = 'background: transparent; color: #48484A; border: 2px solid transparent';
       if (isL && ov != null) { const c = rgbOf(ov); const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255; style = 'background: ' + gcol(ov) + '; color: ' + (lum > 0.55 ? '#000000' : '#FFFFFF') + '; border: 2px solid ' + (isT ? '#409CFF' : gcol(ov)); }
       else if (isM || isT || isL) style = 'background: transparent; color: #C7C7CC; border: 2px solid ' + ring;
-      const tappable = isL || isM || isT;
-      cells.push({ blank: false, real: true, num: d, style: style, aria: fmt(k) + (isL ? (ov != null ? ', ' + Math.round(ov) + '% ' + letter(ov) : ', logged') : isM ? ', no check-in' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
+      // To-dos for the list chosen with the Personal | Work switch: done/total up to today, planned count after.
+      const ts = hWork ? this.workForDay(k) : this.tasksForDay(k, false); const nDone = ts.filter(function (t) { return t.done; }).length;
+      const isF = k > TODAY;
+      const cnt = !ts.length ? '' : isF ? String(ts.length) : nDone + '/' + ts.length;
+      if (isF) style = 'background: transparent; color: #C7C7CC; border: 2px solid transparent';
+      const tappable = true;
+      cells.push({ blank: false, real: true, num: d, style: style, cnt: cnt, hasCnt: !!cnt, aria: fmt(k) + (isL ? (ov != null ? ', ' + Math.round(ov) + '% ' + letter(ov) : ', logged') : isM ? ', no check-in' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
     }
-    const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet' };
+    const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet',
+      isWork: hWork, personalStyle: hWork ? 'background: transparent; color: #C7C7CC' : 'background: #0A84FF; color: #FFFFFF', workStyle: hWork ? 'background: #0A84FF; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
+      personalStr: hWork ? 'false' : 'true', workStr: hWork ? 'true' : 'false',
+      toPersonal: () => this.setState({ hMode: 'personal' }), toWork: () => this.setState({ hMode: 'work' }),
+      legendTasks: hWork ? 'work to-dos done / planned' : 'to-dos done / planned' };
 
     // sheet
     let sheet = { open: false, logged: false, missed: false, date: '', edited: '', b: badge(null), rings: [], expLine: '', ed: { txt: '', col: NEU }, groups: [], note: '', tasks: [], taskCount: '', edit: () => {} };
@@ -2491,10 +2526,15 @@ class Component extends DCLogic {
         });
         sheet.note = e.note || 'No note'; sheet.noteSec = sec('note'); sheet.taskSec = sec('tasks');
         sheet.hasJournal = !!s.journal[k]; sheet.journal = s.journal[k] || ''; sheet.jSec = sec('journal');
-        const st = this.tasksForDay(k, true);
-        sheet.tasks = st.map((t) => this.taskRow(t, true));
-        sheet.taskCount = st.length ? st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done' : 'None planned';
       }
+      // To-dos for this day from the list chosen in History (Personal or Work); shown for any day, past or future.
+      const hw = s.hMode === 'work'; const st = hw ? this.workForDay(k) : this.tasksForDay(k, true);
+      sheet.tasks = st.map((t) => this.taskRow(t, true)); sheet.hasTasks = st.length > 0; sheet.taskTitle = hw ? 'Work to-dos' : 'To-dos';
+      sheet.taskCount = st.length ? (k > TODAY ? st.length + ' planned' : st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done') : 'None planned';
+      sheet.isFuture = k > TODAY; sheet.canFill = !e && k <= TODAY;
+      if (!e) sheet.edited = k > TODAY ? 'Upcoming' : k === TODAY ? 'Not checked in yet' : 'No check-in';
+      sheet.addHere = () => { const kind = hw ? 'work' : 'personal'; this.setState({ sel: null, tab: 'planner', pMode: kind, pView: 'day', pDate: k, wDate: k }); this.openAdd(kind); };
+      sheet.addLabel = hw ? 'Add a Work To-Do' : 'Add a To-Do';
     }
 
     // planner

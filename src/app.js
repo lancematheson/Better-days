@@ -609,7 +609,7 @@ class Component extends DCLogic {
     const tParts = TODAY.split('-');
     this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
       tasks: carryOver((S.tasks || []).map(migrateTask), TODAY), work: carryOver((S.work || []).map(function (w) { return w.date ? w : Object.assign({}, w, { date: TODAY, carried: '' }); }), TODAY),
-      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', hMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false),
       tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
@@ -873,7 +873,7 @@ class Component extends DCLogic {
   shiftMonth(n) {
     let y = this.state.month.y, m = this.state.month.m + n;
     if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
-    const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 1) return;
+    const v = y * 12 + m; const sp = START.split('-'), tp = TODAY.split('-'); if (v < (+sp[0]) * 12 + (+sp[1] - 1) || v > (+tp[0]) * 12 + (+tp[1] - 1) + 12) return; // up to a year ahead, to see planned to-dos
     this.setState({ month: { y: y, m: m } });
   }
   // Scan: photo -> on-phone text reading -> review sheet -> to-dos on the right days.
@@ -1101,7 +1101,7 @@ class Component extends DCLogic {
     // calendar
     const y = s.month.y, m = s.month.m;
     const first = new Date(Date.UTC(y, m, 1)); const off = (first.getUTCDay() + 6) % 7; const dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-    const cells = []; let lc = 0, el = 0;
+    const cells = []; let lc = 0, el = 0; const hWork = s.hMode === 'work';
     for (let i = 0; i < off; i++) cells.push({ blank: true, real: false });
     for (let d = 1; d <= dim; d++) {
       const k = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
@@ -1113,10 +1113,19 @@ class Component extends DCLogic {
       let style = 'background: transparent; color: #48484A; border: 2px solid transparent';
       if (isL && ov != null) { const c = rgbOf(ov); const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255; style = 'background: ' + gcol(ov) + '; color: ' + (lum > 0.55 ? '#000000' : '#FFFFFF') + '; border: 2px solid ' + (isT ? '#409CFF' : gcol(ov)); }
       else if (isM || isT || isL) style = 'background: transparent; color: #C7C7CC; border: 2px solid ' + ring;
-      const tappable = isL || isM || isT;
-      cells.push({ blank: false, real: true, num: d, style: style, aria: fmt(k) + (isL ? (ov != null ? ', ' + Math.round(ov) + '% ' + letter(ov) : ', logged') : isM ? ', no check-in' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
+      // To-dos for the list chosen with the Personal | Work switch: done/total up to today, planned count after.
+      const ts = hWork ? this.workForDay(k) : this.tasksForDay(k, false); const nDone = ts.filter(function (t) { return t.done; }).length;
+      const isF = k > TODAY;
+      const cnt = !ts.length ? '' : isF ? String(ts.length) : nDone + '/' + ts.length;
+      if (isF) style = 'background: transparent; color: #C7C7CC; border: 2px solid transparent';
+      const tappable = true;
+      cells.push({ blank: false, real: true, num: d, style: style, cnt: cnt, hasCnt: !!cnt, aria: fmt(k) + (isL ? (ov != null ? ', ' + Math.round(ov) + '% ' + letter(ov) : ', logged') : isM ? ', no check-in' : isT ? ', today, not logged yet' : ''), pick: tappable ? () => this.setState({ sel: k }) : () => {} });
     }
-    const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet' };
+    const cal = { title: MONTHS[m] + ' ' + y, cells: cells, count: el ? lc + ' of ' + el + ' days logged' : 'No days to log yet',
+      isWork: hWork, personalStyle: hWork ? 'background: transparent; color: #C7C7CC' : 'background: #0A84FF; color: #FFFFFF', workStyle: hWork ? 'background: #0A84FF; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
+      personalStr: hWork ? 'false' : 'true', workStr: hWork ? 'true' : 'false',
+      toPersonal: () => this.setState({ hMode: 'personal' }), toWork: () => this.setState({ hMode: 'work' }),
+      legendTasks: hWork ? 'work to-dos done / planned' : 'to-dos done / planned' };
 
     // sheet
     let sheet = { open: false, logged: false, missed: false, date: '', edited: '', b: badge(null), rings: [], expLine: '', ed: { txt: '', col: NEU }, groups: [], note: '', tasks: [], taskCount: '', edit: () => {} };
@@ -1142,10 +1151,15 @@ class Component extends DCLogic {
         });
         sheet.note = e.note || 'No note'; sheet.noteSec = sec('note'); sheet.taskSec = sec('tasks');
         sheet.hasJournal = !!s.journal[k]; sheet.journal = s.journal[k] || ''; sheet.jSec = sec('journal');
-        const st = this.tasksForDay(k, true);
-        sheet.tasks = st.map((t) => this.taskRow(t, true));
-        sheet.taskCount = st.length ? st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done' : 'None planned';
       }
+      // To-dos for this day from the list chosen in History (Personal or Work); shown for any day, past or future.
+      const hw = s.hMode === 'work'; const st = hw ? this.workForDay(k) : this.tasksForDay(k, true);
+      sheet.tasks = st.map((t) => this.taskRow(t, true)); sheet.hasTasks = st.length > 0; sheet.taskTitle = hw ? 'Work to-dos' : 'To-dos';
+      sheet.taskCount = st.length ? (k > TODAY ? st.length + ' planned' : st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done') : 'None planned';
+      sheet.isFuture = k > TODAY; sheet.canFill = !e && k <= TODAY;
+      if (!e) sheet.edited = k > TODAY ? 'Upcoming' : k === TODAY ? 'Not checked in yet' : 'No check-in';
+      sheet.addHere = () => { const kind = hw ? 'work' : 'personal'; this.setState({ sel: null, tab: 'planner', pMode: kind, pView: 'day', pDate: k, wDate: k }); this.openAdd(kind); };
+      sheet.addLabel = hw ? 'Add a Work To-Do' : 'Add a To-Do';
     }
 
     // planner

@@ -299,6 +299,26 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   vm.runInContext(src + `\n;globalThis.__n = FACTORS.map((f) => f.name);`, c2);
   const n = c2.__n; ok(n[4] === 'Health' && n[11] === 'Money Goals' && n[12] === 'Side Hustle' && n[0] === 'Sleep', 'old default names updated, custom names kept');
 }
+// History calendar: to-do counts for Personal or Work, future days tappable, to-dos in day details.
+{
+  const T = new L.Component({}); T.state.days = {}; T.state.tasks = []; T.state.series = []; T.state.work = []; T.state.nextId = 1; T.state.workNextId = 1;
+  const today = L.getToday(); const fut = L.addDays(today, 3); const past = L.addDays(today, -2);
+  T.addTask('Walk', past, null, 'physical'); T.toggleTask(T.state.tasks[0]); T.addTask('Call', past, null, 'emotional');
+  T.addTask('Dentist', fut, null, 'physical'); T.addWorkItem('Send deck', fut);
+  const y = +today.slice(0, 4), m = +today.slice(5, 7) - 1; T.state.month = { y: y, m: m };
+  const cell = (k) => T.renderVals().cal.cells.filter((c) => c.real)[+k.slice(8) - 1];
+  if (past.slice(0, 7) === today.slice(0, 7)) ok(cell(past).cnt === '1/2', 'past day shows done/total');
+  if (fut.slice(0, 7) === today.slice(0, 7)) {
+    ok(cell(fut).cnt === '1', 'future day shows planned count');
+    T.renderVals().cal.toWork(); ok(cell(fut).cnt === '1' && T.renderVals().cal.isWork, 'Work switch counts work to-dos');
+    cell(fut).pick(); let sh = T.renderVals().sheet;
+    ok(sh.open && sh.isFuture && !sh.canFill && sh.tasks[0].text === 'Send deck' && sh.taskCount === '1 planned' && sh.taskTitle === 'Work to-dos', 'future day opens with its work to-dos');
+    T.renderVals().cal.toPersonal(); sh = T.renderVals().sheet; ok(sh.tasks[0].text === 'Dentist' && sh.edited === 'Upcoming', 'Personal switch shows personal to-dos');
+    sh.addHere(); ok(T.state.tab === 'planner' && T.state.add.open && T.state.add.day === fut && T.state.add.kind === 'personal' && !T.state.sel, 'Add a To-Do opens the add sheet on that day');
+  }
+  T.state.month = { y: y, m: m }; for (let i = 0; i < 14; i++) T.shiftMonth(1);
+  ok(T.state.month.y * 12 + T.state.month.m === y * 12 + m + 12, 'next-month arrow goes up to a year ahead, then stops');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
