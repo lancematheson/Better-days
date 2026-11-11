@@ -316,6 +316,10 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
     T.renderVals().cal.toPersonal(); sh = T.renderVals().sheet; ok(sh.tasks[0].text === 'Dentist' && sh.edited === 'Upcoming', 'Personal switch shows personal to-dos');
     sh.addHere(); ok(T.state.tab === 'planner' && T.state.add.open && T.state.add.day === fut && T.state.add.kind === 'personal' && !T.state.sel, 'Add a To-Do opens the add sheet on that day');
   }
+  T.addSeries('personal', 'Vitamins', 'physical', { type: 'daily', days: [] }, past); T.addTask('This week', null, L.weekKey(today), 'physical');
+  T.state.month = { y: y, m: m }; T.state.hMode = 'personal';
+  if (fut.slice(0, 7) === today.slice(0, 7)) ok(cell(fut).cnt === '1', 'repeating and anytime-this-week to-dos are not counted');
+  T.state.sel = fut; ok(T.renderVals().sheet.tasks.length === 1, 'and not listed in the day details'); T.state.sel = null;
   T.state.month = { y: y, m: m }; for (let i = 0; i < 14; i++) T.shiftMonth(1);
   ok(T.state.month.y * 12 + T.state.month.m === y * 12 + m + 12, 'next-month arrow goes up to a year ahead, then stops');
 }

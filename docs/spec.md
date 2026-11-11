@@ -119,8 +119,8 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    - **Carry-over (both lists):** unfinished one-time to-dos from earlier days move to today with "Carried over from
      [date]". Anytime-this-week to-dos stay on their week.
 4. **History** — a **Personal | Work** switch, then a monthly calendar: each checked-in day is filled with its overall score
-   color; days with no check-in are left blank; today has a blue outline. Under each date, a small to-do count for the
-   chosen list: done/total up to today (e.g. 1/2), planned count for future days (e.g. 3). The arrows go back to the
+   color; days with no check-in are left blank; today has a blue outline. Under each date, a small count of to-dos **added for that specific
+   date** in the chosen list (repeating and anytime-this-week to-dos are left out here): done/total up to today (e.g. 1/2), planned count for future days (e.g. 3). The arrows go back to the
    first day and up to 12 months ahead. Every day can be tapped, past or future: a day with no check-in shows its to-dos,
    an **Add a To-Do** button (opens Planner's add sheet on that day, in the chosen list) and, up to today, Fill In This Day. Tap a day for its full detail: rings, grade and expected vs. actual on top, then
    tappable sections (Physical, Emotional, Financial with each pillar's %, To-dos with count, Note, and Journal if that day

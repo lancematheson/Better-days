@@ -760,6 +760,8 @@ class Component extends DCLogic {
     if (w.sid) { this.setState({ delAsk: { sid: w.sid, date: w.date, text: w.text } }); return; }
     this.setState({ work: this.state.work.filter(function (x) { return x.id !== w.id; }) });
   }
+  // History shows only to-dos added for a specific date: no repeating copies, no anytime-this-week items.
+  datedFor(work, k) { return byTime((work ? this.state.work : this.state.tasks).filter(function (t) { return t.date === k; })); }
   workForDay(k) { return byTime(this.state.work.filter(function (w) { return w.date === k; }).concat(this.occurrences('work', k))); }
   taskRow(t, showWhen) {
     const bits = [];
@@ -1114,7 +1116,8 @@ class Component extends DCLogic {
       if (isL && ov != null) { const c = rgbOf(ov); const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255; style = 'background: ' + gcol(ov) + '; color: ' + (lum > 0.55 ? '#000000' : '#FFFFFF') + '; border: 2px solid ' + (isT ? '#409CFF' : gcol(ov)); }
       else if (isM || isT || isL) style = 'background: transparent; color: #C7C7CC; border: 2px solid ' + ring;
       // To-dos for the list chosen with the Personal | Work switch: done/total up to today, planned count after.
-      const ts = hWork ? this.workForDay(k) : this.tasksForDay(k, false); const nDone = ts.filter(function (t) { return t.done; }).length;
+      // Only to-dos added for that specific date (no repeats, no anytime-this-week).
+      const ts = this.datedFor(hWork, k); const nDone = ts.filter(function (t) { return t.done; }).length;
       const isF = k > TODAY;
       const cnt = !ts.length ? '' : isF ? String(ts.length) : nDone + '/' + ts.length;
       if (isF) style = 'background: transparent; color: #C7C7CC; border: 2px solid transparent';
@@ -1153,7 +1156,7 @@ class Component extends DCLogic {
         sheet.hasJournal = !!s.journal[k]; sheet.journal = s.journal[k] || ''; sheet.jSec = sec('journal');
       }
       // To-dos for this day from the list chosen in History (Personal or Work); shown for any day, past or future.
-      const hw = s.hMode === 'work'; const st = hw ? this.workForDay(k) : this.tasksForDay(k, true);
+      const hw = s.hMode === 'work'; const st = this.datedFor(hw, k);
       sheet.tasks = st.map((t) => this.taskRow(t, true)); sheet.hasTasks = st.length > 0; sheet.taskTitle = hw ? 'Work to-dos' : 'To-dos';
       sheet.taskCount = st.length ? (k > TODAY ? st.length + ' planned' : st.filter(function (t) { return t.done; }).length + ' of ' + st.length + ' done') : 'None planned';
       sheet.isFuture = k > TODAY; sheet.canFill = !e && k <= TODAY;

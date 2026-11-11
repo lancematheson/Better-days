@@ -1,5 +1,5 @@
 // Better Days offline support: keeps the app files on the phone so it opens without internet.
-const CACHE = 'dayscore-8c18f0a7eb';
+const CACHE = 'dayscore-04a74add11';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 // cache: 'reload' skips the phone's 10-minute web cache so a new version never saves an old copy.
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES.map(function (f) { return new Request(f, { cache: 'reload' }); })); }).then(function () { return self.skipWaiting(); })); });
