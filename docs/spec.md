@@ -58,7 +58,7 @@ Used on rings, grades, graphs, dots and the History calendar (each checked-in da
 Pillar tags on to-dos use their own colors so they never read as grades: Physical cyan, Emotional pink, Financial purple.
 
 ## 5. Pages (iOS tab bar, Apple Fitness–style dark look)
-Tabs, in order: Summary · Check-in · Planner · History · Journal.
+Tabs, in order: Summary · Check-in · Planner · History · Notes.
 
 1. **Summary** — gear icon opens Settings. Top to bottom:
    - Latest day as three nested rings in grade colors (outer Physical, middle Emotional, inner Financial) with overall grade.
@@ -123,13 +123,16 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
    date** in the chosen list (repeating and anytime-this-week to-dos are left out here): done/total up to today (e.g. 1/2), planned count for future days (e.g. 3). The arrows go back to the
    first day and up to 12 months ahead. Every day can be tapped, past or future: a day with no check-in shows its to-dos,
    an **Add a To-Do** button (opens Planner's add sheet on that day, in the chosen list) and, up to today, Fill In This Day. Tap a day for its full detail: rings, grade and expected vs. actual on top, then
-   tappable sections (Physical, Emotional, Financial with each pillar's %, To-dos with count, Note, and Journal if that day
-   has an entry). Tap a section to open it (factor scores, importance, expected). The Note starts open; the rest start collapsed each time a day is opened.
+   tappable sections (Physical, Emotional, Financial with each pillar's %, To-dos with count, and Note). Tap a section to open it (factor scores, importance, expected). The Note starts open; the rest start collapsed each time a day is opened.
    "Edited on [date]" shows under the date. Every past day can be filled in or edited anytime. (The old Compare page was removed; its
    key numbers live in the Summary card and each day's detail.)
-5. **Journal** — one blank page per day, ‹ › to move between days, Back to Today, word count. Tapping the date opens the
-   same pop-up calendar as Planner (dots on days with an entry) to jump to any day. Saves as you type. Separate
-   from the check-in's short note.
+5. **Notes** — long-term lists in sections (replaced the daily Journal, Nov 2026). Starts with **Gift Ideas, Bucket List,
+   Grocery List, General**; **+ New Section** adds more (a name containing "gift" makes a gift-style section); each
+   section can be renamed or deleted (second tap confirms; deletes its items). Inside a section: add items with an
+   optional detail; tap the circle to check off; checked items go to a collapsible **Done (n)** area with **Clear**.
+   **Gift Ideas** items also have **For** (blank = Me) and an optional **price** ("$35", "28.50"); the list is grouped by
+   person (Me first) with "N gifts · N bought · $total"; checking a gift marks it bought (it stays in its group, struck
+   through) and "Clear bought gifts" removes them. Items stay until deleted; saved only on the phone.
 
 ## 6. Advice / tips
 - **Needs Attention lists only factors swiped Bad** (days typed before the swipe check-in: factors below 7.0). Pillar and overall percentages no longer add lines. The Summary card reads "N factors rated Bad on [date]" or "Nothing rated Bad".
@@ -144,7 +147,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 
 ## 7. Settings & setup
 - First launch runs a 5-step setup: **Welcome to Better Days** (one-line pitch + a short tour of Check-in, Summary, Planner,
-  History, Journal) → Pillar weights → Importance (High / Med / Low) → This week's Focus (one per pillar; no Sunday promise
+  History, Notes) → Pillar weights → Importance (High / Med / Low) → This week's Focus (one per pillar; no Sunday promise
   until that prompt exists) → **You're Set** (how to start tonight, the green ↑ Good / yellow → Okay / red ↓ Bad swipe
   guide, and three tips: Back button, first night has no expectations, export a backup). "Run Setup Again" in Settings.
 - Settings: pillar weights (must total 100), Focus (one per pillar), factor names + importance, tip sources, change history, Export CSV (share sheet), Delete All Data (tap twice; also clears to-dos and journal), About.
@@ -157,7 +160,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
   each time it comes back on screen and reloads itself once when one takes over. Settings → About shows "Version [build
   date] · [code]" so you can tell which version is running.
 - Days follow the calendar (midnight to midnight). Missed days are left out of all averages and graphs.
-- CSV export: one row per day with overall/pillar %, every factor's score, importance and expected score, note, edited date, journal text. Deleting the home-screen app deletes its data, so export now and then.
+- CSV export: one row per day with overall/pillar %, every factor's score, importance and expected score, note, edited date, journal text (past daily-journal entries are still saved and exported, though the Journal tab is gone). Deleting the home-screen app deletes its data, so export now and then.
 - Installed via Safari → Share → Add to Home Screen (iPhone) or Chrome → ⋮ → Add to Home screen / Install app (Android). Tested at
   Android phone sizes in Chrome's engine (no real Android device yet); the phone's own back button may close the app,
   so every screen with somewhere to go back to has an on-screen Back / Cancel / ✕. Anyone with the link can install it; each person's data is separate.
@@ -170,6 +173,7 @@ Tabs, in order: Summary · Check-in · Planner · History · Journal.
 - Reminders / alarms of any kind (setup step and Settings section removed).
 - Compare page (replaced by the Summary "vs. Expected" card).
 - Paste-a-list import (Lance wants Scan only).
+- Daily Journal tab (replaced by Notes; old entries kept in storage and the CSV export only).
 
 ## 10. Ideas / next steps
 - Sunday-night Focus prompt and weekly review (decided, not built yet).
