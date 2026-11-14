@@ -7,7 +7,7 @@ const ctx = { console, setTimeout, clearTimeout, setInterval, Date, Math, JSON, 
 ctx.window = { addEventListener() {}, removeEventListener() {} };
 vm.createContext(ctx);
 vm.runInContext(`class DCLogic { constructor(p) { this.props = p || {}; this.state = {}; } setState(o) { this.state = Object.assign({}, this.state, typeof o === 'function' ? o(this.state) : o); } forceUpdate() {} }`, ctx);
-vm.runInContext(src + `\n;globalThis.__x = { Component, scoreWord, trendWord, mostlyWord, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
+vm.runInContext(src + `\n;globalThis.__x = { Component, defaultNotes, parsePrice, fmtMoney, scoreWord, trendWord, mostlyWord, swipeDir, parseScan, fmtTime, focusOk, migrateTask, tipPosFromSeen, carryOver, repeatsOn, repeatLabel, scoreDay, letter, rgbOf, badge, delta, dR, expDelta, rings, buildChart, makeData, makeTasks, weekKey, addDays, wFor, focusFor, FACTORS, TIPLIB, DEF_IMP, getToday: () => TODAY };`, ctx);
 vm.runInContext("TODAY = '2026-11-02'; START = '2026-09-03';", ctx); // fixed dates so results are the same every day
 const L = ctx.__x;
 
@@ -106,17 +106,12 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(w.items.length === 2 && w.items[1].text === 'Send proposal' && w.items[1].done && w.count === '1 of 2 done', 'done work sinks to the bottom');
   w.next(); ok(T.renderVals().wk.empty, 'other days have their own list');
 }
-// Planner switches between personal and work; Journal keeps one page per day.
+// Planner switches between personal and work.
 {
   const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.series = []; T.state.journal = {};
   let r = T.renderVals(); ok(r.pm.isPersonal && !r.pm.isWork, 'planner opens on Personal');
   r.pm.toWork(); r = T.renderVals(); ok(r.pm.isWork && r.pm.addAria === 'Add work to-do with options', 'switch to Work');
   r.pm.add(); ok(T.state.add.kind === 'work', '+ adds a work to-do in Work mode');
-  const today = L.getToday(); T.state.jDate = today;
-  T.renderVals().jn.onText({ target: { value: 'Good day today' } });
-  ok(T.state.journal[today] === 'Good day today' && T.renderVals().jn.count === '3 words', 'journal saves per day');
-  T.renderVals().jn.next(); ok(T.renderVals().jn.text === '' && T.renderVals().jn.count === 'Blank page', 'each day starts blank');
-  T.renderVals().jn.prev(); T.renderVals().jn.onText({ target: { value: '  ' } }); ok(!(today in T.state.journal), 'clearing a page removes it');
 }
 // Pop-up calendar in Planner jumps to a date.
 {
@@ -151,17 +146,11 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   ok(T.state.tasks[T.state.tasks.length - 1].time === '', 'no time on anytime-this-week to-dos');
   ok(L.carryOver([{ id: 9, date: '2026-11-01', time: '08:00', done: false }], '2026-11-03')[0].time === '08:00', 'carried to-dos keep their time');
 }
-// Journal date picker, and History day sections that start collapsed.
+// History day sections start collapsed (the note starts open).
 {
   const T = new L.Component({}); T.state.tasks = []; T.state.work = []; T.state.series = []; T.state.days = L.makeData();
-  T.state.journal = { '2026-10-20': 'Paid it off!' }; T.state.jDate = '2026-11-02';
-  T.renderVals().openJPick(); let pk = T.renderVals().pk;
-  ok(pk.open && pk.hint === 'Dots mark days you wrote in', 'journal calendar opens');
-  T.renderVals().pk.prev(); const c20 = T.renderVals().pk.cells.filter((c) => c.real)[19];
-  ok(c20.dot !== 'transparent' && /has an entry/.test(c20.aria), 'dot on days with an entry');
-  c20.pick(); ok(T.state.jDate === '2026-10-20' && !T.state.pick && T.renderVals().jn.text === 'Paid it off!', 'picking opens that page');
   T.state.sel = '2026-10-20'; let sh = T.renderVals().sheet;
-  ok(sh.groups.every((g) => !g.open) && !sh.taskSec.open && sh.noteSec.open && sh.hasJournal && !sh.jSec.open, 'note starts open, other sections collapsed');
+  ok(sh.groups.every((g) => !g.open) && !sh.taskSec.open && sh.noteSec.open, 'note starts open, other sections collapsed');
   sh.groups[1].toggle(); sh = T.renderVals().sheet; ok(sh.groups[1].open && !sh.groups[0].open, 'tap opens one section');
   sh.groups[1].toggle(); ok(!T.renderVals().sheet.groups[1].open, 'tap again closes it');
   T.renderVals().sheet.noteSec.toggle(); ok(!T.renderVals().sheet.noteSec.open, 'note can be closed');
@@ -323,6 +312,28 @@ ok(L.migrateTask({ text: 'x', factor: 'saving' }).pillar === 'financial' && L.mi
   T.state.month = { y: y, m: m }; for (let i = 0; i < 14; i++) T.shiftMonth(1);
   ok(T.state.month.y * 12 + T.state.month.m === y * 12 + m + 12, 'next-month arrow goes up to a year ahead, then stops');
 }
+// Notes: sections of long-term checklists; Gift Ideas groups by person with prices.
+{
+  const T = new L.Component({}); T.state.notes = L.defaultNotes(); T.state.tab = 'notes';
+  let n = T.renderVals().nt; ok(n.home && n.sections.map((x) => x.name).join() === 'Gift Ideas,Bucket List,Grocery List,General', 'starter sections');
+  n.sections[2].open(); T.state.nDraft.text = '  Eggs '; T.state.nDraft.detail = 'dozen'; T.addNoteItem(); T.state.nDraft.text = 'Milk'; T.addNoteItem();
+  n = T.renderVals().nt; ok(n.inSec && n.title === 'Grocery List' && n.open.length === 2 && n.open[0].text === 'Eggs' && n.open[0].detail === 'dozen' && n.count === '2 open', 'add items with optional detail');
+  n.open[0].toggle(); n = T.renderVals().nt; ok(n.open.length === 1 && n.doneList.length === 1 && n.doneHead === 'Done (1)', 'checked items move to Done');
+  n.clearDone(); ok(T.state.notes.items.length === 1, 'clear done');
+  n.back(); T.renderVals().nt.sections[0].open();
+  const add = (text, who, price) => { Object.assign(T.state.nDraft, { text, who, price }); T.addNoteItem(); };
+  add('Scarf', 'Mom', '$35'); add('Cookbook', 'mom', '28.50'); add('Watch', '', '199'); add('Game', 'Sarah', 'cheap');
+  n = T.renderVals().nt; const by = Object.fromEntries(n.people.map((g) => [g.who, g]));
+  ok(n.people[0].who === 'Me' && by.Me.items[0].text === 'Watch' && by.Me.items[0].price === '$199', 'blank For = Me, listed first, price shown');
+  ok(by.Mom.sub === '1 gift · $35' && by.mom && by.Sarah.items[0].hasPrice === false, 'grouped by person with a total; unreadable price left blank');
+  by.Mom.items[0].toggle(); ok(/1 bought/.test(T.renderVals().nt.people.find((g) => g.who === 'Mom').sub), 'checking a gift marks it bought');
+  ok(L.parsePrice('$1,250') === 1250 && L.parsePrice('12.5') === 12.5 && L.fmtMoney(28.5) === '$28.50' && L.fmtMoney(35) === '$35', 'price reading and display');
+  T.renderVals().nt.back(); T.renderVals().nt.startNew(); T.state.nNew = 'Movies to watch'; T.renderVals().nt.saveNew();
+  n = T.renderVals().nt; ok(n.sections.length === 5 && n.sections[4].name === 'Movies to watch', 'add a section');
+  n.sections[4].open(); T.renderVals().nt.startRename(); T.state.nRename = 'Movies'; T.renderVals().nt.saveRename(); ok(T.renderVals().nt.title === 'Movies', 'rename a section');
+  T.state.nDraft.text = 'Dune'; T.addNoteItem(); T.renderVals().nt.del(); ok(T.state.notes.sections.length === 5, 'delete needs a second tap');
+  T.renderVals().nt.del(); ok(T.state.notes.sections.length === 4 && !T.state.notes.items.some((x) => x.text === 'Dune') && T.renderVals().nt.home, 'deleted with its items');
+}
 // Carry-over: unfinished one-time to-dos move to today; done ones stay put.
 {
   const out = L.carryOver([{ id: 1, date: '2026-10-30', done: false, mark: 'not', carried: '' }, { id: 2, date: '2026-10-30', done: true }, { id: 3, date: null, week: '2026-10-26', done: false }], '2026-11-02');
@@ -391,7 +402,7 @@ ok(L.wFor(today).physical === 45 && L.wFor(L.addDays(today, -1)).physical === 40
 
 // CSV export.
 const csv = C.buildCsv().split('\n');
-ok(csv[0].split(',').length === 5 + 15 * 3 + 3, 'CSV columns (with journal)');
+ok(csv[0].split(',').length === 5 + 15 * 3 + 3, 'CSV columns (past journal entries still exported)');
 ok(csv.length === Object.keys(C.state.days).length + 1, 'CSV one row per day');
 
 console.log(`\n${passes} passed, ${fails} failed`);

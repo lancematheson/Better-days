@@ -486,6 +486,22 @@ function swipeDir(dx, dy, min) {
 // swipe values (9 / 7 / 4): 8 and up = Good, 5.5 up to 8 = Okay, below 5.5 = Bad.
 function scoreWord(v) { return v >= 8 ? 'Good' : v >= 5.5 ? 'Okay' : 'Bad'; }
 function answerLabel(v) { if (v === undefined) return ''; if (v === 'NA' || v == null) return 'N/A'; return scoreWord(v); }
+// ---------- Notes: long-term lists in sections (checklists; Gift Ideas groups by person with prices) ----------
+function defaultNotes() {
+  return { sections: [{ id: 1, name: 'Gift Ideas', kind: 'gift' }, { id: 2, name: 'Bucket List', kind: 'list' }, { id: 3, name: 'Grocery List', kind: 'list' }, { id: 4, name: 'General', kind: 'list' }], items: [], nextId: 5 };
+}
+// "$45", "45.50", "45" -> 45.5; anything else -> null
+function parsePrice(t) { const m = String(t || '').replace(/[, ]/g, '').match(/^\$?(\d+(?:\.\d{1,2})?)$/); return m ? +m[1] : null; }
+function fmtMoney(v) { return v == null ? '' : '$' + (Math.round(v * 100) % 100 ? v.toFixed(2) : String(Math.round(v))); }
+function makeNotes() {
+  const n = defaultNotes(); let id = 10;
+  const add = (sid, text, extra) => n.items.push(Object.assign({ id: id++, sid: sid, text: text, detail: '', done: false, who: '', price: null }, extra || {}));
+  add(1, 'Cozy scarf', { who: 'Mom', price: 35 }); add(1, 'Cookbook', { who: 'Mom', price: 28, done: true }); add(1, 'Running watch', { who: 'Me', price: 199 }); add(1, 'Board game', { who: 'Sarah', price: 40 });
+  add(2, 'See the Northern Lights', { detail: 'Iceland or Norway' }); add(2, 'Run a half marathon'); add(2, 'Learn to surf', { done: true });
+  add(3, 'Eggs'); add(3, 'Spinach'); add(3, 'Greek yogurt', { detail: 'plain, big tub' }); add(3, 'Coffee', { done: true });
+  add(4, 'Wi-Fi password: on the router'); add(4, 'Book recs from Dan', { detail: 'Atomic Habits, Deep Work' });
+  n.nextId = id; return n;
+}
 // Focus ("Big Three") is one factor from each pillar.
 function focusMissing(list) { return PILLARS.filter(function (p) { return !list.some(function (id) { return pillarOfFactor(id) === p.id; }); }); }
 function focusOk(list) { return list.length === 3 && focusMissing(list).length === 0; }
@@ -604,12 +620,12 @@ class Component extends DCLogic {
     // Preview builds (window.BD_DEMO) start with sample data so every screen has something to show.
     if (!SAVED && typeof window !== 'undefined' && window.BD_DEMO) {
       START = addDays(TODAY, -60); // sample data runs up to yesterday
-      S = { days: makeData(), plans: makePlans(), tasks: makeTasks(), work: makeWork(), series: makeSeries(), seriesNextId: 100, nextId: 100, workNextId: 100, setupDone: true };
+      S = { days: makeData(), plans: makePlans(), tasks: makeTasks(), work: makeWork(), notes: makeNotes(), series: makeSeries(), seriesNextId: 100, nextId: 100, workNextId: 100, setupDone: true };
     }
     const tParts = TODAY.split('-');
     this.state = { tab: 'summary', filter: 'all', open: {}, days: S.days || {}, plans: S.plans || {}, inp: null, month: { y: +tParts[0], m: +tParts[1] - 1 }, sel: null,
       tasks: carryOver((S.tasks || []).map(migrateTask), TODAY), work: carryOver((S.work || []).map(function (w) { return w.date ? w : Object.assign({}, w, { date: TODAY, carried: '' }); }), TODAY),
-      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', hMode: 'personal', pick: null, scan: null, journal: S.journal || {}, jDate: TODAY, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
+      workNextId: S.workNextId || 1, workText: '', wDate: TODAY, pMode: 'personal', hMode: 'personal', pick: null, scan: null, notes: S.notes || defaultNotes(), nSel: null, nDraft: { text: '', detail: '', who: '', price: '' }, nNew: null, nRename: null, nDel: 0, nDoneOpen: false, journal: S.journal || {}, series: S.series || [], seriesNextId: S.seriesNextId || 1, delAsk: null, nextId: S.nextId || 1, pView: 'day', pDate: TODAY, pWeek: weekKey(TODAY),
       draftC: { text: '', pillar: '' },
       online: (typeof navigator === 'undefined' || navigator.onLine !== false),
       tipPos: S.tipPos || tipPosFromSeen(S.seen), set: this.freshDraft(), msg: '', setup: S.setupDone ? null : { step: 0 }, setupDone: !!S.setupDone, delStep: 0, csv: '',
@@ -618,7 +634,7 @@ class Component extends DCLogic {
   }
   persist() {
     const s = this.state; const names = {}; FACTORS.forEach(function (f) { names[f.id] = f.name; });
-    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, series: s.series, seriesNextId: s.seriesNextId, journal: s.journal, hist: s.hist, tipPos: s.tipPos,
+    const data = { v: 1, start: START, days: s.days, plans: s.plans, tasks: s.tasks, nextId: s.nextId, work: s.work, workNextId: s.workNextId, notes: s.notes, series: s.series, seriesNextId: s.seriesNextId, journal: s.journal, hist: s.hist, tipPos: s.tipPos,
       setupDone: s.setupDone, whist: WHIST, fhist: FHIST, names: names, defImp: DEF_IMP, focus0: FOCUS };
     try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
   }
@@ -909,10 +925,25 @@ class Component extends DCLogic {
     });
     if (added) this.setState({ scan: null });
   }
+  // Notes
+  patchNotes(p) { this.setState({ notes: Object.assign({}, this.state.notes, p) }); }
+  addNoteItem() {
+    const s = this.state, d = s.nDraft, sec = s.notes.sections.filter((x) => x.id === s.nSel)[0]; if (!sec || !d.text.trim()) return;
+    const it = { id: s.notes.nextId, sid: sec.id, text: d.text.trim(), detail: (d.detail || '').trim(), done: false, who: sec.kind === 'gift' ? ((d.who || '').trim() || 'Me') : '', price: sec.kind === 'gift' ? parsePrice(d.price) : null };
+    this.setState({ notes: Object.assign({}, s.notes, { items: s.notes.items.concat([it]), nextId: s.notes.nextId + 1 }), nDraft: { text: '', detail: '', who: sec.kind === 'gift' ? d.who : '', price: '' } });
+  }
+  toggleNote(id) { this.patchNotes({ items: this.state.notes.items.map((x) => (x.id === id ? Object.assign({}, x, { done: !x.done }) : x)) }); }
+  delNote(id) { this.patchNotes({ items: this.state.notes.items.filter((x) => x.id !== id) }); }
+  clearDoneNotes(sid) { this.patchNotes({ items: this.state.notes.items.filter((x) => !(x.sid === sid && x.done)) }); }
+  addSection(name) {
+    const n = (name || '').trim(); if (!n) return; const s = this.state.notes;
+    this.setState({ notes: Object.assign({}, s, { sections: s.sections.concat([{ id: s.nextId, name: n, kind: /gift/i.test(n) ? 'gift' : 'list' }]), nextId: s.nextId + 1 }), nNew: null });
+  }
+  renameSection(id, name) { const n = (name || '').trim(); if (!n) return; this.patchNotes({ sections: this.state.notes.sections.map((x) => (x.id === id ? Object.assign({}, x, { name: n }) : x)) }); this.setState({ nRename: null }); }
+  deleteSection(id) { const s = this.state.notes; this.setState({ notes: Object.assign({}, s, { sections: s.sections.filter((x) => x.id !== id), items: s.items.filter((x) => x.sid !== id) }), nSel: null, nDel: 0 }); }
   // Jump the Planner to a date picked from the pop-up calendar (Personal opens that day's Day view).
   pickDate(k) {
-    if (this.state.pick && this.state.pick.j) this.setState({ jDate: k, pick: null });
-    else if (this.state.pMode === 'work') this.setState({ wDate: k, pick: null });
+    if (this.state.pMode === 'work') this.setState({ wDate: k, pick: null });
     else this.setState({ pView: 'day', pDate: k, pick: null });
   }
   toggle(id) { const o = Object.assign({}, this.state.open); o[id] = !o[id]; this.setState({ open: o }); }
@@ -1153,7 +1184,6 @@ class Component extends DCLogic {
           }) });
         });
         sheet.note = e.note || 'No note'; sheet.noteSec = sec('note'); sheet.taskSec = sec('tasks');
-        sheet.hasJournal = !!s.journal[k]; sheet.journal = s.journal[k] || ''; sheet.jSec = sec('journal');
       }
       // To-dos for this day from the list chosen in History (Personal or Work); shown for any day, past or future.
       const hw = s.hMode === 'work'; const st = this.datedFor(hw, k);
@@ -1225,7 +1255,7 @@ class Component extends DCLogic {
       delLabel: s.delStep === 0 ? 'Delete All Data' : 'Tap again to permanently delete everything',
       del: () => {
         if (this.state.delStep === 0) { this.setState({ delStep: 1 }); return; }
-        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], work: [], series: [], journal: {}, inp: null, tipPos: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans, to-dos and journal pages deleted' }] });
+        START = TODAY; this.setState({ delStep: 0, days: {}, plans: {}, tasks: [], work: [], series: [], journal: {}, notes: defaultNotes(), nSel: null, inp: null, tipPos: {}, csv: '', sel: null, hist: [{ date: fmtShort(TODAY), txt: 'All check-ins, plans, to-dos and notes deleted' }] });
       }
     };
     // setup flow
@@ -1242,7 +1272,7 @@ class Component extends DCLogic {
       open: !!s.setup, num: sstep + 1, total: SU.length, prog: Math.round((sstep + 1) / SU.length * 100), title: sd0.title, body: sd0.body,
       isWeights: !!sd0.isWeights, isImp: !!sd0.isImp, isFocus: !!sd0.isFocus, isWelcome: !!sd0.isWelcome, isDone: !!sd0.isDone,
       features: [['Check-in', '15 quick swipe cards across Physical, Emotional and Financial.', '#0A84FF'], ['Summary', 'Your grade, rings, trends and what needs attention.', '#30D158'],
-        ['Planner', 'Personal and work to-dos, repeats, times, and Scan a photo of a list.', '#BF5AF2'], ['History', 'Every day colored by how it went.', '#FFD60A'], ['Journal', 'A blank page for each day.', '#FF6FAE']]
+        ['Planner', 'Personal and work to-dos, repeats, times, and Scan a photo of a list.', '#BF5AF2'], ['History', 'Every day colored by how it went.', '#FFD60A'], ['Notes', 'Long-term lists: gift ideas, bucket list, groceries and more.', '#FF6FAE']]
         .map(function (r, i) { return { name: r[0], txt: r[1], col: r[2], sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
       tips: ['Swipe left does nothing; use the Back button to change an answer.', 'Your first night has no “expected” yet. Predictions start the next day.', 'Everything is saved only on this phone. Export a backup in Settings now and then.']
         .map(function (t, i) { return { n: String(i + 1), txt: t, sep: i ? 'border-top: 1px solid #38383A' : '' }; }),
@@ -1309,33 +1339,23 @@ class Component extends DCLogic {
       workStyle: isWorkMode ? 'background: #0A84FF; color: #FFFFFF' : 'background: transparent; color: #C7C7CC',
       toPersonal: () => this.setState({ pMode: 'personal' }), toWork: () => this.setState({ pMode: 'work', wDate: this.state.pView === 'day' ? this.state.pDate : this.state.wDate })
     };
-    // journal: one free-writing page per day
-    const jt = s.journal[s.jDate] || ''; const words = jt.trim() ? jt.trim().split(/\s+/).length : 0;
-    const jn = {
-      kicker: s.jDate === TODAY ? 'Today' : s.jDate === addDays(TODAY, -1) ? 'Yesterday' : s.jDate < TODAY ? 'Past day' : 'Upcoming',
-      title: fmt(s.jDate), count: words ? words + (words === 1 ? ' word' : ' words') : 'Blank page', text: jt,
-      onText: (ev) => { const j = Object.assign({}, this.state.journal); const v = ev.target.value; if (v.trim()) j[this.state.jDate] = v; else delete j[this.state.jDate]; this.setState({ journal: j }); },
-      prev: () => this.setState({ jDate: addDays(this.state.jDate, -1) }), next: () => this.setState({ jDate: addDays(this.state.jDate, 1) }),
-      isOff: s.jDate !== TODAY, toToday: () => this.setState({ jDate: TODAY })
-    };
 
     // pop-up calendar for jumping the Planner to any date (dots mark days with to-dos)
-    const forJ = !!(s.pick && s.pick.j);
-    const curDate = forJ ? s.jDate : isWorkMode ? s.wDate : (isDay ? s.pDate : s.pWeek);
+    const curDate = isWorkMode ? s.wDate : (isDay ? s.pDate : s.pWeek);
     let dpk = { open: false, cells: [] };
     if (s.pick) {
       const py = s.pick.y, pmn = s.pick.m; const f1st = new Date(Date.UTC(py, pmn, 1)); const off0 = (f1st.getUTCDay() + 6) % 7; const dimN = new Date(Date.UTC(py, pmn + 1, 0)).getUTCDate();
       const cells2 = []; for (let i = 0; i < off0; i++) cells2.push({ blank: true, real: false });
       for (let d = 1; d <= dimN; d++) {
         const k = py + '-' + String(pmn + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        const n = forJ ? (s.journal[k] ? 1 : 0) : isWorkMode ? this.workForDay(k).length : this.tasksForDay(k, false).length;
-        const sel = forJ || isWorkMode || isDay ? k === curDate : weekKey(k) === s.pWeek; const isT = k === TODAY;
-        cells2.push({ blank: false, real: true, num: d, aria: fmt(k) + (n ? (forJ ? ', has an entry' : ', ' + n + (n === 1 ? ' to-do' : ' to-dos')) : ''), selStr: sel ? 'true' : 'false',
+        const n = isWorkMode ? this.workForDay(k).length : this.tasksForDay(k, false).length;
+        const sel = isWorkMode || isDay ? k === curDate : weekKey(k) === s.pWeek; const isT = k === TODAY;
+        cells2.push({ blank: false, real: true, num: d, aria: fmt(k) + (n ? ', ' + n + (n === 1 ? ' to-do' : ' to-dos') : ''), selStr: sel ? 'true' : 'false',
           style: sel ? 'background: #0A84FF; color: #FFFFFF; border: 2px solid #0A84FF' : 'background: transparent; color: ' + (isT ? '#409CFF' : '#FFFFFF') + '; border: 2px solid ' + (isT ? '#409CFF' : 'transparent'),
           dot: n ? (sel ? '#FFFFFF' : '#98989F') : 'transparent', pick: () => this.pickDate(k) });
       }
       const shiftM = (n) => { let y = this.state.pick.y, m = this.state.pick.m + n; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } this.setState({ pick: Object.assign({}, this.state.pick, { y: y, m: m }) }); };
-      dpk = { open: true, title: MONTHS[pmn] + ' ' + py, cells: cells2, hint: forJ ? 'Dots mark days you wrote in' : isWorkMode ? 'Dots mark days with work to-dos' : 'Dots mark days with to-dos',
+      dpk = { open: true, title: MONTHS[pmn] + ' ' + py, cells: cells2, hint: isWorkMode ? 'Dots mark days with work to-dos' : 'Dots mark days with to-dos',
         prev: () => shiftM(-1), next: () => shiftM(1), today: () => this.pickDate(TODAY),
         close: (ev) => { if (ev && ev.target !== ev.currentTarget) return; this.setState({ pick: null }); } };
     }
@@ -1361,17 +1381,60 @@ class Component extends DCLogic {
       };
     }
 
+    // notes
+    const NS = s.notes; const nsec = NS.sections.filter((x) => x.id === s.nSel)[0] || null;
+    const noteRow = (x, i) => ({ text: x.text, detail: x.detail, hasDetail: !!x.detail, done: x.done, notDone: !x.done, doneStr: x.done ? 'true' : 'false',
+      aria: (x.done ? 'Mark not done: ' : 'Mark done: ') + x.text, price: fmtMoney(x.price), hasPrice: x.price != null,
+      textStyle: x.done ? 'color: #8E8E93; text-decoration: line-through' : 'color: #FFFFFF', sep: i ? 'border-top: 1px solid #38383A' : '',
+      toggle: () => this.toggleNote(x.id), del: () => this.delNote(x.id) });
+    const nt = {
+      home: !nsec, inSec: !!nsec,
+      sections: NS.sections.map((x, i) => { const its = NS.items.filter((y) => y.sid === x.id); const open = its.filter((y) => !y.done).length;
+        return { name: x.name, sub: its.length ? open + ' open' + (its.length - open ? ' · ' + (its.length - open) + (x.kind === 'gift' ? ' bought' : ' done') : '') : 'Empty', open: () => this.setState({ nSel: x.id, nDraft: { text: '', detail: '', who: '', price: '' }, nDel: 0, nRename: null, nDoneOpen: false }),
+          sep: i ? 'border-top: 1px solid #38383A' : '', isGift: x.kind === 'gift', col: ['#FF6FAE', '#64D2FF', '#30D158', '#FFD60A', '#BF5AF2', '#FF9F0A'][i % 6] }; }),
+      adding: s.nNew != null, newName: s.nNew || '', startNew: () => this.setState({ nNew: '' }), onNew: (ev) => this.setState({ nNew: ev.target.value }),
+      onNewKey: (ev) => { if (ev.key === 'Enter') this.addSection(this.state.nNew); }, saveNew: () => this.addSection(this.state.nNew), cancelNew: () => this.setState({ nNew: null }),
+      back: () => this.setState({ nSel: null, nRename: null, nDel: 0 })
+    };
+    if (nsec) {
+      const its = NS.items.filter((y) => y.sid === nsec.id); const isGift = nsec.kind === 'gift'; const d = s.nDraft;
+      Object.assign(nt, {
+        title: nsec.name, isGift: isGift, isList: !isGift,
+        text: d.text, detail: d.detail, who: d.who, price: d.price, canAdd: !!d.text.trim(),
+        addStyle: d.text.trim() ? 'background: #0A84FF; color: #FFFFFF' : 'background: #2C2C2E; color: #8E8E93',
+        ph: isGift ? 'Gift idea' : 'Add an item',
+        onText: (ev) => this.setState({ nDraft: Object.assign({}, this.state.nDraft, { text: ev.target.value }) }),
+        onDetail: (ev) => this.setState({ nDraft: Object.assign({}, this.state.nDraft, { detail: ev.target.value }) }),
+        onWho: (ev) => this.setState({ nDraft: Object.assign({}, this.state.nDraft, { who: ev.target.value }) }),
+        onPrice: (ev) => this.setState({ nDraft: Object.assign({}, this.state.nDraft, { price: ev.target.value }) }),
+        onKey: (ev) => { if (ev.key === 'Enter') this.addNoteItem(); }, add: () => this.addNoteItem(),
+        count: its.length ? its.filter((y) => !y.done).length + (isGift ? ' to buy' : ' open') : 'Nothing here yet',
+        empty: its.length === 0,
+        open: its.filter((y) => !y.done).map(noteRow),
+        doneList: its.filter((y) => y.done).map(noteRow), hasDone: its.some((y) => y.done), doneHead: (isGift ? 'Bought (' : 'Done (') + its.filter((y) => y.done).length + ')',
+        doneOpen: s.nDoneOpen, doneRot: s.nDoneOpen ? 90 : 0, doneOpenStr: s.nDoneOpen ? 'true' : 'false', toggleDone: () => this.setState({ nDoneOpen: !this.state.nDoneOpen }), clearDone: () => this.clearDoneNotes(nsec.id),
+        // Gift Ideas: grouped by person, with a running total (bought gifts stay in their group, struck through)
+        people: (function () { const by = {}; its.forEach(function (y) { const w = y.who || 'Me'; (by[w] = by[w] || []).push(y); });
+          return Object.keys(by).sort(function (a, b) { return a === 'Me' ? -1 : b === 'Me' ? 1 : a.localeCompare(b); }).map(function (w) { const g = by[w]; const tot = g.reduce(function (t, y) { return t + (y.price || 0); }, 0);
+            const bought = g.filter(function (y) { return y.done; }).length;
+            return { who: w, sub: g.length + (g.length === 1 ? ' gift' : ' gifts') + (bought ? ' · ' + bought + ' bought' : '') + (tot ? ' · ' + fmtMoney(tot) : ''), items: g.slice().sort(function (a, b) { return a.done - b.done; }).map(noteRow) }; }); })(),
+        renaming: s.nRename != null, renameVal: s.nRename || '', startRename: () => this.setState({ nRename: nsec.name }), onRename: (ev) => this.setState({ nRename: ev.target.value }),
+        onRenameKey: (ev) => { if (ev.key === 'Enter') this.renameSection(nsec.id, this.state.nRename); }, saveRename: () => this.renameSection(nsec.id, this.state.nRename), cancelRename: () => this.setState({ nRename: null }),
+        delLabel: s.nDel ? 'Tap again to delete “' + nsec.name + '” and its items' : 'Delete Section', delStyle: s.nDel ? 'background: #C4161C; color: #FFFFFF' : 'background: #1C1C1E; color: #FF6961',
+        del: () => { if (this.state.nDel) this.deleteSection(nsec.id); else this.setState({ nDel: 1 }); }
+      });
+    }
+
     const on = '#409CFF', off2 = '#8E8E93';
     return {
-      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', journal: s.tab === 'journal', history: s.tab === 'history', settings: s.tab === 'settings' },
+      show: { summary: s.tab === 'summary', input: s.tab === 'input', planner: s.tab === 'planner', notes: s.tab === 'notes', history: s.tab === 'history', settings: s.tab === 'settings' },
       showTabs: !(s.tab === 'input' && s.inp && s.inp.phase === 'q'), qFill: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'height: 100%; box-sizing: border-box;' : '', scrollPad: (s.tab === 'input' && s.inp && s.inp.phase === 'q') ? 'padding-bottom: env(safe-area-inset-bottom)' : '',
-      st: st, su: su, ad: ad, dsheet: dsheet, hasData: hasData, noData: !hasData, wk: wk2, pm: pm, jn: jn, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
-      openJPick: () => { const pp = this.state.jDate.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1, j: true } }); },
+      st: st, su: su, ad: ad, dsheet: dsheet, hasData: hasData, noData: !hasData, wk: wk2, pm: pm, nt: nt, pk: dpk, scv: scv, onScanFile: (ev) => this.onScanFile(ev),
       openPick: () => { const st = this.state; const c = st.pMode === 'work' ? st.wDate : (st.pView === 'day' ? st.pDate : st.pWeek); const pp = c.split('-'); this.setState({ pick: { y: +pp[0], m: +pp[1] - 1 } }); }, vdb: vdb, attn: attn,
       appVersion: APP_VERSION,
       goSettings: () => this.setState({ tab: 'settings', sel: null, msg: '', delStep: 0, set: this.freshDraft() }),
       runSetup: () => this.setState({ setup: { step: 0 }, set: this.freshDraft(), msg: '' }),
-      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, journal: s.tab === 'journal' ? on : off2, history: s.tab === 'history' ? on : off2 },
+      tabc: { summary: s.tab === 'summary' ? on : off2, input: s.tab === 'input' ? on : off2, planner: s.tab === 'planner' ? on : off2, notes: s.tab === 'notes' ? on : off2, history: s.tab === 'history' ? on : off2 },
       pl: pl, rv: rv, pn: pn,
       tipsOn: s.online, tipsOff: !s.online && latRecs.items.length > 0,
       goPlanner: () => this.go('planner'),
@@ -1379,7 +1442,7 @@ class Component extends DCLogic {
       todayLabel: fmt(TODAY), lat: lat, week: week, highlights: highlights, sections: sections, filters: filters, big3: big3,
       latRecs: latRecs, latSafety: latSafety, openLatest: () => this.setState({ sel: lk }),
       iv: iv, res: res, cal: cal, sheet: sheet,
-      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goJournal: () => this.go('journal'), goHistory: () => this.go('history'),
+      goSummary: () => this.go('summary'), goInput: () => this.go('input'), goNotes: () => this.go('notes'), goHistory: () => this.go('history'),
       back: () => this.back(), save: () => this.save(),
       onNote: (ev) => this.patchInp({ note: ev.target.value }),
       prevMonth: () => this.shiftMonth(-1), nextMonth: () => this.shiftMonth(1), closeSheet: () => this.setState({ sel: null })

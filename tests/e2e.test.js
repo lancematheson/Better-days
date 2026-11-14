@@ -108,18 +108,13 @@ const SHOTS = path.join(ROOT, 'tests', 'screenshots'); fs.mkdirSync(SHOTS, { rec
   await p.getByRole('button', { name: 'Next month' }).click(); await p.getByRole('button', { name: /, December 10|Thu, Dec 10/ }).first().click(); await p.waitForTimeout(150);
   log('jumped to:', await p.getByRole('button', { name: /Pick a date/ }).getAttribute('aria-label'));
   await btn('History').click(); await p.waitForTimeout(150);
-  await btn('Journal').click(); await p.waitForTimeout(150);
-  await p.getByLabel(/Journal for/).fill('Long day but a good one.'); await p.waitForTimeout(400);
-  await p.screenshot({ path: SHOTS + '/11b-journal.png' });
-  await p.getByRole('button', { name: /Pick a date/ }).click(); await p.waitForTimeout(150);
-  await p.screenshot({ path: SHOTS + '/11c-journal-pick.png' });
-  await p.getByRole('button', { name: 'Today', exact: true }).click(); await p.waitForTimeout(100);
-  await btn('History').click(); await p.getByRole('button', { name: /, today|% / }).first().click(); await p.waitForTimeout(150);
-  await p.screenshot({ path: SHOTS + '/11d-day-collapsed.png' });
-  await p.getByRole('button', { name: /Physical/ }).first().click(); await p.waitForTimeout(100);
-  await p.screenshot({ path: SHOTS + '/11e-day-open.png' });
-  await p.getByRole('button', { name: 'Close' }).click(); await btn('Journal').click();
-  log('journal saved:', (await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')).journal)));
+  await btn('Notes').click(); await p.waitForTimeout(150);
+  await p.getByRole('button', { name: /Grocery List/ }).click(); await p.waitForTimeout(100);
+  await p.getByLabel('Add an item').fill('Eggs'); await p.keyboard.press('Enter'); await p.waitForTimeout(100);
+  await p.getByRole('button', { name: 'Notes', exact: true }).first().click(); await p.getByRole('button', { name: /Gift Ideas/ }).click(); await p.waitForTimeout(100);
+  await p.getByLabel('Gift idea').fill('Scarf'); await p.getByLabel('For').fill('Mom'); await p.getByLabel('Price (optional)').fill('35'); await p.getByRole('button', { name: 'Add item' }).click(); await p.waitForTimeout(400);
+  await p.screenshot({ path: SHOTS + '/11b-notes-gifts.png' });
+  log('notes saved:', (await p.evaluate(() => JSON.parse(localStorage.getItem('dayscore.v1')).notes.items.map((x) => x.text + (x.who ? ' for ' + x.who : '') + (x.price ? ' $' + x.price : '')))));
   await p.screenshot({ path: SHOTS + '/11-history.png' });
   // settings
   await btn('Summary').click(); await p.getByRole('button', { name: 'Settings' }).click(); await p.waitForTimeout(150);

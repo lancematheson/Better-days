@@ -752,25 +752,157 @@
 </div>
 </sc-if>
 
-<!-- ================= JOURNAL ================= -->
-<sc-if value="{{show.journal}}" hint-placeholder-val="{{false}}">
-<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px; min-height: 100%; box-sizing: border-box">
-  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
-    <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{jn.kicker}}</span>
-    <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Journal</h1>
-  </div>
-  <div style="display: flex; align-items: center; justify-content: space-between">
-    <button onClick="{{jn.prev}}" aria-label="Previous day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
-    <button onClick="{{openJPick}}" aria-label="Pick a date: {{jn.title}}" style="flex: 1; min-width: 0; min-height: 44px; background: transparent; border: none; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; padding: 0">
-      <span style="display: flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 700">{{jn.title}}<svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #409CFF"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>
-      <span style="font-size: 12px; color: #98989F">{{jn.count}}</span>
-    </button>
-    <button onClick="{{jn.next}}" aria-label="Next day" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #1C1C1E; color: #409CFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></button>
-  </div>
-  <sc-if value="{{jn.isOff}}" hint-placeholder-val="{{false}}"><button onClick="{{jn.toToday}}" style="align-self: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: none; background: #1C1C1E; color: #409CFF; font-size: 14px; font-weight: 600">Back to Today</button></sc-if>
-  <label for="journaltext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Journal for {{jn.title}}</label>
-  <textarea id="journaltext" value="{{jn.text}}" onChange="{{jn.onText}}" placeholder="Write anything…" style="flex: 1; min-height: 420px; border-radius: 16px; border: none; background: #1C1C1E; color: #FFFFFF; padding: 16px; font-size: 17px; line-height: 1.5; resize: none"></textarea>
-  <span style="font-size: 12px; color: #98989F; text-align: center">Saves as you type. One page per day, kept only on this phone.</span>
+<!-- ================= NOTES ================= -->
+<sc-if value="{{show.notes}}" hint-placeholder-val="{{false}}">
+<div style="padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 12px">
+  <sc-if value="{{nt.home}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">Lists to keep</span>
+        <h1 style="margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em">Notes</h1>
+      </div>
+      <div style="background: #1C1C1E; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column">
+        <sc-for list="{{nt.sections}}" as="x" hint-placeholder-count="4">
+          <button onClick="{{x.open}}" style="background: transparent; border: none; color: #FFFFFF; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0; text-align: left; {{x.sep}}">
+            <span style="width: 10px; height: 10px; border-radius: 5px; background: {{x.col}}; flex: none"></span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 17px; font-weight: 700">{{x.name}}</span>
+              <span style="font-size: 13px; color: #98989F">{{x.sub}}</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{nt.adding}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 8px">
+          <label for="newsection" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">New section name</label>
+          <input id="newsection" type="text" value="{{nt.newName}}" onChange="{{nt.onNew}}" onKeyDown="{{nt.onNewKey}}" placeholder="Section name, e.g. Movies to watch" style="flex: 1; min-height: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px; min-width: 0">
+          <button onClick="{{nt.saveNew}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 16px; font-weight: 700">Add</button>
+          <button onClick="{{nt.cancelNew}}" aria-label="Cancel" style="min-height: 44px; width: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #C7C7CC; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        </div>
+      </sc-if>
+      <button onClick="{{nt.startNew}}" style="min-height: 50px; border-radius: 14px; border: none; background: #1C1C1E; color: #409CFF; font-size: 17px; font-weight: 600">+ New Section</button>
+      <span style="font-size: 12px; color: #98989F; text-align: center; padding: 0 12px">Notes are kept until you delete them, and stay only on this phone.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{nt.inSec}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: space-between; min-height: 44px">
+        <button onClick="{{nt.back}}" style="background: transparent; border: none; color: #409CFF; font-size: 17px; display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Notes</button>
+        <button onClick="{{nt.startRename}}" style="background: transparent; border: none; color: #409CFF; font-size: 16px; min-height: 44px; padding: 0">Rename</button>
+      </div>
+      <sc-if value="{{nt.renaming}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 8px">
+          <label for="renamesection" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Section name</label>
+          <input id="renamesection" type="text" value="{{nt.renameVal}}" onChange="{{nt.onRename}}" onKeyDown="{{nt.onRenameKey}}" style="flex: 1; min-height: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px; min-width: 0">
+          <button onClick="{{nt.saveRename}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; border: none; background: #0A84FF; color: #FFFFFF; font-size: 16px; font-weight: 700">Save</button>
+          <button onClick="{{nt.cancelRename}}" aria-label="Cancel rename" style="min-height: 44px; width: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #C7C7CC; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        </div>
+      </sc-if>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 4px">
+        <span style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #98989F">{{nt.count}}</span>
+        <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.02em">{{nt.title}}</h1>
+      </div>
+
+      <div style="background: #1C1C1E; border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 8px">
+          <label for="notetext" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{nt.ph}}</label>
+          <input id="notetext" type="text" value="{{nt.text}}" onChange="{{nt.onText}}" onKeyDown="{{nt.onKey}}" placeholder="{{nt.ph}}" style="flex: 1; min-height: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px; min-width: 0">
+          <button onClick="{{nt.add}}" aria-label="Add item" style="width: 44px; height: 44px; border-radius: 22px; border: none; display: flex; align-items: center; justify-content: center; flex: none; {{nt.addStyle}}"><svg width="20" height="20" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 2.5"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+        <sc-if value="{{nt.isGift}}" hint-placeholder-val="{{false}}">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 8px">
+            <label for="notewho" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">For</label>
+            <input id="notewho" type="text" value="{{nt.who}}" onChange="{{nt.onWho}}" onKeyDown="{{nt.onKey}}" placeholder="For (Me, Mom…)" style="min-height: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px; min-width: 0">
+            <label for="noteprice" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Price (optional)</label>
+            <input id="noteprice" type="text" inputmode="decimal" value="{{nt.price}}" onChange="{{nt.onPrice}}" onKeyDown="{{nt.onKey}}" placeholder="$ Price" style="min-height: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px; min-width: 0">
+          </div>
+        </sc-if>
+        <label for="notedetail" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Detail (optional)</label>
+        <input id="notedetail" type="text" value="{{nt.detail}}" onChange="{{nt.onDetail}}" onKeyDown="{{nt.onKey}}" placeholder="Detail (optional)" style="min-height: 44px; border-radius: 12px; border: none; background: #2C2C2E; color: #FFFFFF; padding: 0 12px; font-size: 16px; min-width: 0">
+      </div>
+
+      <sc-if value="{{nt.empty}}" hint-placeholder-val="{{false}}"><div style="background: #1C1C1E; border-radius: 16px; padding: 14px 16px; font-size: 14px; color: #98989F">Nothing here yet. Add your first item above.</div></sc-if>
+
+      <sc-if value="{{nt.isList}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="background: #1C1C1E; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column">
+            <sc-for list="{{nt.open}}" as="t" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 2px 0; {{t.sep}}">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 6px 0">
+              <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasDetail}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #98989F">{{t.detail}}</span></sc-if>
+            </div>
+            <sc-if value="{{t.hasPrice}}" hint-placeholder-val="{{false}}"><span style="font-size: 15px; font-weight: 700; color: #C7C7CC; font-variant-numeric: tabular-nums">{{t.price}}</span></sc-if>
+            <button onClick="{{t.del}}" aria-label="Delete {{t.text}}" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{nt.hasDone}}" hint-placeholder-val="{{false}}">
+            <div style="background: #1C1C1E; border-radius: 20px; padding: 0 16px; display: flex; flex-direction: column">
+              <div style="display: flex; align-items: center; min-height: 48px">
+                <button onClick="{{nt.toggleDone}}" aria-expanded="{{nt.doneOpenStr}}" style="flex: 1; background: transparent; border: none; color: #FFFFFF; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; text-align: left; font-size: 15px; font-weight: 700"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{nt.doneRot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>{{nt.doneHead}}</button>
+                <button onClick="{{nt.clearDone}}" style="background: transparent; border: none; color: #409CFF; font-size: 15px; min-height: 44px; padding: 0 0 0 12px">Clear</button>
+              </div>
+              <sc-if value="{{nt.doneOpen}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; flex-direction: column; padding-bottom: 4px">
+                  <sc-for list="{{nt.doneList}}" as="t" hint-placeholder-count="1">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 2px 0; {{t.sep}}">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 6px 0">
+              <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasDetail}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #98989F">{{t.detail}}</span></sc-if>
+            </div>
+            <sc-if value="{{t.hasPrice}}" hint-placeholder-val="{{false}}"><span style="font-size: 15px; font-weight: 700; color: #C7C7CC; font-variant-numeric: tabular-nums">{{t.price}}</span></sc-if>
+            <button onClick="{{t.del}}" aria-label="Delete {{t.text}}" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{nt.isGift}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{nt.people}}" as="g" hint-placeholder-count="2">
+            <div style="background: #1C1C1E; border-radius: 20px; padding: 6px 16px 4px; display: flex; flex-direction: column">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 6px 0">
+                <span style="font-size: 17px; font-weight: 800">{{g.who}}</span>
+                <span style="font-size: 13px; color: #98989F">{{g.sub}}</span>
+              </div>
+              <sc-for list="{{g.items}}" as="t" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 2px 0; border-top: 1px solid #38383A">
+            <button onClick="{{t.toggle}}" aria-label="{{t.aria}}" aria-pressed="{{t.doneStr}}" style="width: 44px; height: 44px; margin-left: -10px; background: transparent; border: none; display: flex; align-items: center; justify-content: center; flex: none">
+              <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="width: 24px; height: 24px; border-radius: 12px; background: #0A84FF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="stroke-width: 3.5"><path d="M5 12l5 5 9-10"></path></svg></span></sc-if>
+              <sc-if value="{{t.notDone}}" hint-placeholder-val="{{true}}"><span style="width: 20px; height: 20px; border-radius: 12px; border: 2px solid #636366"></span></sc-if>
+            </button>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 6px 0">
+              <span style="font-size: 16px; {{t.textStyle}}">{{t.text}}</span>
+              <sc-if value="{{t.hasDetail}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #98989F">{{t.detail}}</span></sc-if>
+            </div>
+            <sc-if value="{{t.hasPrice}}" hint-placeholder-val="{{false}}"><span style="font-size: 15px; font-weight: 700; color: #C7C7CC; font-variant-numeric: tabular-nums">{{t.price}}</span></sc-if>
+            <button onClick="{{t.del}}" aria-label="Delete {{t.text}}" style="width: 36px; height: 44px; background: transparent; border: none; color: #636366; display: flex; align-items: center; justify-content: center; flex: none"><svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <sc-if value="{{nt.hasDone}}" hint-placeholder-val="{{false}}"><button onClick="{{nt.clearDone}}" style="min-height: 44px; border-radius: 14px; border: none; background: #1C1C1E; color: #409CFF; font-size: 15px; font-weight: 600">Clear bought gifts</button></sc-if>
+        </div>
+      </sc-if>
+
+      <button onClick="{{nt.del}}" style="min-height: 48px; border-radius: 14px; border: none; font-size: 15px; font-weight: 600; margin-top: 8px; {{nt.delStyle}}">{{nt.delLabel}}</button>
+    </div>
+  </sc-if>
 </div>
 </sc-if>
 
@@ -783,7 +915,7 @@
   <button onClick="{{goInput}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.input}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Check-in</button>
   <button onClick="{{goPlanner}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.planner}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9"></path></svg>Planner</button>
   <button onClick="{{goHistory}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.history}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>History</button>
-  <button onClick="{{goJournal}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.journal}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"></path><path d="M6 3v18M4 7h4M4 12h4M4 17h4M10 8h6M10 12h5"></path></svg>Journal</button>
+  <button onClick="{{goNotes}}" style="border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; font-weight: 600; color: {{tabc.notes}}"><svg width="24" height="24" viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"></rect><path d="M8 8l1.2 1.2L11.5 7M13.5 8.2H16M8 13l1.2 1.2 2.3-2.2M13.5 13.2H16M8 18h8"></path></svg>Notes</button>
 </nav>
 </sc-if>
 
@@ -1114,15 +1246,6 @@
             </button>
             <sc-if value="{{sheet.noteSec.open}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; line-height: 1.45; color: #C7C7CC; padding-bottom: 4px">{{sheet.note}}</span></sc-if>
           </div>
-          <sc-if value="{{sheet.hasJournal}}" hint-placeholder-val="{{false}}">
-          <div style="background: #2C2C2E; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px">
-            <button onClick="{{sheet.jSec.toggle}}" aria-expanded="{{sheet.jSec.openStr}}" style="width: 100%%; background: transparent; border: none; color: #FFFFFF; padding: 0; min-height: 40px; display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left">
-              <span style="flex: 1; font-size: 15px; font-weight: 700">Journal</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" class="ic" aria-hidden="true" style="color: #8E8E93; transform: rotate({{sheet.jSec.rot}}deg)"><path d="M9 6l6 6-6 6"></path></svg>
-            </button>
-            <sc-if value="{{sheet.jSec.open}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; line-height: 1.45; color: #C7C7CC; white-space: pre-wrap; padding-bottom: 4px">{{sheet.journal}}</span></sc-if>
-          </div>
-          </sc-if>
           <button onClick="{{sheet.edit}}" style="min-height: 50px; border-radius: 14px; border: none; background: #2C2C2E; color: #409CFF; font-size: 17px; font-weight: 600">Edit This Day</button>
         </div>
       </sc-if>
